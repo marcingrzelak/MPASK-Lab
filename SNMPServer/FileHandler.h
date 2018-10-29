@@ -7,6 +7,7 @@ public:
 	~FileHandler();
 
 	void FileRead();
+	string FileGetLine();
 
 
 	fstream file;

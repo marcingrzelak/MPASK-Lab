@@ -5,7 +5,6 @@
 
 TreeNode::TreeNode()
 {
-	next.push_back(0);
 }
 
 TreeNode::~TreeNode()
@@ -27,14 +26,14 @@ Tree::~Tree()
 
 void Tree::addRoot(string pName, int pOID)
 {
-	TreeNode *children = new TreeNode;
+	TreeNode *newRoot = new TreeNode;
 
-	children->name = pName;
-	children->OID = pOID;
+	newRoot->name = pName;
+	newRoot->OID = pOID;
 
 	if (root == 0)
 	{
-		root = children;
+		root = newRoot;
 	}
 
 	else

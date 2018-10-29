@@ -20,4 +20,12 @@ void FileHandler::FileRead()
 	cout << line << endl;
 }
 
+string FileHandler::FileGetLine()
+{
+	string line;
+	//dodac zabezpieczenie konca pliku
+	getline(file, line);
+	return line;
+}
+
 
