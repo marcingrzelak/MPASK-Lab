@@ -2,30 +2,34 @@
 #include "FileHandler.h"
 
 
-FileHandler::FileHandler(string filePath)
+FileHandler::FileHandler()
 {
-	file.open(filePath, ios::in);
+	
 }
 
 
 FileHandler::~FileHandler()
 {
-	file.close();
+	ifs.close();
 }
 
-void FileHandler::FileRead()
+string FileHandler::FileRead(string filePath)
 {
-	string line;
-	getline(file, line);
-	cout << line << endl;
+	ifstream ifs(filePath.c_str(), ios::in | ios::binary | ios::ate);
+	ifstream::pos_type fileSize = ifs.tellg();
+	ifs.seekg(0, ios::beg);
+
+	vector<char> bytes(fileSize);
+	ifs.read(bytes.data(), fileSize);
+
+	return string(bytes.data(), fileSize);
 }
 
 string FileHandler::FileGetLine()
 {
 	string line;
 	//dodac zabezpieczenie konca pliku
-	getline(file, line);
+
+	//getline(file, line);
 	return line;
 }
-
-

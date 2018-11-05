@@ -3,13 +3,12 @@
 class FileHandler
 {
 public:
-	FileHandler(string);
+	FileHandler();
 	~FileHandler();
 
-	void FileRead();
+	string FileRead(string);
 	string FileGetLine();
 
-
-	fstream file;
+	ifstream ifs;
 };
 
