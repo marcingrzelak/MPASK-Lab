@@ -1,28 +1,29 @@
 #include "pch.h"
 #include "FileHandler.h"
+#include "Regex.h"
 
 
-FileHandler::FileHandler()
+FileHandler::FileHandler(string path)
 {
-	
+	file.open(path, ios::in);
 }
-
 
 FileHandler::~FileHandler()
 {
-	ifs.close();
+	file.close();
 }
 
-string FileHandler::FileRead(string filePath)
+string FileHandler::FileRead()
 {
-	ifstream ifs(filePath.c_str(), ios::in | ios::binary | ios::ate);
-	ifstream::pos_type fileSize = ifs.tellg();
-	ifs.seekg(0, ios::beg);
+	string allFile = "", line;
+	while (!file.eof())
+	{
+		getline(file, line);		
+		line = regex_replace(line, Regex::comments(), " ");
+		allFile.append(line+" ");
+	}
 
-	vector<char> bytes(fileSize);
-	ifs.read(bytes.data(), fileSize);
-
-	return string(bytes.data(), fileSize);
+	return allFile;
 }
 
 string FileHandler::FileGetLine()

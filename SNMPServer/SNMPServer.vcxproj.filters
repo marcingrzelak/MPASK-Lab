@@ -24,6 +24,9 @@
     <ClInclude Include="TreeStructure.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Regex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -36,6 +39,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="TreeStructure.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Regex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
