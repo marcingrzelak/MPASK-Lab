@@ -6,14 +6,8 @@ Regex::Regex()
 {
 }
 
-
 Regex::~Regex()
 {
-}
-
-regex Regex::wzorzec()
-{
-	return regex("\\w*\\s*OBJECT-TYPE\\s*SYNTAX.*ACCESS.*STATUS.*DESCRIPTION\\s*.*\\s*::=\\s*\{.*\}");
 }
 
 regex Regex::whitespaces()
