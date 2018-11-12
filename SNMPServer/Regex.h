@@ -7,6 +7,13 @@ public:
 
 	static regex whitespaces();
 	static regex comments();
+	regex OBJECT_TYPE();
+	regex IMPORTS1();
+	regex IMPORTS2();
+	regex IMPORTS3();
+	regex DATA_TYPE();
+	regex OBJECT_IDENTIFIER();
 
-	//static const string OBJECT_TYPE_PATTERN = "((\\w*)(\\s*)(OBJECT-TYPE)(\\s*)(SYNTAX)(.*)(ACCESS)(.*)(STATUS)(.*)(DESCRIPTION)(.*)(::=)(\\s*)(.)(\\s*)(\\w*)(\\s*)(\\d)(\\s*)(.))";
+	//regex IMPORTS("(BEGIN\\s*IMPORTS\\s*((.*?),\\s*)*(.*?)\\s*FROM\\s*(\\S*).*;)"); //powinno dzialac niezaleznie od ilosci importow
+	//regex IMPORTS(R"(BEGIN\s*IMPORTS\s*(.*?),\s*(.*?),\s*(.*?),\s*(.*?),\s*(.*?),\s*(.*?)\s*FROM\s*(\S*).*;)");
 };

@@ -15,22 +15,15 @@ FileHandler::~FileHandler()
 
 string FileHandler::FileRead()
 {
-	string allFile = "", line;
+	string wholeFile = "", line;
 	while (!file.eof())
 	{
 		getline(file, line);		
 		line = regex_replace(line, Regex::comments(), " ");
-		allFile.append(line+" ");
+		wholeFile.append(line+" ");
 	}
 
-	return allFile;
-}
+	wholeFile = regex_replace(wholeFile, Regex::whitespaces(), " ");
 
-string FileHandler::FileGetLine()
-{
-	string line;
-	//dodac zabezpieczenie konca pliku
-
-	//getline(file, line);
-	return line;
+	return wholeFile;
 }
