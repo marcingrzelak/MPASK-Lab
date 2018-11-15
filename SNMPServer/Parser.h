@@ -1,5 +1,6 @@
 #pragma once
 #include "TreeStructure.h"
+#include "DataStructures.h"
 
 class Parser
 {
@@ -7,6 +8,6 @@ public:
 	Parser();
 	~Parser();
 
-	void wholeFileParse(string pFilePath, Tree pOIDTree);
+	void wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType);
 };
 

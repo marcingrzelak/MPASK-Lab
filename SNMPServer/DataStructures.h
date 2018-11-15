@@ -55,12 +55,14 @@ public:
 	string typeID;
 	string keyword;
 	string type;
-	int size;
-	long long sizeMin;
-	long long sizeMax;
+	int size=-1;
+	long long sizeMin=-1;
+	long long sizeMax=-1;
 
 	//indexes from regex match
 	int iName = 1, iVisibility = 2, iTypeID = 3, iKeyword = 4, iType = 5, iSize = 9, iSizeMin = 11, iSizeMax = 12;
+
+	static void showDataTypes(vector<DataType> pVDataType);
 };
 
 class Imports2

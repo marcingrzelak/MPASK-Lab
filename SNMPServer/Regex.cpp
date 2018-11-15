@@ -42,7 +42,7 @@ regex Regex::IMPORTS3()
 
 regex Regex::DATA_TYPE()
 {
-	return regex(R"((\w*)\s::=\s\[(\S*?)\s(\d+)\]\s(\S*?)\s(.*?)\s\((((SIZE)\s\((\d+)\))|((\d+)\.{2}(\d+)))\))");
+	return regex(R"((\w*)\s::=\s?\[?(\S*?)?\s?(\d+)?\]?\s?(\S*?)?\s(INTEGER|OCTET STRING|OBJECT IDENTIFIER|NULL)\s\(?(((SIZE)?\s\((\d+)\))|((\d+)\.{2}(\d+)))?\)?)");
 }
 
 regex Regex::OBJECT_IDENTIFIER()

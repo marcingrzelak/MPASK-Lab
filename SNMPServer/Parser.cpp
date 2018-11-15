@@ -15,7 +15,7 @@ Parser::~Parser()
 {
 }
 
-void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
+void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType)
 {
 	FileHandler file(pFilePath);
 	Regex Rgx;
@@ -34,8 +34,9 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 
 	sregex_iterator endIterator;
 
+	cout << "Przygotowywanie pliku " << pFilePath << " do parsowania" << endl;
 	mainFile = file.FileRead();
-	cout << "Otwieram plik: " << pFilePath << " do parsowania" << endl;
+	cout << "Przygotowywanie zakonczone" << endl;
 
 	rgx = Rgx.IMPORTS1(); //sekcja z importami
 	regex_search(mainFile, result, rgx);
@@ -71,7 +72,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 		importFilePath.append(vImports2.at(i).fileName);
 		importFilePath.append(".txt");
 
-		wholeFileParse(importFilePath, pOIDTree); //rekurencyjne odpalenie pliku z importami do parsownia
+		wholeFileParse(importFilePath, pOIDTree, pVDataType); //rekurencyjne odpalenie pliku z importami do parsownia
 	}
 
 	//import OBJECT IDENTIFIER - nowe OIDy
@@ -83,7 +84,14 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 		{
 			sObjectIdentifier.name = (*objectIdentifierIterator)[sObjectIdentifier.iName];
 			sObjectIdentifier.parent = (*objectIdentifierIterator)[sObjectIdentifier.iParent];
-			sObjectIdentifier.oid = stoi((*objectIdentifierIterator)[sObjectIdentifier.iOid]);
+			try
+			{
+				sObjectIdentifier.oid = stoi((*objectIdentifierIterator)[sObjectIdentifier.iOid]);
+			}
+			catch (const std::exception&)
+			{
+
+			}
 
 			TreeNode* parent = pOIDTree.findNode(sObjectIdentifier.parent, pOIDTree.root);
 			pOIDTree.addNode(sObjectIdentifier.name, sObjectIdentifier.oid, parent);
@@ -95,10 +103,17 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 			sObjectIdentifierExtended.name = (*objectIdentifierIterator)[sObjectIdentifierExtended.iName];
 			sObjectIdentifierExtended.parent = (*objectIdentifierIterator)[sObjectIdentifierExtended.iParent];
 			sObjectIdentifierExtended.parent2 = (*objectIdentifierIterator)[sObjectIdentifierExtended.iParent2];
-			sObjectIdentifierExtended.oidParent2 = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOidParent2]);
 			sObjectIdentifierExtended.parent3 = (*objectIdentifierIterator)[sObjectIdentifierExtended.iParent3];
-			sObjectIdentifierExtended.oidParent3 = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOidParent3]);
-			sObjectIdentifierExtended.oid = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOid]);
+			try
+			{
+				sObjectIdentifierExtended.oidParent2 = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOidParent2]);
+				sObjectIdentifierExtended.oidParent3 = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOidParent3]);
+				sObjectIdentifierExtended.oid = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOid]);
+			}
+			catch (const std::exception&)
+			{
+
+			}
 
 			TreeNode* node = pOIDTree.findNode(sObjectIdentifierExtended.parent, pOIDTree.root);
 			TreeNode* node2 = pOIDTree.findNodeSpecificOID(sObjectIdentifierExtended.parent2, sObjectIdentifierExtended.oidParent2, node);
@@ -110,7 +125,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 		++objectIdentifierIterator;
 	}
 
-	cout << "Zaimportowano deklaracje OBJECT IDENTIFIER" << endl;
+	cout << "Zaimportowano deklaracje OBJECT IDENTIFIER z pliku " << pFilePath << endl << endl;
 
 	//import OBJECT-TYPE - nowe obiekty zarz¹dzalne
 	rgx = Rgx.OBJECT_TYPE();
@@ -123,7 +138,14 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 		sObjectType.status = (*objectTypeIterator)[sObjectType.iStatus];
 		sObjectType.description = (*objectTypeIterator)[sObjectType.iDescription];
 		sObjectType.parent = (*objectTypeIterator)[sObjectType.iParent];
-		sObjectType.oid = stoi((*objectTypeIterator)[sObjectType.iOid]);
+		try
+		{
+			sObjectType.oid = stoi((*objectTypeIterator)[sObjectType.iOid]);
+		}
+		catch (const std::exception&)
+		{
+
+		}
 
 		TreeNode* parent = pOIDTree.findNode(sObjectType.parent, pOIDTree.root);
 		pOIDTree.addNodeObject(sObjectType.name, sObjectType.oid, parent, sObjectType.syntax, sObjectType.access, sObjectType.description);
@@ -132,7 +154,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 		++objectTypeIterator;
 	}
 
-	cout << "Zaimportowano deklaracje OBJECT-TYPE" << endl;
+	cout << "Zaimportowano deklaracje OBJECT-TYPE z pliku " << pFilePath << endl << endl;
 
 	//import data type - nowe typy danych
 	rgx = Rgx.DATA_TYPE();
@@ -147,17 +169,41 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 
 		if (string((*dataTypeIterator)[sDataType.iSize]).size() != 0) //skladnia: IpAddress ::= [APPLICATION 0] IMPLICIT OCTET STRING (SIZE (4))
 		{
-			sDataType.size = stoi((*dataTypeIterator)[sDataType.iSize]);
+			try
+			{
+				sDataType.size = stoi((*dataTypeIterator)[sDataType.iSize]);
+			}
+			catch (const std::exception&)
+			{
+				sDataType.size = -1;
+			}
+
+			sDataType.sizeMin = -1;
+			sDataType.sizeMax = -1;
+
 		}
 		else //skladnia: Counter ::= [APPLICATION 1] IMPLICIT INTEGER (0..4294967295)
 		{
-			sDataType.sizeMin = stoll((*dataTypeIterator)[sDataType.iSizeMin]);
-			sDataType.sizeMax = stoll((*dataTypeIterator)[sDataType.iSizeMax]);
+			try
+			{
+				sDataType.sizeMin = stoll((*dataTypeIterator)[sDataType.iSizeMin]);
+				sDataType.sizeMax = stoll((*dataTypeIterator)[sDataType.iSizeMax]);
+			}
+			catch (const std::exception&)
+			{
+				sDataType.sizeMin = -1;
+				sDataType.sizeMax = -1;
+			}
+
+			sDataType.size = -1;
+
 		}
+		pVDataType.push_back(sDataType);
 		++dataTypeIterator;
 		cout << "Dodano typ danych: " << sDataType.name << endl;
 	}
 
-	cout << "Zaimportowano definicje nowych typow danych" << endl;
+	cout << "Zaimportowano definicje nowych typow danych z pliku " << pFilePath << endl << endl;
+	cout << "Koniec pliku " << pFilePath << endl << endl;
 	return;
 }
