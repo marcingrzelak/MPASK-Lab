@@ -35,6 +35,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 	sregex_iterator endIterator;
 
 	mainFile = file.FileRead();
+	cout << "Otwieram plik: " << pFilePath << " do parsowania" << endl;
 
 	rgx = Rgx.IMPORTS1(); //sekcja z importami
 	regex_search(mainFile, result, rgx);
@@ -70,7 +71,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 		importFilePath.append(vImports2.at(i).fileName);
 		importFilePath.append(".txt");
 
-		wholeFileParse(importFilePath); //rekurencyjne odpalenie pliku z importami do parsownia
+		wholeFileParse(importFilePath, pOIDTree); //rekurencyjne odpalenie pliku z importami do parsownia
 	}
 
 	//import OBJECT IDENTIFIER - nowe OIDy
@@ -86,6 +87,8 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 
 			TreeNode* parent = pOIDTree.findNode(sObjectIdentifier.parent, pOIDTree.root);
 			pOIDTree.addNode(sObjectIdentifier.name, sObjectIdentifier.oid, parent);
+			cout << "Dodano OID: " << sObjectIdentifier.name << endl;
+
 		}
 		else // skladnia: internet OBJECT IDENTIFIER ::= { iso org(3) dod(6) 1 }
 		{
@@ -102,10 +105,12 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 			TreeNode* node3 = pOIDTree.findNodeSpecificOID(sObjectIdentifierExtended.parent3, sObjectIdentifierExtended.oidParent3, node2);
 
 			pOIDTree.addNode(sObjectIdentifierExtended.name, sObjectIdentifierExtended.oid, node3);
-
+			cout << "Dodano OID: " << sObjectIdentifierExtended.name << endl;
 		}
 		++objectIdentifierIterator;
 	}
+
+	cout << "Zaimportowano deklaracje OBJECT IDENTIFIER" << endl;
 
 	//import OBJECT-TYPE - nowe obiekty zarz¹dzalne
 	rgx = Rgx.OBJECT_TYPE();
@@ -122,7 +127,12 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 
 		TreeNode* parent = pOIDTree.findNode(sObjectType.parent, pOIDTree.root);
 		pOIDTree.addNodeObject(sObjectType.name, sObjectType.oid, parent, sObjectType.syntax, sObjectType.access, sObjectType.description);
+		cout << "Dodano obiekt: " << sObjectType.name << endl;
+
+		++objectTypeIterator;
 	}
+
+	cout << "Zaimportowano deklaracje OBJECT-TYPE" << endl;
 
 	//import data type - nowe typy danych
 	rgx = Rgx.DATA_TYPE();
@@ -141,10 +151,13 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree)
 		}
 		else //skladnia: Counter ::= [APPLICATION 1] IMPLICIT INTEGER (0..4294967295)
 		{
-			sDataType.sizeMin = stoi((*dataTypeIterator)[sDataType.iSizeMin]);
-			sDataType.sizeMax = stoi((*dataTypeIterator)[sDataType.iSizeMax]);
+			sDataType.sizeMin = stoll((*dataTypeIterator)[sDataType.iSizeMin]);
+			sDataType.sizeMax = stoll((*dataTypeIterator)[sDataType.iSizeMax]);
 		}
+		++dataTypeIterator;
+		cout << "Dodano typ danych: " << sDataType.name << endl;
 	}
 
+	cout << "Zaimportowano definicje nowych typow danych" << endl;
 	return;
 }

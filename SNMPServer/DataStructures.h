@@ -56,8 +56,8 @@ public:
 	string keyword;
 	string type;
 	int size;
-	int sizeMin;
-	int sizeMax;
+	long long sizeMin;
+	long long sizeMax;
 
 	//indexes from regex match
 	int iName = 1, iVisibility = 2, iTypeID = 3, iKeyword = 4, iType = 5, iSize = 9, iSizeMin = 11, iSizeMax = 12;

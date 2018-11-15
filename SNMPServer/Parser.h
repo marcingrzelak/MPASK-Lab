@@ -1,4 +1,6 @@
 #pragma once
+#include "TreeStructure.h"
+
 class Parser
 {
 public:

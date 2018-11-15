@@ -1,8 +1,6 @@
 #include "pch.h"
 #include "TreeStructure.h"
 
-#pragma region TreeNode
-
 TreeNode::TreeNode()
 {
 }
@@ -32,10 +30,8 @@ void TreeNode::printTree(string indent, bool last)
 	}
 }
 
-#pragma endregion
 
 
-#pragma region Tree
 Tree::Tree()
 {
 	addRoot("iso", 1);
@@ -125,4 +121,60 @@ TreeNode * Tree::findNodeSpecificOID(string pName, int pOID, TreeNode * node)
 	}
 	return nullptr;
 }
-#pragma endregion
+
+string Tree::findNodeWord(string pName, TreeNode * node, string OID)
+{
+	if (node->name == pName)
+	{
+		OID.append(to_string(node->OID));
+		OID.append(".");
+		return OID;
+	}
+	else
+	{
+		for (int i = 0; i < node->next.size(); i++)
+		{
+			string result = findNodeWord(pName, node->next.at(i), OID);
+			if (result != "")
+			{
+				OID.append(to_string(node->OID));
+				OID.append(".");
+				return OID;
+			}
+		}
+	}
+	return "";
+}
+
+TreeNode * Tree::findNodeOID(string pOID, TreeNode * node)
+{
+	size_t found = pOID.find_first_of(".");
+	int singleOID;
+	string nowy;
+	if (found == string::npos)
+	{
+		singleOID = stoi(pOID);
+	}
+	else
+	{
+		string nowyOID = pOID.substr(0, found);
+		nowy = pOID.substr(found);
+		singleOID = stoi(nowyOID);
+	}
+
+	if (node->OID == singleOID)
+	{
+		return node;
+	}
+	else
+	{
+		for (int i = 0; i < node->next.size(); i++)
+		{
+			TreeNode* result = findNodeOID(nowy, node->next.at(i));
+			if (result != nullptr) {
+				return result;
+			}
+		}
+	}
+	return nullptr;
+}

@@ -24,4 +24,6 @@ public:
 	void addNodeObject(string pName, int pOID, TreeNode *parent, string pSyntax, string pAccess, string pDescription);
 	TreeNode* findNode(string pName, TreeNode* node);
 	TreeNode* findNodeSpecificOID(string pName, int pOID, TreeNode* node);
+	string findNodeWord(string pName, TreeNode* node, string OID);
+	TreeNode* findNodeOID(string pOID, TreeNode* node);
 };

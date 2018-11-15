@@ -7,8 +7,6 @@ public:
 	~FileHandler();
 
 	string FileRead();
-	string FileGetLine();
-
 	fstream file;
 };
 
