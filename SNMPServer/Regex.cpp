@@ -47,7 +47,12 @@ regex Regex::DATA_TYPE()
 
 regex Regex::OBJECT_IDENTIFIER()
 {
-	return regex(R"(\s(\S*)\sOBJECT\s*IDENTIFIER\s::=\s\{\s(((\S*)\s(\S*)\((\d+)\)\s(\S*)\((\d+)\))|(\S*))\s(\d+)\s\})");
+	return regex(R"(\s(\S*)\sOBJECT\sIDENTIFIER\s::=\s\{\s(.*?)\s(\d+)\s\})");
+}
+
+regex Regex::OBJECT_IDENTIFIER1()
+{
+	return regex(R"((\S*?)(\((\d+)\))?\s)");
 }
 
 regex Regex::SEQUENCE1()

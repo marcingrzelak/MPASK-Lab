@@ -29,7 +29,15 @@ public:
 	int oid;
 
 	//indexes from regex match
-	int iName = 1, iParent = 9, iOid = 10;
+	int iName = 1, iParent = 2, iOid = 3;
+};
+
+class ObjectIdentifier1
+{
+public:
+
+
+	int iName = 1, iOid = 3;
 };
 
 class ObjectIdentifierExtended

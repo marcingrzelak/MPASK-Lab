@@ -19,12 +19,13 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 {
 	FileHandler file(pFilePath);
 	Regex Rgx;
-	regex rgx;
+	regex rgx, rgx2;
 	string mainFile, importFilePath, importFile, import1;
 	smatch result;
 
 	ObjectType sObjectType;
 	ObjectIdentifier sObjectIdentifier;
+	ObjectIdentifier1 sObjectIdentifier1;
 	ObjectIdentifierExtended sObjectIdentifierExtended;
 	DataType sDataType;
 	Imports2 sImports2;
@@ -83,47 +84,57 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	sregex_iterator objectIdentifierIterator(mainFile.begin(), mainFile.end(), rgx);
 	while (objectIdentifierIterator != endIterator)
 	{
-		if (string((*objectIdentifierIterator)[sObjectIdentifier.iParent]).size() != 0) //skladnia: directory OBJECT IDENTIFIER ::= { internet 1 }
+		sObjectIdentifier.name = (*objectIdentifierIterator)[sObjectIdentifier.iName];
+		sObjectIdentifier.parent = (*objectIdentifierIterator)[sObjectIdentifier.iParent];
+		try
 		{
-			sObjectIdentifier.name = (*objectIdentifierIterator)[sObjectIdentifier.iName];
-			sObjectIdentifier.parent = (*objectIdentifierIterator)[sObjectIdentifier.iParent];
-			try
-			{
-				sObjectIdentifier.oid = stoi((*objectIdentifierIterator)[sObjectIdentifier.iOid]);
-			}
-			catch (const std::exception&)
-			{
+			sObjectIdentifier.oid = stoi((*objectIdentifierIterator)[sObjectIdentifier.iOid]);
+		}
+		catch (const std::exception&)
+		{
 
-			}
+		}
 
+		if (sObjectIdentifier.parent.find(" ") != string::npos) //skladnia: directory OBJECT IDENTIFIER ::= { internet 1 }
+		{
 			TreeNode* parent = pOIDTree.findNode(sObjectIdentifier.parent, pOIDTree.root);
 			pOIDTree.addNode(sObjectIdentifier.name, sObjectIdentifier.oid, parent);
 			cout << "Dodano OID: " << sObjectIdentifier.name << endl;
-
 		}
 		else // skladnia: internet OBJECT IDENTIFIER ::= { iso org(3) dod(6) 1 }
 		{
-			sObjectIdentifierExtended.name = (*objectIdentifierIterator)[sObjectIdentifierExtended.iName];
-			sObjectIdentifierExtended.parent = (*objectIdentifierIterator)[sObjectIdentifierExtended.iParent];
-			sObjectIdentifierExtended.parent2 = (*objectIdentifierIterator)[sObjectIdentifierExtended.iParent2];
-			sObjectIdentifierExtended.parent3 = (*objectIdentifierIterator)[sObjectIdentifierExtended.iParent3];
-			try
+			sObjectIdentifier.parent.append(" ");
+			string oid;
+			rgx2 = Rgx.OBJECT_IDENTIFIER1();
+			sregex_iterator objectIdentifierIterator1(sObjectIdentifier.parent.begin(), sObjectIdentifier.parent.end(), rgx2);
+			while (objectIdentifierIterator1 != endIterator)
 			{
-				sObjectIdentifierExtended.oidParent2 = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOidParent2]);
-				sObjectIdentifierExtended.oidParent3 = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOidParent3]);
-				sObjectIdentifierExtended.oid = stoi((*objectIdentifierIterator)[sObjectIdentifierExtended.iOid]);
+				if((*objectIdentifierIterator1)[sObjectIdentifier1.iName] == "iso")
+				{
+					if (string((*objectIdentifierIterator1)[sObjectIdentifier1.iOid]).size() == 0)
+					{
+						oid.append("1.");
+					}
+					else
+					{
+						oid.append((*objectIdentifierIterator1)[sObjectIdentifier1.iOid]);
+						oid.append(".");
+					}
+				}
+				else
+				{
+					oid.append((*objectIdentifierIterator1)[sObjectIdentifier1.iOid]);
+					oid.append(".");
+				}
+				++objectIdentifierIterator1;
 			}
-			catch (const std::exception&)
-			{
 
-			}
+			oid = oid.substr(0, oid.size() - 1);
 
-			TreeNode* node = pOIDTree.findNode(sObjectIdentifierExtended.parent, pOIDTree.root);
-			TreeNode* node2 = pOIDTree.findNodeSpecificOID(sObjectIdentifierExtended.parent2, sObjectIdentifierExtended.oidParent2, node);
-			TreeNode* node3 = pOIDTree.findNodeSpecificOID(sObjectIdentifierExtended.parent3, sObjectIdentifierExtended.oidParent3, node2);
+			TreeNode * node = pOIDTree.findOID(oid, pOIDTree.root);
+			pOIDTree.addNode(sObjectIdentifier.name, sObjectIdentifier.oid, node);
 
-			pOIDTree.addNode(sObjectIdentifierExtended.name, sObjectIdentifierExtended.oid, node3);
-			cout << "Dodano OID: " << sObjectIdentifierExtended.name << endl;
+			cout << "Dodano OID: " << sObjectIdentifier.name << endl;
 		}
 		++objectIdentifierIterator;
 	}
