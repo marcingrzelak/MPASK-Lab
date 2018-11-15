@@ -14,7 +14,7 @@ DataStructures::~DataStructures()
 void DataType::showDataTypes(vector<DataType> pVDataType)
 {
 	cout << "Nowe typy danych:" << endl;
-	for (int i = 0; i < pVDataType.size(); i++)
+	for (unsigned int i = 0; i < pVDataType.size(); i++)
 	{
 		if (pVDataType.at(i).name.length() > 0)
 			cout << pVDataType.at(i).name << endl;
@@ -41,4 +41,19 @@ void DataType::showDataTypes(vector<DataType> pVDataType)
 			cout << pVDataType.at(i).sizeMax << endl;
 		cout << endl;
 	}
+}
+
+void Sequence::showSequences(vector<Sequence> pVSequence)
+{
+	cout << "Nowe sekwencje:" << endl;
+	for (unsigned int i = 0; i < pVSequence.size(); i++)
+	{
+		cout << pVSequence.at(i).name << endl;
+		for (unsigned int j = 0; j < pVSequence.at(i).type.size(); j++)
+		{
+			cout << pVSequence.at(i).typeName.at(j) << "\t\t" << pVSequence.at(i).type.at(j) << endl;
+		}
+		cout << endl << endl;
+	}
+
 }

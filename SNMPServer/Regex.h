@@ -13,4 +13,6 @@ public:
 	regex IMPORTS3();
 	regex DATA_TYPE();
 	regex OBJECT_IDENTIFIER();
+	regex SEQUENCE1();
+	regex SEQUENCE();
 };

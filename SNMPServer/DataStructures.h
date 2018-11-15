@@ -55,9 +55,9 @@ public:
 	string typeID;
 	string keyword;
 	string type;
-	int size=-1;
-	long long sizeMin=-1;
-	long long sizeMax=-1;
+	int size = -1;
+	long long sizeMin = -1;
+	long long sizeMax = -1;
 
 	//indexes from regex match
 	int iName = 1, iVisibility = 2, iTypeID = 3, iKeyword = 4, iType = 5, iSize = 9, iSizeMin = 11, iSizeMax = 12;
@@ -78,4 +78,25 @@ class Imports3
 {
 public:
 	vector <string> imports;
+};
+
+class Sequence
+{
+public:
+	string name;
+	vector <string> typeName;
+	vector <string> type;
+
+	int iTypeName = 1, iType = 2;
+
+	static void showSequences(vector<Sequence> pVSequence);
+};
+
+class Sequence1
+{
+public:
+	string name;
+	string types;
+
+	int iName = 1, iTypes = 2;
 };

@@ -15,7 +15,7 @@ Parser::~Parser()
 {
 }
 
-void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType)
+void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector<Sequence> &pVSequence)
 {
 	FileHandler file(pFilePath);
 	Regex Rgx;
@@ -31,6 +31,9 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	vector<Imports2> vImports2;
 	Imports3 sImports3;
 	vector<Imports3> vImports3;
+	Sequence1 sSequence1;
+	vector<Sequence1> vSequence1;
+	Sequence sSequence;
 
 	sregex_iterator endIterator;
 
@@ -72,7 +75,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		importFilePath.append(vImports2.at(i).fileName);
 		importFilePath.append(".txt");
 
-		wholeFileParse(importFilePath, pOIDTree, pVDataType); //rekurencyjne odpalenie pliku z importami do parsownia
+		wholeFileParse(importFilePath, pOIDTree, pVDataType, pVSequence); //rekurencyjne odpalenie pliku z importami do parsownia
 	}
 
 	//import OBJECT IDENTIFIER - nowe OIDy
@@ -201,6 +204,35 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		pVDataType.push_back(sDataType);
 		++dataTypeIterator;
 		cout << "Dodano typ danych: " << sDataType.name << endl;
+	}
+
+	//import sequences
+	rgx = Rgx.SEQUENCE1(); //
+	sregex_iterator sequence1Iterator(mainFile.begin(), mainFile.end(), rgx);
+
+	while (sequence1Iterator != endIterator)
+	{
+		sSequence1.name = (*sequence1Iterator)[sSequence1.iName];
+		sSequence1.types = (*sequence1Iterator)[sSequence1.iTypes];
+		sSequence1.types.append(",");
+		vSequence1.push_back(sSequence1);
+		++sequence1Iterator;
+	}
+
+	for (unsigned int i = 0; i < vSequence1.size(); i++) //iteracja po wszystkich ciagach typow
+	{
+		rgx = Rgx.SEQUENCE();
+		sregex_iterator sequenceIterator(vSequence1.at(i).types.begin(), vSequence1.at(i).types.end(), rgx);
+
+		while (sequenceIterator != endIterator)
+		{
+			sSequence.typeName.push_back((*sequenceIterator)[sSequence.iTypeName]);
+			sSequence.type.push_back((*sequenceIterator)[sSequence.iType]);
+
+			++sequenceIterator;
+		}
+		sSequence.name = vSequence1.at(i).name;
+		pVSequence.push_back(sSequence);
 	}
 
 	cout << "Zaimportowano definicje nowych typow danych z pliku " << pFilePath << endl << endl;

@@ -49,3 +49,13 @@ regex Regex::OBJECT_IDENTIFIER()
 {
 	return regex(R"(\s(\S*)\sOBJECT\s*IDENTIFIER\s::=\s\{\s(((\S*)\s(\S*)\((\d+)\)\s(\S*)\((\d+)\))|(\S*))\s(\d+)\s\})");
 }
+
+regex Regex::SEQUENCE1()
+{
+	return regex(R"((\w*)\s::=\sSEQUENCE\s\{(.*?)\s\})");
+}
+
+regex Regex::SEQUENCE()
+{
+	return regex(R"(\s?(\S*?)\s(.*?),)");
+}
