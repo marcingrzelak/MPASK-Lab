@@ -45,13 +45,17 @@ void DataType::showDataTypes(vector<DataType> pVDataType)
 
 void Sequence::showSequences(vector<Sequence> pVSequence)
 {
+	const int width = 25;
+	const char sep = ' ';
 	cout << "Nowe sekwencje:" << endl;
 	for (unsigned int i = 0; i < pVSequence.size(); i++)
 	{
 		cout << pVSequence.at(i).name << endl;
 		for (unsigned int j = 0; j < pVSequence.at(i).type.size(); j++)
 		{
-			cout << pVSequence.at(i).typeName.at(j) << "\t\t" << pVSequence.at(i).type.at(j) << endl;
+			cout << left << setw(width) << setfill(sep) << pVSequence.at(i).typeName.at(j);
+			cout << left << setw(width) << setfill(sep) << pVSequence.at(i).type.at(j);
+			cout << endl;
 		}
 		cout << endl << endl;
 	}

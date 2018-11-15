@@ -95,7 +95,8 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 
 		}
 
-		if (sObjectIdentifier.parent.find(" ") != string::npos) //skladnia: directory OBJECT IDENTIFIER ::= { internet 1 }
+		size_t found = sObjectIdentifier.parent.find(" ");
+		if (found == string::npos) //skladnia: directory OBJECT IDENTIFIER ::= { internet 1 }
 		{
 			TreeNode* parent = pOIDTree.findNode(sObjectIdentifier.parent, pOIDTree.root);
 			pOIDTree.addNode(sObjectIdentifier.name, sObjectIdentifier.oid, parent);
