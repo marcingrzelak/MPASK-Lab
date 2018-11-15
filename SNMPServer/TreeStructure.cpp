@@ -24,7 +24,7 @@ void TreeNode::printTree(string indent, bool last)
 	}
 	cout << name << endl;
 
-	for (int i = 0; i < next.size(); i++)
+	for (unsigned int i = 0; i < next.size(); i++)
 	{
 		next.at(i)->printTree(indent, i == next.size() - 1);
 	}
@@ -90,7 +90,7 @@ TreeNode * Tree::findNode(string pName, TreeNode* node)
 	}
 	else
 	{
-		for (int i = 0; i < node->next.size(); i++)
+		for (unsigned int i = 0; i < node->next.size(); i++)
 		{
 			TreeNode* result = findNode(pName, node->next.at(i));
 			if (result != nullptr) {
@@ -111,7 +111,7 @@ TreeNode * Tree::findNodeSpecificOID(string pName, int pOID, TreeNode * node)
 	}
 	else
 	{
-		for (int i = 0; i < node->next.size(); i++)
+		for (unsigned int i = 0; i < node->next.size(); i++)
 		{
 			TreeNode* result = findNode(pName, node->next.at(i));
 			if (result != nullptr) {
@@ -127,54 +127,53 @@ string Tree::findNodeWord(string pName, TreeNode * node, string OID)
 	if (node->name == pName)
 	{
 		OID.append(to_string(node->OID));
-		OID.append(".");
 		return OID;
 	}
 	else
 	{
-		for (int i = 0; i < node->next.size(); i++)
+		for (unsigned int i = 0; i < node->next.size(); i++)
 		{
 			string result = findNodeWord(pName, node->next.at(i), OID);
 			if (result != "")
 			{
-				OID.append(to_string(node->OID));
-				OID.append(".");
+				OID.append(result);
+				OID.insert(0, ".");
+				OID.insert(0, to_string(node->OID));
 				return OID;
 			}
 		}
 	}
-	return "";
+	return OID;
 }
 
-TreeNode * Tree::findNodeOID(string pOID, TreeNode * node)
+TreeNode * Tree::findOID(string pOID, TreeNode * node)
 {
-	size_t found = pOID.find_first_of(".");
-	int singleOID;
-	string nowy;
-	if (found == string::npos)
+	stringstream streamOID(pOID);
+	string singleOID;
+	vector<int> OIDlist;
+	TreeNode* newNode = node;
+
+	while (getline(streamOID, singleOID, '.'))
 	{
-		singleOID = stoi(pOID);
-	}
-	else
-	{
-		string nowyOID = pOID.substr(0, found);
-		nowy = pOID.substr(found);
-		singleOID = stoi(nowyOID);
+		OIDlist.push_back(stoi(singleOID));
 	}
 
-	if (node->OID == singleOID)
+	if (OIDlist.at(0) == 1)
 	{
-		return node;
-	}
-	else
-	{
-		for (int i = 0; i < node->next.size(); i++)
+		for (unsigned int i = 1; i < OIDlist.size(); i++)
 		{
-			TreeNode* result = findNodeOID(nowy, node->next.at(i));
-			if (result != nullptr) {
-				return result;
+			int counter = newNode->next.size();;
+			for (unsigned int j = 0; j < counter; j++)
+			{
+				if (newNode->next.at(j)->OID == OIDlist.at(i))
+				{
+					newNode = newNode->next.at(j);
+					j = counter;
+				}
 			}
+			//return nullptr;
 		}
 	}
-	return nullptr;
+
+	return newNode;
 }
