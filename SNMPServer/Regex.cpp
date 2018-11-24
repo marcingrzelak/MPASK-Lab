@@ -20,67 +20,67 @@ regex Regex::comments()
 	return regex(R"(-{2}.*)");
 }
 
-regex Regex::OBJECT_TYPE()
+regex Regex::importsGeneral()
 {
-	return regex(R"((\w*)\sOBJECT-TYPE\sSYNTAX\s(.*?)ACCESS\s(.*?)STATUS\s(.*?)DESCRIPTION\s(.*?)(INDEX\s\{.*?\}\s)?::=\s\{\s(\S*)\s(\d+)\s\})");
+	return regex(R"(IMPORTS\s(.*?);)");
 }
 
-regex Regex::IMPORTS1()
+regex Regex::imports()
 {
-	return regex(R"(BEGIN\s*IMPORTS\s*(.*?);)");
+	return regex(R"((.*?)\sFROM\s(\S*))");
 }
 
-regex Regex::IMPORTS2()
+regex Regex::importsOneElement()
 {
-	return regex(R"(\s*(.*?)\s*FROM\s*(\S*))");
+	return regex(R"(\s?(.*?),)");
 }
 
-regex Regex::IMPORTS3()
+regex Regex::objectIdentifierGeneral()
 {
-	return regex(R"(\s*(.*?),)");
+	return regex(R"((\S*)\sOBJECT\sIDENTIFIER\s::=\s\{\s(.*?)\s(\d+)\s\})");
 }
 
-regex Regex::DATA_TYPE()
-{
-	return regex(R"((\w*)\s::=\s?\[?(\S*?)?\s?(\d+)?\]?\s?(\S*?)?\s(INTEGER|OCTET STRING|OBJECT IDENTIFIER|NULL)\s\(?(((SIZE)?\s\((\d+)\))|((\d+)\.{2}(\d+)))?\)?)");
-}
-
-regex Regex::CHOICE()
-{
-	return regex(R"((\w*)\s::=\s?CHOICE\s\{\s(.*?)\s\})");
-}
-
-regex Regex::CHOICE1()
-{
-	return regex(R"(\s?(\S*?)\s(.*?),)");
-}
-
-regex Regex::INDEX1()
-{
-	return regex(R"(\{\s(.*?)\s\})");
-}
-
-regex Regex::INDEX2()
-{
-	return regex(R"((\S*)\,\s?)");
-}
-
-regex Regex::OBJECT_IDENTIFIER()
-{
-	return regex(R"(\s(\S*)\sOBJECT\sIDENTIFIER\s::=\s\{\s(.*?)\s(\d+)\s\})");
-}
-
-regex Regex::OBJECT_IDENTIFIER1()
+regex Regex::objectIdentifierLongParent()
 {
 	return regex(R"((\S*?)(\((\d+)\))?\s)");
 }
 
-regex Regex::SEQUENCE1()
+regex Regex::objectType()
+{
+	return regex(R"((\w*)\sOBJECT-TYPE\sSYNTAX\s(.*?)ACCESS\s(.*?)STATUS\s(.*?)DESCRIPTION\s(.*?)(INDEX\s\{.*?\}\s)?::=\s\{\s(\S*)\s(\d+)\s\})");
+}
+
+regex Regex::index()
+{
+	return regex(R"(\{\s(.*?)\s\})");
+}
+
+regex Regex::indexOneElement()
+{
+	return regex(R"(\s?(.*?),)");
+}
+
+regex Regex::dataType()
+{
+	return regex(R"((\w*)\s::=\s?\[?(\S*?)?\s?(\d+)?\]?\s?(\S*?)?\s(INTEGER|OCTET STRING|OBJECT IDENTIFIER|NULL)\s\(?(((SIZE)?\s\((\d+)\))|((\d+)\.{2}(\d+)))?\)?)");
+}
+
+regex Regex::choiceGeneral()
+{
+	return regex(R"((\w*)\s::=\s?CHOICE\s\{\s(.*?)\s\})");
+}
+
+regex Regex::choiceOneElement()
+{
+	return regex(R"(\s?(\S*?)\s(.*?),)");
+}
+
+regex Regex::sequenceGeneral()
 {
 	return regex(R"((\w*)\s::=\sSEQUENCE\s\{(.*?)\s\})");
 }
 
-regex Regex::SEQUENCE()
+regex Regex::sequenceOneElement()
 {
 	return regex(R"(\s?(\S*?)\s(.*?),)");
 }

@@ -1,4 +1,5 @@
 #pragma once
+
 class DataStructures
 {
 public:
@@ -6,48 +7,20 @@ public:
 	~DataStructures();
 };
 
-class ObjectType
+class ImportsTemp
 {
 public:
-	string name;
-	string syntax;
-	string access;
-	string status;
-	string description;
-	string index;
-	string parent;
-	int oid;
+	string imports;
+	string fileName;
 
 	//indexes from regex match
-	int iName = 1, iSyntax = 2, iAccess = 3, iStatus = 4, iDescription = 5, iIndex = 6, iParent = 7, iOid = 8;
+	int iImports = 1, iFileName = 2;
 };
 
-class Index
+class Imports
 {
 public:
-	string name;
-	vector <string> indexes;
-};
-
-class Choice
-{
-public:
-	string name;
-	vector <string> typeName;
-	vector <string> type;
-
-	int iTypeName = 1, iType = 2;
-
-	static void showChoices(vector<Choice> pVChoice);
-};
-
-class Choice1
-{
-public:
-	string name;
-	string types;
-
-	int iName = 1, iTypes = 2;
+	vector <string> imports;
 };
 
 class ObjectIdentifier
@@ -61,25 +34,42 @@ public:
 	int iName = 1, iParent = 2, iOid = 3;
 };
 
-class ObjectIdentifier1
+class ObjectIdentifierLongParent
 {
 public:
+	//indexes from regex match
 	int iName = 1, iOid = 3;
 };
 
-class ObjectIdentifierExtended
+class ObjectType
 {
 public:
 	string name;
+	string syntax;
+	string access;
+	string status;
+	string description;
 	string parent;
-	string parent2;
-	int oidParent2;
-	string parent3;
-	int oidParent3;
 	int oid;
 
 	//indexes from regex match
-	int iName = 1, iParent = 4, iParent2 = 5, iOidParent2 = 6, iParent3 = 7, iOidParent3 = 8, iOid = 10;
+	int iName = 1, iSyntax = 2, iAccess = 3, iStatus = 4, iDescription = 5, iIndex = 6, iParent = 7, iOid = 8;
+};
+
+class IndexTemp
+{
+public:
+	string indexes;
+	string indexesClean;
+};
+
+class Index
+{
+public:
+	string name;
+	vector <string> indexes;
+
+	static void showIndexes(vector<Index> pVIndex);
 };
 
 class DataType
@@ -100,19 +90,37 @@ public:
 	static void showDataTypes(vector<DataType> pVDataType);
 };
 
-class Imports2
+class ChoiceTemp
 {
 public:
-	string imports;
-	string fileName;
+	string name;
+	string types;
 
-	int iImports = 1, iFileName = 2;
+	//indexes from regex match
+	int iName = 1, iTypes = 2;
 };
 
-class Imports3
+class Choice
 {
 public:
-	vector <string> imports;
+	string name;
+	vector <string> typeName;
+	vector <string> type;
+
+	//indexes from regex match
+	int iTypeName = 1, iType = 2;
+
+	static void showChoices(vector<Choice> pVChoice);
+};
+
+class SequenceTemp
+{
+public:
+	string name;
+	string types;
+
+	//indexes from regex match
+	int iName = 1, iTypes = 2;
 };
 
 class Sequence
@@ -122,16 +130,8 @@ public:
 	vector <string> typeName;
 	vector <string> type;
 
+	//indexes from regex match
 	int iTypeName = 1, iType = 2;
 
 	static void showSequences(vector<Sequence> pVSequence);
-};
-
-class Sequence1
-{
-public:
-	string name;
-	string types;
-
-	int iName = 1, iTypes = 2;
 };

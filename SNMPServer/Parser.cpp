@@ -15,77 +15,80 @@ Parser::~Parser()
 {
 }
 
-void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector<Sequence> &pVSequence, vector<Choice> &pVChoice)
+void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence)
 {
 	FileHandler file(pFilePath);
-	Regex Rgx;
 	regex rgx, rgx2;
-	string mainFile, importFilePath, importFile, import1, indexes;
+	string mainFile, importsFilePath = "MIBS/", importsGeneral, indexes;
 	smatch result;
 
-	ObjectType sObjectType;
+	ImportsTemp sImportsTemp;
+	vector<ImportsTemp> vImportsTemp;
+	Imports sImports;
+	vector<Imports> vImports;
 	ObjectIdentifier sObjectIdentifier;
-	ObjectIdentifier1 sObjectIdentifier1;
-	ObjectIdentifierExtended sObjectIdentifierExtended;
-	DataType sDataType;
-	Imports2 sImports2;
-	vector<Imports2> vImports2;
-	Imports3 sImports3;
-	vector<Imports3> vImports3;
-	Sequence1 sSequence1;
-	vector<Sequence1> vSequence1;
-	Sequence sSequence;
+	ObjectIdentifierLongParent sObjectIdentifierLongParent;
+	IndexTemp sIndexTemp;
 	Index sIndex;
-	vector <Index> vIndex;
-	Choice1 sChoice1;
-	vector<Choice1> vChoice1;
+	ObjectType sObjectType;
+	DataType sDataType;
+	ChoiceTemp sChoiceTemp;
+	vector<ChoiceTemp> vChoiceTemp;
 	Choice sChoice;
+	SequenceTemp sSequenceTemp;
+	vector<SequenceTemp> vSequenceTemp;
+	Sequence sSequence;
+
 
 	sregex_iterator endIterator;
 
-	cout << "Przygotowywanie pliku " << pFilePath << " do parsowania" << endl;
+	cout << "Odczyt pliku " << pFilePath << " do pamieci" << endl;
 	mainFile = file.FileRead();
-	cout << "Przygotowywanie zakonczone" << endl;
+	cout << "Odczyt zakonczony" << endl;
 
-	rgx = Rgx.IMPORTS1(); //sekcja z importami
-	regex_search(mainFile, result, rgx);
-	import1 = result[1];
+#pragma region IMPORTS
+	//wyszukanie sekcji z importami
+	regex_search(mainFile, result, Regex::importsGeneral());
+	importsGeneral = result[1];
 
-	rgx = Rgx.IMPORTS2(); //ciag elem do importu z pojedynczego pliku
-	sregex_iterator import2Iterator(import1.begin(), import1.end(), rgx);
-
-	while (import2Iterator != endIterator)
+	//podzial na ciag elementow do zaimportowania i nazwe pliku
+	rgx = Regex::imports(); 
+	sregex_iterator import1Iterator(importsGeneral.begin(), importsGeneral.end(), rgx);
+	while (import1Iterator != endIterator)
 	{
-		sImports2.imports = (*import2Iterator)[sImports2.iImports];
-		sImports2.imports.append(",");
-		sImports2.fileName = (*import2Iterator)[sImports2.iFileName];
-		if ((sImports2.imports != "OBJECT-TYPE,") && (sImports2.fileName != "RFC-1212"))
+		sImportsTemp.imports = (*import1Iterator)[sImportsTemp.iImports];
+		sImportsTemp.imports.append(",");
+		sImportsTemp.fileName = (*import1Iterator)[sImportsTemp.iFileName];
+		if ((sImportsTemp.imports != "OBJECT-TYPE,") && (sImportsTemp.fileName != "RFC-1212"))
 		{
-			vImports2.push_back(sImports2);
+			vImportsTemp.push_back(sImportsTemp);
 		}
-		++import2Iterator;
+		++import1Iterator;
 	}
 
-	for (unsigned int i = 0; i < vImports2.size(); i++) //iteracja po wszystkich plikach
+	for (unsigned int i = 0; i < vImportsTemp.size(); i++) //iteracja po wszystkich plikach
 	{
-		rgx = Rgx.IMPORTS3(); //konkretne elem. do importu z danego pliku
-		sregex_iterator import3Iterator(vImports2.at(i).imports.begin(), vImports2.at(i).imports.end(), rgx);
-
-		while (import3Iterator != endIterator)
+		//konkretne elem. do importu z danego pliku
+		rgx = Regex::importsOneElement();
+		sregex_iterator importsIterator(vImportsTemp.at(i).imports.begin(), vImportsTemp.at(i).imports.end(), rgx);
+		while (importsIterator != endIterator)
 		{
-			sImports3.imports.push_back((*import3Iterator)[1]); //tutaj mamy konkretne elem. do importu. todo: import tylko tych, teraz importujemy wszystko
-			++import3Iterator;
+			sImports.imports.push_back((*importsIterator)[1]); //tutaj mamy konkretne elem. do importu. todo: import tylko tych, teraz importujemy wszystko
+			++importsIterator;
 		}
 
-		importFilePath.append("MIBS/");
-		importFilePath.append(vImports2.at(i).fileName);
-		importFilePath.append(".txt");
+		importsFilePath.append(vImportsTemp.at(i).fileName);
+		importsFilePath.append(".txt");
 
-		wholeFileParse(importFilePath, pOIDTree, pVDataType, pVSequence, pVChoice); //rekurencyjne odpalenie pliku z importami do parsownia
+		wholeFileParse(importsFilePath, pOIDTree, pVDataType, pVIndex, pVChoice, pVSequence); //rekurencyjne odpalenie pliku z importami do parsownia
+		importsFilePath.clear();
 	}
+#pragma endregion importy
 
-	//import OBJECT IDENTIFIER - nowe OIDy
-	rgx = Rgx.OBJECT_IDENTIFIER();
+#pragma region OBJECT IDENTIFIER
+	//wyszukanie sekcji OBJECT-IDENTIFIER
+	rgx = Regex::objectIdentifierGeneral();
+	TreeNode* parent;
 	sregex_iterator objectIdentifierIterator(mainFile.begin(), mainFile.end(), rgx);
 	while (objectIdentifierIterator != endIterator)
 	{
@@ -103,52 +106,51 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		size_t found = sObjectIdentifier.parent.find(" ");
 		if (found == string::npos) //skladnia: directory OBJECT IDENTIFIER ::= { internet 1 }
 		{
-			TreeNode* parent = pOIDTree.findNode(sObjectIdentifier.parent, pOIDTree.root);
-			pOIDTree.addNode(sObjectIdentifier.name, sObjectIdentifier.oid, parent);
-			cout << "Dodano OID: " << sObjectIdentifier.name << endl;
+			parent = pOIDTree.findNode(sObjectIdentifier.parent, pOIDTree.root);
 		}
 		else // skladnia: internet OBJECT IDENTIFIER ::= { iso org(3) dod(6) 1 }
 		{
 			sObjectIdentifier.parent.append(" ");
 			string oid;
-			rgx2 = Rgx.OBJECT_IDENTIFIER1();
-			sregex_iterator objectIdentifierIterator1(sObjectIdentifier.parent.begin(), sObjectIdentifier.parent.end(), rgx2);
-			while (objectIdentifierIterator1 != endIterator)
+			//wyszukiwanie kolejnych rodzicow
+			rgx2 = Regex::objectIdentifierLongParent();
+			sregex_iterator objectIdentifierLongParentIterator(sObjectIdentifier.parent.begin(), sObjectIdentifier.parent.end(), rgx2);
+			while (objectIdentifierLongParentIterator != endIterator)
 			{
-				if ((*objectIdentifierIterator1)[sObjectIdentifier1.iName] == "iso")
+				if ((*objectIdentifierLongParentIterator)[sObjectIdentifierLongParent.iName] == "iso")
 				{
-					if (string((*objectIdentifierIterator1)[sObjectIdentifier1.iOid]).size() == 0)
+					if (string((*objectIdentifierLongParentIterator)[sObjectIdentifierLongParent.iOid]).size() == 0)
 					{
 						oid.append("1.");
 					}
 					else
 					{
-						oid.append((*objectIdentifierIterator1)[sObjectIdentifier1.iOid]);
+						oid.append((*objectIdentifierLongParentIterator)[sObjectIdentifierLongParent.iOid]);
 						oid.append(".");
 					}
 				}
 				else
 				{
-					oid.append((*objectIdentifierIterator1)[sObjectIdentifier1.iOid]);
+					oid.append((*objectIdentifierLongParentIterator)[sObjectIdentifierLongParent.iOid]);
 					oid.append(".");
 				}
-				++objectIdentifierIterator1;
+				++objectIdentifierLongParentIterator;
 			}
 
-			oid = oid.substr(0, oid.size() - 1);
+			oid = oid.substr(0, oid.size() - 1); //usuniecie ostatniej "." z oid
 
-			TreeNode * node = pOIDTree.findOID(oid, pOIDTree.root);
-			pOIDTree.addNode(sObjectIdentifier.name, sObjectIdentifier.oid, node);
-
-			cout << "Dodano OID: " << sObjectIdentifier.name << endl;
+			parent = pOIDTree.findOID(oid, pOIDTree.root);
 		}
+		pOIDTree.addNode(sObjectIdentifier.name, sObjectIdentifier.oid, parent);
+		cout << "Dodano OID: " << sObjectIdentifier.name << endl;
 		++objectIdentifierIterator;
 	}
-
 	cout << "Zaimportowano deklaracje OBJECT IDENTIFIER z pliku " << pFilePath << endl << endl;
+#pragma endregion nowe OIDy
 
-	//import OBJECT-TYPE - nowe obiekty zarz¹dzalne
-	rgx = Rgx.OBJECT_TYPE();
+#pragma region OBJECT-TYPE
+	//wyszukanie sekcji OBJECT-TYPE
+	rgx = Regex::objectType();
 	sregex_iterator objectTypeIterator(mainFile.begin(), mainFile.end(), rgx);
 	while (objectTypeIterator != endIterator)
 	{
@@ -170,20 +172,20 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		if (string((*objectTypeIterator)[sObjectType.iIndex]).size() != 0) //jest struktura z indexem
 		{
 			sIndex.name = sObjectType.name;
-			sObjectType.index = (*objectTypeIterator)[sObjectType.iIndex];
-			rgx2 = Rgx.INDEX1(); //ciag indexow
-			regex_search(sObjectType.index, result, rgx2);
-			indexes = result[1];
-			indexes.append(",");
+			sIndexTemp.indexes = (*objectTypeIterator)[sObjectType.iIndex];
 
-			rgx2 = Rgx.INDEX2(); //poszczegolne nazwy
-			sregex_iterator Index2Iterator(indexes.begin(), indexes.end(), rgx2);
-			while (Index2Iterator != endIterator)
+			regex_search(sIndexTemp.indexes, result, Regex::index()); //ciag indexow
+			sIndexTemp.indexesClean = result[1];
+			sIndexTemp.indexesClean.append(",");
+
+			rgx2 = Regex::indexOneElement(); //poszczegolne nazwy
+			sregex_iterator IndexIterator(sIndexTemp.indexesClean.begin(), sIndexTemp.indexesClean.end(), rgx2);
+			while (IndexIterator != endIterator)
 			{
-				sIndex.indexes.push_back((*Index2Iterator)[1]);
-				++Index2Iterator;
+				sIndex.indexes.push_back((*IndexIterator)[1]);
+				++IndexIterator;
 			}
-			vIndex.push_back(sIndex);
+			pVIndex.push_back(sIndex);
 			sIndex.indexes.clear();
 		}
 
@@ -195,9 +197,11 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	}
 
 	cout << "Zaimportowano deklaracje OBJECT-TYPE z pliku " << pFilePath << endl << endl;
+#pragma endregion nowe obiekty zarzadzalne
 
-	//import data type - nowe typy danych
-	rgx = Rgx.DATA_TYPE();
+#pragma region data type
+	//wyszukanie sekcji z nowymi typami danych
+	rgx = Regex::dataType();
 	sregex_iterator dataTypeIterator(mainFile.begin(), mainFile.end(), rgx);
 	while (dataTypeIterator != endIterator)
 	{
@@ -207,7 +211,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		sDataType.keyword = (*dataTypeIterator)[sDataType.iKeyword];
 		sDataType.type = (*dataTypeIterator)[sDataType.iType];
 
-		if (string((*dataTypeIterator)[sDataType.iSize]).size() != 0) //skladnia: IpAddress ::= [APPLICATION 0] IMPLICIT OCTET STRING (SIZE (4))
+		if (string((*dataTypeIterator)[sDataType.iSize]).size() != 0) //skladnia rozmiaru: (SIZE (4))
 		{
 			try
 			{
@@ -222,7 +226,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 			sDataType.sizeMax = -1;
 
 		}
-		else //skladnia: Counter ::= [APPLICATION 1] IMPLICIT INTEGER (0..4294967295)
+		else //skladnia rozmiaru: (0..4294967295)
 		{
 			try
 			{
@@ -243,22 +247,25 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		cout << "Dodano typ danych: " << sDataType.name << endl;
 	}
 
-	//import data-type with choice
-	rgx = Rgx.CHOICE();
+#pragma endregion nowe typy danych
+
+#pragma region data type choice
+	//wyszukanie sekcji z nowymi typami danych typu choice
+	rgx = Regex::choiceGeneral();
 	sregex_iterator choice1Iterator(mainFile.begin(), mainFile.end(), rgx);
 	while (choice1Iterator != endIterator)
 	{
-		sChoice1.name = (*choice1Iterator)[sChoice1.iName];
-		sChoice1.types = (*choice1Iterator)[sChoice1.iTypes];
-		sChoice1.types.append(",");
-		vChoice1.push_back(sChoice1);
+		sChoiceTemp.name = (*choice1Iterator)[sChoiceTemp.iName];
+		sChoiceTemp.types = (*choice1Iterator)[sChoiceTemp.iTypes];
+		sChoiceTemp.types.append(",");
+		vChoiceTemp.push_back(sChoiceTemp);
 		++choice1Iterator;
 	}
 
-	for (unsigned int i = 0; i < vChoice1.size(); i++) //iteracja po wszystkich ciagach typow
+	for (unsigned int i = 0; i < vChoiceTemp.size(); i++) //iteracja po wszystkich ciagach typow choice
 	{
-		rgx = Rgx.CHOICE1();
-		sregex_iterator choiceIterator(vChoice1.at(i).types.begin(), vChoice1.at(i).types.end(), rgx);
+		rgx = Regex::choiceOneElement();
+		sregex_iterator choiceIterator(vChoiceTemp.at(i).types.begin(), vChoiceTemp.at(i).types.end(), rgx);
 
 		while (choiceIterator != endIterator)
 		{
@@ -267,32 +274,31 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 
 			++choiceIterator;
 		}
-		sChoice.name = vChoice1.at(i).name;
+		sChoice.name = vChoiceTemp.at(i).name;
 		pVChoice.push_back(sChoice);
 		sChoice.typeName.clear();
 		sChoice.type.clear();
 	}
+#pragma endregion nowe typy danych choice
 
-
-
-
-	//import sequences
-	rgx = Rgx.SEQUENCE1(); //
+#pragma region data type sequence
+	//wyszukanie sekcji z nowymi typami danych typu sequence
+	rgx = Regex::sequenceGeneral();
 	sregex_iterator sequence1Iterator(mainFile.begin(), mainFile.end(), rgx);
 
 	while (sequence1Iterator != endIterator)
 	{
-		sSequence1.name = (*sequence1Iterator)[sSequence1.iName];
-		sSequence1.types = (*sequence1Iterator)[sSequence1.iTypes];
-		sSequence1.types.append(",");
-		vSequence1.push_back(sSequence1);
+		sSequenceTemp.name = (*sequence1Iterator)[sSequenceTemp.iName];
+		sSequenceTemp.types = (*sequence1Iterator)[sSequenceTemp.iTypes];
+		sSequenceTemp.types.append(",");
+		vSequenceTemp.push_back(sSequenceTemp);
 		++sequence1Iterator;
 	}
 
-	for (unsigned int i = 0; i < vSequence1.size(); i++) //iteracja po wszystkich ciagach typow
+	for (unsigned int i = 0; i < vSequenceTemp.size(); i++) //iteracja po wszystkich ciagach typow sequence
 	{
-		rgx = Rgx.SEQUENCE();
-		sregex_iterator sequenceIterator(vSequence1.at(i).types.begin(), vSequence1.at(i).types.end(), rgx);
+		rgx = Regex::sequenceOneElement();
+		sregex_iterator sequenceIterator(vSequenceTemp.at(i).types.begin(), vSequenceTemp.at(i).types.end(), rgx);
 
 		while (sequenceIterator != endIterator)
 		{
@@ -301,9 +307,12 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 
 			++sequenceIterator;
 		}
-		sSequence.name = vSequence1.at(i).name;
+		sSequence.name = vSequenceTemp.at(i).name;
 		pVSequence.push_back(sSequence);
+		sSequence.typeName.clear();
+		sSequence.type.clear();
 	}
+#pragma endregion nowe typy danych sequence
 
 	cout << "Zaimportowano definicje nowych typow danych z pliku " << pFilePath << endl << endl;
 	cout << "Koniec pliku " << pFilePath << endl << endl;

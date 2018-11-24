@@ -5,19 +5,23 @@ public:
 	Regex();
 	~Regex();
 
+	/**
+	@param
+	@return
+	*/
 	static regex whitespaces();
 	static regex comments();
-	regex OBJECT_TYPE();
-	regex IMPORTS1();
-	regex IMPORTS2();
-	regex IMPORTS3();
-	regex DATA_TYPE();
-	regex CHOICE();
-	regex CHOICE1();
-	regex INDEX1();
-	regex INDEX2();
-	regex OBJECT_IDENTIFIER();
-	regex OBJECT_IDENTIFIER1();
-	regex SEQUENCE1();
-	regex SEQUENCE();
+	static regex importsGeneral();
+	static regex imports();
+	static regex importsOneElement();
+	static regex objectIdentifierGeneral();
+	static regex objectIdentifierLongParent();
+	static regex objectType();
+	static regex index();
+	static regex indexOneElement();
+	static regex dataType();
+	static regex choiceGeneral();
+	static regex choiceOneElement();
+	static regex sequenceGeneral();
+	static regex sequenceOneElement();
 };

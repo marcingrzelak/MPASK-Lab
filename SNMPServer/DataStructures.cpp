@@ -43,6 +43,24 @@ void DataType::showDataTypes(vector<DataType> pVDataType)
 	}
 }
 
+void Choice::showChoices(vector<Choice> pVChoice)
+{
+	const int width = 25;
+	const char sep = ' ';
+	cout << "Nowe dane typu Choice:" << endl;
+	for (unsigned int i = 0; i < pVChoice.size(); i++)
+	{
+		cout << pVChoice.at(i).name << endl;
+		for (unsigned int j = 0; j < pVChoice.at(i).type.size(); j++)
+		{
+			cout << left << setw(width) << setfill(sep) << pVChoice.at(i).typeName.at(j);
+			cout << left << setw(width) << setfill(sep) << pVChoice.at(i).type.at(j);
+			cout << endl;
+		}
+		cout << endl << endl;
+	}
+}
+
 void Sequence::showSequences(vector<Sequence> pVSequence)
 {
 	const int width = 25;
@@ -61,19 +79,15 @@ void Sequence::showSequences(vector<Sequence> pVSequence)
 	}
 }
 
-void Choice::showChoices(vector<Choice> pVChoice)
+void Index::showIndexes(vector<Index> pVIndex)
 {
-	const int width = 25;
-	const char sep = ' ';
-	cout << "Nowe dane typu Choice:" << endl;
-	for (unsigned int i = 0; i < pVChoice.size(); i++)
+	cout << "Nowe indexy:" << endl;
+	for (unsigned int i = 0; i < pVIndex.size(); i++)
 	{
-		cout << pVChoice.at(i).name << endl;
-		for (unsigned int j = 0; j < pVChoice.at(i).type.size(); j++)
+		cout << pVIndex.at(i).name << endl;
+		for (unsigned int j = 0; j < pVIndex.at(i).indexes.size(); j++)
 		{
-			cout << left << setw(width) << setfill(sep) << pVChoice.at(i).typeName.at(j);
-			cout << left << setw(width) << setfill(sep) << pVChoice.at(i).type.at(j);
-			cout << endl;
+			cout << pVIndex.at(i).indexes.at(j) << endl;
 		}
 		cout << endl << endl;
 	}
