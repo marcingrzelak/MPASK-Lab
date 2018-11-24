@@ -14,11 +14,40 @@ public:
 	string access;
 	string status;
 	string description;
+	string index;
 	string parent;
 	int oid;
 
 	//indexes from regex match
-	int iName = 1, iSyntax = 2, iAccess = 3, iStatus = 4, iDescription = 5, iParent = 6, iOid = 7;
+	int iName = 1, iSyntax = 2, iAccess = 3, iStatus = 4, iDescription = 5, iIndex = 6, iParent = 7, iOid = 8;
+};
+
+class Index
+{
+public:
+	string name;
+	vector <string> indexes;
+};
+
+class Choice
+{
+public:
+	string name;
+	vector <string> typeName;
+	vector <string> type;
+
+	int iTypeName = 1, iType = 2;
+
+	static void showChoices(vector<Choice> pVChoice);
+};
+
+class Choice1
+{
+public:
+	string name;
+	string types;
+
+	int iName = 1, iTypes = 2;
 };
 
 class ObjectIdentifier
@@ -35,8 +64,6 @@ public:
 class ObjectIdentifier1
 {
 public:
-
-
 	int iName = 1, iOid = 3;
 };
 

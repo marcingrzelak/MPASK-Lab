@@ -59,5 +59,22 @@ void Sequence::showSequences(vector<Sequence> pVSequence)
 		}
 		cout << endl << endl;
 	}
+}
 
+void Choice::showChoices(vector<Choice> pVChoice)
+{
+	const int width = 25;
+	const char sep = ' ';
+	cout << "Nowe dane typu Choice:" << endl;
+	for (unsigned int i = 0; i < pVChoice.size(); i++)
+	{
+		cout << pVChoice.at(i).name << endl;
+		for (unsigned int j = 0; j < pVChoice.at(i).type.size(); j++)
+		{
+			cout << left << setw(width) << setfill(sep) << pVChoice.at(i).typeName.at(j);
+			cout << left << setw(width) << setfill(sep) << pVChoice.at(i).type.at(j);
+			cout << endl;
+		}
+		cout << endl << endl;
+	}
 }

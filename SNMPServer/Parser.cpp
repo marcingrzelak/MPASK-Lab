@@ -15,12 +15,12 @@ Parser::~Parser()
 {
 }
 
-void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector<Sequence> &pVSequence)
+void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector<Sequence> &pVSequence, vector<Choice> &pVChoice)
 {
 	FileHandler file(pFilePath);
 	Regex Rgx;
 	regex rgx, rgx2;
-	string mainFile, importFilePath, importFile, import1;
+	string mainFile, importFilePath, importFile, import1, indexes;
 	smatch result;
 
 	ObjectType sObjectType;
@@ -35,6 +35,11 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	Sequence1 sSequence1;
 	vector<Sequence1> vSequence1;
 	Sequence sSequence;
+	Index sIndex;
+	vector <Index> vIndex;
+	Choice1 sChoice1;
+	vector<Choice1> vChoice1;
+	Choice sChoice;
 
 	sregex_iterator endIterator;
 
@@ -76,7 +81,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		importFilePath.append(vImports2.at(i).fileName);
 		importFilePath.append(".txt");
 
-		wholeFileParse(importFilePath, pOIDTree, pVDataType, pVSequence); //rekurencyjne odpalenie pliku z importami do parsownia
+		wholeFileParse(importFilePath, pOIDTree, pVDataType, pVSequence, pVChoice); //rekurencyjne odpalenie pliku z importami do parsownia
 	}
 
 	//import OBJECT IDENTIFIER - nowe OIDy
@@ -110,7 +115,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 			sregex_iterator objectIdentifierIterator1(sObjectIdentifier.parent.begin(), sObjectIdentifier.parent.end(), rgx2);
 			while (objectIdentifierIterator1 != endIterator)
 			{
-				if((*objectIdentifierIterator1)[sObjectIdentifier1.iName] == "iso")
+				if ((*objectIdentifierIterator1)[sObjectIdentifier1.iName] == "iso")
 				{
 					if (string((*objectIdentifierIterator1)[sObjectIdentifier1.iOid]).size() == 0)
 					{
@@ -160,6 +165,26 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		catch (const std::exception&)
 		{
 
+		}
+
+		if (string((*objectTypeIterator)[sObjectType.iIndex]).size() != 0) //jest struktura z indexem
+		{
+			sIndex.name = sObjectType.name;
+			sObjectType.index = (*objectTypeIterator)[sObjectType.iIndex];
+			rgx2 = Rgx.INDEX1(); //ciag indexow
+			regex_search(sObjectType.index, result, rgx2);
+			indexes = result[1];
+			indexes.append(",");
+
+			rgx2 = Rgx.INDEX2(); //poszczegolne nazwy
+			sregex_iterator Index2Iterator(indexes.begin(), indexes.end(), rgx2);
+			while (Index2Iterator != endIterator)
+			{
+				sIndex.indexes.push_back((*Index2Iterator)[1]);
+				++Index2Iterator;
+			}
+			vIndex.push_back(sIndex);
+			sIndex.indexes.clear();
 		}
 
 		TreeNode* parent = pOIDTree.findNode(sObjectType.parent, pOIDTree.root);
@@ -217,6 +242,39 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		++dataTypeIterator;
 		cout << "Dodano typ danych: " << sDataType.name << endl;
 	}
+
+	//import data-type with choice
+	rgx = Rgx.CHOICE();
+	sregex_iterator choice1Iterator(mainFile.begin(), mainFile.end(), rgx);
+	while (choice1Iterator != endIterator)
+	{
+		sChoice1.name = (*choice1Iterator)[sChoice1.iName];
+		sChoice1.types = (*choice1Iterator)[sChoice1.iTypes];
+		sChoice1.types.append(",");
+		vChoice1.push_back(sChoice1);
+		++choice1Iterator;
+	}
+
+	for (unsigned int i = 0; i < vChoice1.size(); i++) //iteracja po wszystkich ciagach typow
+	{
+		rgx = Rgx.CHOICE1();
+		sregex_iterator choiceIterator(vChoice1.at(i).types.begin(), vChoice1.at(i).types.end(), rgx);
+
+		while (choiceIterator != endIterator)
+		{
+			sChoice.typeName.push_back((*choiceIterator)[sChoice.iTypeName]);
+			sChoice.type.push_back((*choiceIterator)[sChoice.iType]);
+
+			++choiceIterator;
+		}
+		sChoice.name = vChoice1.at(i).name;
+		pVChoice.push_back(sChoice);
+		sChoice.typeName.clear();
+		sChoice.type.clear();
+	}
+
+
+
 
 	//import sequences
 	rgx = Rgx.SEQUENCE1(); //

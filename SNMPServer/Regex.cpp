@@ -22,7 +22,7 @@ regex Regex::comments()
 
 regex Regex::OBJECT_TYPE()
 {
-	return regex(R"((\w*)\sOBJECT-TYPE\sSYNTAX\s(.*?)ACCESS\s(.*?)STATUS\s(.*?)DESCRIPTION\s(.*?)::=\s\{\s(\S*)\s(\d+)\s\})");
+	return regex(R"((\w*)\sOBJECT-TYPE\sSYNTAX\s(.*?)ACCESS\s(.*?)STATUS\s(.*?)DESCRIPTION\s(.*?)(INDEX\s\{.*?\}\s)?::=\s\{\s(\S*)\s(\d+)\s\})");
 }
 
 regex Regex::IMPORTS1()
@@ -43,6 +43,26 @@ regex Regex::IMPORTS3()
 regex Regex::DATA_TYPE()
 {
 	return regex(R"((\w*)\s::=\s?\[?(\S*?)?\s?(\d+)?\]?\s?(\S*?)?\s(INTEGER|OCTET STRING|OBJECT IDENTIFIER|NULL)\s\(?(((SIZE)?\s\((\d+)\))|((\d+)\.{2}(\d+)))?\)?)");
+}
+
+regex Regex::CHOICE()
+{
+	return regex(R"((\w*)\s::=\s?CHOICE\s\{\s(.*?)\s\})");
+}
+
+regex Regex::CHOICE1()
+{
+	return regex(R"(\s?(\S*?)\s(.*?),)");
+}
+
+regex Regex::INDEX1()
+{
+	return regex(R"(\{\s(.*?)\s\})");
+}
+
+regex Regex::INDEX2()
+{
+	return regex(R"((\S*)\,\s?)");
 }
 
 regex Regex::OBJECT_IDENTIFIER()

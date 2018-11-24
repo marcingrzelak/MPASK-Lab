@@ -8,6 +8,6 @@ public:
 	Parser();
 	~Parser();
 
-	void wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector<Sequence> &pVSequence);
+	void wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector<Sequence> &pVSequence, vector<Choice> &pVChoice);
 };
 

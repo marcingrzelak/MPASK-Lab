@@ -12,6 +12,10 @@ public:
 	regex IMPORTS2();
 	regex IMPORTS3();
 	regex DATA_TYPE();
+	regex CHOICE();
+	regex CHOICE1();
+	regex INDEX1();
+	regex INDEX2();
 	regex OBJECT_IDENTIFIER();
 	regex OBJECT_IDENTIFIER1();
 	regex SEQUENCE1();
