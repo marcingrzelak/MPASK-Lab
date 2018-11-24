@@ -151,6 +151,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="BERCoder.h" />
     <ClInclude Include="DataStructures.h" />
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="Parser.h" />
@@ -159,6 +160,7 @@
     <ClInclude Include="TreeStructure.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="BERCoder.cpp" />
     <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Parser.cpp" />
