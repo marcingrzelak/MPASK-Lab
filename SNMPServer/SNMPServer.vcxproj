@@ -157,7 +157,9 @@
     <ClInclude Include="Parser.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Regex.h" />
+    <ClInclude Include="Strings.h" />
     <ClInclude Include="TreeStructure.h" />
+    <ClInclude Include="Identifier.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BERCoder.cpp" />
@@ -173,6 +175,7 @@
     <ClCompile Include="Regex.cpp" />
     <ClCompile Include="SNMPServer.cpp" />
     <ClCompile Include="TreeStructure.cpp" />
+    <ClCompile Include="Identifier.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
