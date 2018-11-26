@@ -22,4 +22,5 @@ constexpr auto IDENTIFIER_TYPE_NULL = "NULL";
 constexpr auto IDENTIFIER_TYPE_OBJECT_IDENTIFIER = "OBJECT IDENTIFIER";
 constexpr auto IDENTIFIER_TYPE_SEQUENCE = "SEQUENCE";
 constexpr auto IDENTIFIER_TYPE_SEQUENCE_OF = "SEQUENCE OF";
+constexpr unsigned int IDENTIFIER_TAG_LONG = 0x1F;
 #pragma endregion
