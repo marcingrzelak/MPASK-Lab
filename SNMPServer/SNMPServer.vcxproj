@@ -161,6 +161,7 @@
     <ClInclude Include="Strings.h" />
     <ClInclude Include="TreeStructure.h" />
     <ClInclude Include="Identifier.h" />
+    <ClInclude Include="Value.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BERCoder.cpp" />
@@ -178,6 +179,7 @@
     <ClCompile Include="SNMPServer.cpp" />
     <ClCompile Include="TreeStructure.cpp" />
     <ClCompile Include="Identifier.cpp" />
+    <ClCompile Include="Value.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

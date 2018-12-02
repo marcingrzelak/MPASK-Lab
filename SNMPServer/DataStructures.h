@@ -77,7 +77,7 @@ class DataType
 public:
 	string name;
 	string visibility;
-	string typeID;
+	unsigned long typeID = ULONG_MAX;
 	string keyword;
 	string type;
 	int size = -1;

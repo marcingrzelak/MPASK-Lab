@@ -67,7 +67,7 @@ void Identifier::setComplexity(string pComplexity)
 	}
 }
 
-void Identifier::setTag(unsigned int pTag)
+void Identifier::setTag(unsigned long pTag)
 {
 	if (pTag < 31) //one octet
 	{
@@ -77,7 +77,8 @@ void Identifier::setTag(unsigned int pTag)
 	{
 		firstOctet |= IDENTIFIER_TAG_LONG;
 		uint8_t x = 0, octet = 0;
-		unsigned int i = 31, bitCounter = 0;
+		int i = 31;
+		unsigned int bitCounter = 0;
 		bool flag = false;
 		while (i >= 0)
 		{

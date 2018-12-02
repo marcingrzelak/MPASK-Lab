@@ -17,7 +17,7 @@ public:
 
 	 void setClass(string pClass);
 	 void setComplexity(string pComplexity);
-	 void setTag(unsigned int pTag);
+	 void setTag(unsigned long pTag);
 	 void setTagFromType(string pType);
 };
 

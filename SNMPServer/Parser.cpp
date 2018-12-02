@@ -207,7 +207,14 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	{
 		sDataType.name = (*dataTypeIterator)[sDataType.iName];
 		sDataType.visibility = (*dataTypeIterator)[sDataType.iVisibility];
-		sDataType.typeID = (*dataTypeIterator)[sDataType.iTypeID];
+		try
+		{
+			sDataType.typeID = stoul((*dataTypeIterator)[sDataType.iTypeID]);
+		}
+		catch (const std::exception&)
+		{
+
+		}
 		sDataType.keyword = (*dataTypeIterator)[sDataType.iKeyword];
 		sDataType.type = (*dataTypeIterator)[sDataType.iType];
 
