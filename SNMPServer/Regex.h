@@ -17,6 +17,8 @@ public:
 	static regex objectIdentifierGeneral();
 	static regex objectIdentifierLongParent();
 	static regex objectType();
+	static regex sizeGeneral();
+	static regex size();
 	static regex index();
 	static regex indexOneElement();
 	static regex dataType();

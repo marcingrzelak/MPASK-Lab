@@ -15,7 +15,7 @@ Parser::~Parser()
 {
 }
 
-void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence)
+void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType)
 {
 	FileHandler file(pFilePath);
 	regex rgx, rgx2;
@@ -38,7 +38,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	SequenceTemp sSequenceTemp;
 	vector<SequenceTemp> vSequenceTemp;
 	Sequence sSequence;
-
+	SpecialDataType sSpecialDataType;
 
 	sregex_iterator endIterator;
 
@@ -52,7 +52,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	importsGeneral = result[1];
 
 	//podzial na ciag elementow do zaimportowania i nazwe pliku
-	rgx = Regex::imports(); 
+	rgx = Regex::imports();
 	sregex_iterator import1Iterator(importsGeneral.begin(), importsGeneral.end(), rgx);
 	while (import1Iterator != endIterator)
 	{
@@ -80,7 +80,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		importsFilePath.append(vImportsTemp.at(i).fileName);
 		importsFilePath.append(".txt");
 
-		wholeFileParse(importsFilePath, pOIDTree, pVDataType, pVIndex, pVChoice, pVSequence); //rekurencyjne odpalenie pliku z importami do parsownia
+		wholeFileParse(importsFilePath, pOIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVSpecialDataType); //rekurencyjne odpalenie pliku z importami do parsownia
 		importsFilePath.clear();
 	}
 #pragma endregion importy
@@ -187,6 +187,51 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 			}
 			pVIndex.push_back(sIndex);
 			sIndex.indexes.clear();
+		}
+
+		//sprawdzanie czy jest deklaracja rozmiaru w syntaxie
+		regex_search(sObjectType.syntax, result, Regex::sizeGeneral());
+		string tmp = result[0];
+
+		if (tmp.size() != 0)
+		{
+			sSpecialDataType.name = sObjectType.name;
+			regex_search(tmp, result, Regex::size());
+
+			if (result[sSpecialDataType.iSize].matched) //skladnia rozmiaru: (SIZE (4))
+			{
+				try
+				{
+					sSpecialDataType.size = stoi(result[sSpecialDataType.iSize]);
+				}
+				catch (const std::exception&)
+				{
+					sSpecialDataType.size = -1;
+				}
+
+				sSpecialDataType.sizeMin = -1;
+				sSpecialDataType.sizeMax = -1;
+
+			}
+			else //skladnia rozmiaru: (0..4294967295)
+			{
+				try
+				{
+					sSpecialDataType.sizeMin = stoll(result[sSpecialDataType.iSizeMin]);
+					sSpecialDataType.sizeMax = stoll(result[sSpecialDataType.iSizeMax]);
+				}
+				catch (const std::exception&)
+				{
+					sSpecialDataType.sizeMin = -1;
+					sSpecialDataType.sizeMax = -1;
+				}
+
+				sSpecialDataType.size = -1;
+			}
+			if (sSpecialDataType.size != -1 || sSpecialDataType.sizeMin != -1 || sSpecialDataType.sizeMax != -1)
+			{
+				pVSpecialDataType.push_back(sSpecialDataType);
+			}
 		}
 
 		TreeNode* parent = pOIDTree.findNode(sObjectType.parent, pOIDTree.root);

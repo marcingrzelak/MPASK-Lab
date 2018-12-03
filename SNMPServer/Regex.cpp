@@ -50,6 +50,16 @@ regex Regex::objectType()
 	return regex(R"((\w*)\sOBJECT-TYPE\sSYNTAX\s(.*?)\sACCESS\s(.*?)\sSTATUS\s(.*?)\sDESCRIPTION\s(.*?)\s(INDEX\s\{.*?\}\s)?::=\s\{\s(\S*)\s(\d+)\s\})");
 }
 
+regex Regex::sizeGeneral()
+{
+	return regex(R"(\(.*?\)+)");
+}
+
+regex Regex::size()
+{
+	return regex(R"(\(SIZE\((\d+)\)\)|\((\d+)\.\.(\d+)\))");
+}
+
 regex Regex::index()
 {
 	return regex(R"(\{\s(.*?)\s\})");
