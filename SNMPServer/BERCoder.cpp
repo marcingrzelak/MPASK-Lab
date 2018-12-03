@@ -53,7 +53,7 @@ void BERCoder::setValue(string pValue)
 	value.setValue(pValue);
 }
 
-void BERCoder::setValue(long long pValue, unsigned int pLength)
+void BERCoder::setValue(long long pValue, int pLength)
 {
 	value.setValue(pValue, pLength);
 }
@@ -111,14 +111,10 @@ int BERCoder::checkValue(string pValue, TreeNode* pNode, vector<DataType> &pVDat
 				return -1;
 			}
 		}
-		else if (result[2].matched)//octet string
-		{
-			//return 0;
-		}
 		else if (result[3].matched)//object identifier
 		{
 			//todo sprawdzenie poprawnosci
-			//return 0;
+			return 0;
 		}
 		else if (result[4].matched)//null
 		{
@@ -188,7 +184,7 @@ int BERCoder::checkValue(string pValue, TreeNode* pNode, vector<DataType> &pVDat
 
 				for (size_t j = 0; j < pVSpecialDataType.size(); j++)
 				{
-					if (pVSpecialDataType.at(j).name == pNode->name)
+					if (pVSpecialDataType.at(j).name == pNode->name)//ograniczenia rozmiaru w data type
 					{
 						if (pVSpecialDataType.at(j).size != -1) //rozmiar w bajtach
 						{
@@ -340,15 +336,37 @@ string BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &pVData
 					{
 						setIdentifier(pVDataType.at(i).visibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(i).typeID);
 					}
+
+					BERCoder temp;
+
+					temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(i).type);
+					temp.setLength(byteCount);
+					if (isValueNumber)
+					{
+						temp.setValue(pValueINT, byteCount);
+					}
+					else
+					{
+						temp.setValue(pValue);
+					}
+					stringstream explicitValue = temp.concatAllValues(isValueNumber);
+					isValueNumber = false;
+					string explicitString = explicitValue.str();
+
+					explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
+					unsigned int explicitLength = explicitString.size() / 2;
+
+					setLength(explicitLength);
+
 					encodedValue = concatAllValues(isValueNumber);
-					return encodedValue.str();
+					return encodedValue.str() + " " + explicitValue.str();
 				}
 			}
 		}
 	}
 	else
 	{
-	//wypisz blad
-	return "Blad";
+		//wypisz blad
+		return "Blad";
 	}
 }

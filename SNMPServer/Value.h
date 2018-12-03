@@ -11,6 +11,6 @@ public:
 	vector <char> octetWord;
 
 	void setValue(string pValue);
-	void setValue(long long pValue, unsigned int pLength);
+	void setValue(long long pValue, int pLength);
 };
 

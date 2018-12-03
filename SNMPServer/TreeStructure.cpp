@@ -163,7 +163,7 @@ TreeNode * Tree::findOID(string pOID, TreeNode * node)
 		for (unsigned int i = 1; i < OIDlist.size(); i++)
 		{
 			int counter = newNode->next.size();;
-			for (unsigned int j = 0; j < counter; j++)
+			for (int j = 0; j < counter; j++)
 			{
 				if (newNode->next.at(j)->OID == OIDlist.at(i))
 				{

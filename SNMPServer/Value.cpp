@@ -18,7 +18,7 @@ void Value::setValue(string pValue)
 	octetWord = bytes;
 }
 
-void Value::setValue(long long pValue, unsigned int pLength)
+void Value::setValue(long long pValue, int pLength)
 {
 	for (int i = pLength-1; i >= 0; i--)
 	{

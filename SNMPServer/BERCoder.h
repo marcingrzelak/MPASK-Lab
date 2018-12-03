@@ -24,7 +24,7 @@ public:
 	void clearLength();
 
 	void setValue(string pValue);
-	void setValue(long long pValue, unsigned int pLength);
+	void setValue(long long pValue, int pLength);
 	void clearValue();
 
 	stringstream concatAllValues(bool pIsValueNumber);
@@ -33,6 +33,6 @@ public:
 
 	bool isValueNumber;
 	long long pValueINT = LONG_MIN;
-	unsigned int byteCount, bitCount;
+	long long byteCount, bitCount;
 };
 
