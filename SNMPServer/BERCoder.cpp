@@ -5,6 +5,7 @@
 #include "Identifier.h"
 #include "Length.h"
 #include "Value.h"
+#include "Regex.h"
 
 
 BERCoder::BERCoder()
@@ -96,15 +97,132 @@ stringstream BERCoder::concatAllValues(bool pIsValueNumber)
 	return concatedValue;
 }
 
-stringstream BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> pVDataType, vector <Index> pVIndex, vector<Choice> pVChoice, vector<Sequence> pVSequence)
+int BERCoder::checkValue(string pValue, TreeNode* pNode, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType)
+{
+	smatch result;
+	regex_search(pNode->syntax, result, Regex::dataTypeEncoder());
+
+	if (result[0].matched)//jest podstawowy typ
+	{
+		if (result[1].matched)//integer
+		{
+			if (!isValueNumber)
+			{
+				return -1;
+			}
+		}
+		else if (result[2].matched)//octet string
+		{
+			//return 0;
+		}
+		else if (result[3].matched)//object identifier
+		{
+			//todo sprawdzenie poprawnosci
+			//return 0;
+		}
+		else if (result[4].matched)//null
+		{
+			if (byteCount > 0)
+			{
+				return -2;
+			}
+		}
+
+		for (size_t i = 0; i < pVSpecialDataType.size(); i++)//rozmiary z data type
+		{
+			if (pVSpecialDataType.at(i).name == pNode->name)
+			{
+				if (pVSpecialDataType.at(i).size != -1)
+				{
+					if (byteCount > pVSpecialDataType.at(i).size)
+					{
+						return -3;
+					}
+					else
+					{
+						return 0;
+					}
+				}
+				else
+				{
+					//todo zmienic regexa
+					if (byteCount < pVSpecialDataType.at(i).sizeMin || byteCount > pVSpecialDataType.at(i).sizeMax)
+					{
+						return -4;
+					}
+					else
+					{
+						return 0;
+					}
+				}
+			}
+		}
+	}
+	else//mamy jakis inny typ
+	{
+		for (size_t i = 0; i < pVDataType.size(); i++)
+		{
+			if (pVSpecialDataType.at(i).name == pNode->name)
+			{
+				if (pVDataType.at(i).type == "INTEGER")//integer
+				{
+					if (!isValueNumber)
+					{
+						return -1;
+					}
+				}
+				else if (pVDataType.at(i).type == "OCTET STRING")//octet string
+				{
+				}
+				else if (pVDataType.at(i).type == "OBJECT IDENTIFIER")//object identifier
+				{
+					//todo sprawdzenie poprawnosci
+				}
+				else if (pVDataType.at(i).type == "NULL")//null
+				{
+					if (byteCount > 0)
+					{
+						return -2;
+					}
+				}
+
+				if (pVDataType.at(i).size != -1) //rozmiar w bajtach
+				{
+					if (byteCount > pVDataType.at(i).size)
+					{
+						return -5;
+					}
+					else
+					{
+						return 0;
+					}
+				}
+				else if ((pVDataType.at(0).sizeMin != -1) && (pVDataType.at(0).sizeMax != -1)) //rozmiar w zakresie sizeMin..sizeMax
+				{
+					if (byteCount < pVDataType.at(i).sizeMin || byteCount > pVDataType.at(i).sizeMax)
+					{
+						return -6;
+					}
+					else
+					{
+						return 0;
+					}
+				}
+				else //brak ograniczen rozmiaru
+				{
+					return 0;
+				}
+			}
+		}
+	}
+}
+
+stringstream BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType)
 {
 	clearIdentifier();
 	clearLength();
 	clearValue();
 
-	bool isValueNumber;
-	long long pValueINT = LONG_MIN;
-	unsigned int byteCount, bitCount;
 	stringstream encodedValue;
 
 	//sprawdzanie czy wartosc jest liczba
@@ -129,33 +247,6 @@ stringstream BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> p
 		byteCount = pValue.size();
 	}
 
-	/*
-	sprawdzenie poprawnosci podanej wartosci
-	sprawdzic syntax
-	1. typ danych odrazu w syntaxie
-	- odczyt typu danych
-	- sprawdzic rozmiar
-	2. typ danych poza syntaxem
-	- odpalac petle bo typ moze byc w DataType, Index, Choice, Sequence
-	- jak juz znajdziemy to sprawdzac rozmiar
-	*/
-
-	/*
-	sprawdzanie rozmiaru
-	if (pVDataType.at(0).size != -1) //rozmiar w bajtach
-	{
-		//byteCount musi byc mniejsze od pVDataType.at(0).size
-	}
-	else if((pVDataType.at(0).sizeMin != -1) && (pVDataType.at(0).sizeMax != -1)) //rozmiar w zakresie sizeMin..sizeMax
-	{
-		//value musi sie miescic w zakresie sizeMin..sizeMax
-	}
-	else //brak ograniczen rozmiaru
-	{
-		//do nothing
-	}
-	*/
-	
 	//data type
 	for (unsigned int i = 0; i < pVDataType.size(); i++)
 	{

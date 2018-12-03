@@ -28,7 +28,11 @@ public:
 	void clearValue();
 
 	stringstream concatAllValues(bool pIsValueNumber);
+	int checkValue(string pValue, TreeNode* pNode, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType);
+	stringstream encode(TreeNode* pNode, string pValue, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType);
 
-	stringstream encode(TreeNode* pNode, string pValue, vector<DataType> pVDataType, vector <Index> pVIndex, vector<Choice> pVChoice, vector<Sequence> pVSequence);
+	bool isValueNumber;
+	long long pValueINT = LONG_MIN;
+	unsigned int byteCount, bitCount;
 };
 

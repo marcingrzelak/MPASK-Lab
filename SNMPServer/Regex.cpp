@@ -75,6 +75,13 @@ regex Regex::dataType()
 	return regex(R"((\w*?)\s::=\s?\[?(\S*?)?\s?(\d+)?\]?\s?(\S*?)?\s(INTEGER|OCTET STRING|OBJECT IDENTIFIER|NULL)\s\(?(((SIZE)?\s\((\d+)\))|((\d+)\.{2}(\d+)))?\)?)");
 }
 
+regex Regex::dataTypeEncoder()
+{
+	return regex(R"(((INTEGER)|(OCTET STRING)|(OBJECT IDENTIFIER)|(NULL)))");
+}
+
+
+
 regex Regex::choiceGeneral()
 {
 	return regex(R"((\w*)\s::=\s?CHOICE\s\{\s(.*?)\s\})");
