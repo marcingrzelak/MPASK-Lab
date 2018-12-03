@@ -68,30 +68,30 @@ stringstream BERCoder::concatAllValues(bool pIsValueNumber)
 {
 	stringstream concatedValue;
 
-	concatedValue << hex << static_cast<int>(identifier.firstOctet) << " ";
+	concatedValue << setfill('0') << setw(2) << hex << static_cast<int>(identifier.firstOctet) << " ";
 	for (size_t i = 0; i < identifier.longOctet.size(); i++)
 	{
-		concatedValue << hex << static_cast<int>(identifier.longOctet.at(i)) << " ";
+		concatedValue << setfill('0') << setw(2) << hex << static_cast<int>(identifier.longOctet.at(i)) << " ";
 	}
 
-	concatedValue << hex << static_cast<int>(length.firstOctet);
+	concatedValue << setfill('0') << setw(2) << hex << static_cast<int>(length.firstOctet);
 	for (size_t i = 0; i < length.longOctet.size(); i++)
 	{
-		concatedValue << " " << hex << static_cast<int>(length.longOctet.at(i));
+		concatedValue << " " << setfill('0') << setw(2) << hex << static_cast<int>(length.longOctet.at(i));
 	}
 
 	if (pIsValueNumber)
 	{
 		for (size_t i = 0; i < value.octet.size(); i++)
 		{
-			concatedValue << " " << hex << static_cast<int>(value.octet.at(i));
+			concatedValue << " " << setfill('0') << setw(2) << hex << static_cast<int>(value.octet.at(i));
 		}
 	}
 	else
 	{
 		for (size_t i = 0; i < value.octetWord.size(); i++)
 		{
-			concatedValue << " " << hex << static_cast<int>(value.octetWord.at(i));
+			concatedValue << " " << setfill('0') << setw(2) << hex << static_cast<int>(value.octetWord.at(i));
 		}
 	}
 	return concatedValue;
@@ -162,7 +162,7 @@ int BERCoder::checkValue(string pValue, TreeNode* pNode, vector<DataType> &pVDat
 	{
 		for (size_t i = 0; i < pVDataType.size(); i++)
 		{
-			if (pVSpecialDataType.at(i).name == pNode->name)
+			if (pVDataType.at(i).name == pNode->syntax)
 			{
 				if (pVDataType.at(i).type == "INTEGER")//integer
 				{
@@ -186,29 +186,65 @@ int BERCoder::checkValue(string pValue, TreeNode* pNode, vector<DataType> &pVDat
 					}
 				}
 
+				for (size_t j = 0; j < pVSpecialDataType.size(); j++)
+				{
+					if (pVSpecialDataType.at(j).name == pNode->name)
+					{
+						if (pVSpecialDataType.at(j).size != -1) //rozmiar w bajtach
+						{
+							if (byteCount > pVSpecialDataType.at(j).size)
+							{
+								return -5;
+							}
+							else
+							{
+								return 0;
+							}
+						}
+						else if ((pVSpecialDataType.at(j).sizeMin != -1) && (pVSpecialDataType.at(j).sizeMax != -1)) //rozmiar w zakresie sizeMin..sizeMax
+						{
+							if (byteCount < pVSpecialDataType.at(j).sizeMin || byteCount > pVSpecialDataType.at(j).sizeMax)
+							{
+								return -6;
+							}
+							else
+							{
+								return 0;
+							}
+						}
+					}
+				}
 				if (pVDataType.at(i).size != -1) //rozmiar w bajtach
 				{
 					if (byteCount > pVDataType.at(i).size)
 					{
-						return -5;
+						return -7;
 					}
 					else
 					{
 						return 0;
 					}
 				}
-				else if ((pVDataType.at(0).sizeMin != -1) && (pVDataType.at(0).sizeMax != -1)) //rozmiar w zakresie sizeMin..sizeMax
+				else if ((pVDataType.at(i).sizeMin != -1) && (pVDataType.at(i).sizeMax != -1)) //rozmiar w zakresie sizeMin..sizeMax
 				{
-					if (byteCount < pVDataType.at(i).sizeMin || byteCount > pVDataType.at(i).sizeMax)
+					if (isValueNumber)
 					{
-						return -6;
+						if (pValueINT < pVDataType.at(i).sizeMin || pValueINT > pVDataType.at(i).sizeMax)
+						{
+							return -8;
+						}
+						else
+						{
+							return 0;
+						}
 					}
 					else
 					{
+						//todo jezeli inna wartosc niz integer moze miec ograniczenia rozmiaru x..y to zmienic
 						return 0;
 					}
 				}
-				else //brak ograniczen rozmiaru
+				else
 				{
 					return 0;
 				}
@@ -217,13 +253,14 @@ int BERCoder::checkValue(string pValue, TreeNode* pNode, vector<DataType> &pVDat
 	}
 }
 
-stringstream BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType)
+string BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType)
 {
 	clearIdentifier();
 	clearLength();
 	clearValue();
 
 	stringstream encodedValue;
+	int checkStatus;
 
 	//sprawdzanie czy wartosc jest liczba
 	try
@@ -239,7 +276,7 @@ stringstream BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &
 	//obliczanie dlugosci
 	if (isValueNumber)
 	{
-		bitCount = ceil(log2(pValueINT));
+		bitCount = floor(log2(abs(pValueINT)) + 1) + 1;
 		byteCount = ceil(bitCount / 8.0);
 	}
 	else
@@ -247,29 +284,30 @@ stringstream BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &
 		byteCount = pValue.size();
 	}
 
-	//data type
-	for (unsigned int i = 0; i < pVDataType.size(); i++)
+	checkStatus = checkValue(pValue, pNode, pVDataType, pVIndex, pVChoice, pVSequence, pVSpecialDataType);
+	if (checkStatus == 0)
 	{
-		if (pVDataType.at(i).name == pNode->syntax)
+		//data type
+		for (unsigned int i = 0; i < pVDataType.size(); i++)
 		{
-			if (pVDataType.at(i).visibility.size() == 0) //kodowanie uniwersalne
+			if (pVDataType.at(i).name == pNode->syntax)
 			{
-				setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(i).type);
-				setLength(byteCount);
-				if (isValueNumber)
+				if (pVDataType.at(i).keyword.size() == 0) //kodowanie uniwersalne
 				{
-					setValue(pValueINT, byteCount);
+					setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(i).type);
+					setLength(byteCount);
+					if (isValueNumber)
+					{
+						setValue(pValueINT, byteCount);
+					}
+					else
+					{
+						setValue(pValue);
+					}
+					encodedValue = concatAllValues(isValueNumber);
+					return encodedValue.str();
 				}
-				else
-				{
-					setValue(pValue);
-				}
-				encodedValue = concatAllValues(isValueNumber);
-				return encodedValue;
-			}
-			else
-			{
-				if (pVDataType.at(i).keyword == DATATYPE_KEYWORD_IMPLICIT)
+				else if (pVDataType.at(i).keyword == DATATYPE_KEYWORD_IMPLICIT)
 				{
 					if (pVDataType.at(i).visibility.size() == 0)//brak widocznosci klasy
 					{
@@ -290,7 +328,7 @@ stringstream BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &
 						setValue(pValue);
 					}
 					encodedValue = concatAllValues(isValueNumber);
-					return encodedValue;
+					return encodedValue.str();
 				}
 				else if (pVDataType.at(i).keyword == DATATYPE_KEYWORD_EXPLICIT)
 				{
@@ -303,16 +341,14 @@ stringstream BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &
 						setIdentifier(pVDataType.at(i).visibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(i).typeID);
 					}
 					encodedValue = concatAllValues(isValueNumber);
-					return encodedValue;
+					return encodedValue.str();
 				}
-
 			}
 		}
 	}
-	//typ danych integer - DataType::type
-	//typ implicit - DataType::keyword
-	//wartosc tagu 3 - DataType::typeID
-	//ograniczenia rozmiaru - DataType::size lub sizeMin/sizeMax
-	//nazwa - DataType::name
-	//**widocznosc(klasa) Universal, application - DataType::visibility
+	else
+	{
+	//wypisz blad
+	return "Blad";
+	}
 }

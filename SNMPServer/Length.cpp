@@ -20,7 +20,7 @@ void Length::setDefinedForm(unsigned long long pLength)
 	}
 	else if (pLength > 128)
 	{
-		bits = ceil(log2(pLength));
+		bits = floor(log2(pLength) + 1);
 		K = ceil(bits / 8.0);
 		uint8_t octet = 0;
 		if (K == 127)
@@ -38,10 +38,10 @@ void Length::setDefinedForm(unsigned long long pLength)
 
 			for (int i = K; i > 0; i--)
 			{
-				octet = (pLength >> (8 * (i-1))) & 0xff;
+				octet = (pLength >> (8 * (i - 1))) & 0xff;
 				longOctet.push_back(octet);
 			}
-		}			
+		}
 	}
 	else
 	{
