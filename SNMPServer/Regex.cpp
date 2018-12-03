@@ -77,7 +77,7 @@ regex Regex::dataType()
 
 regex Regex::dataTypeEncoder()
 {
-	return regex(R"(((INTEGER)|(OCTET STRING)|(OBJECT IDENTIFIER)|(NULL)))");
+	return regex(R"((INTEGER)|(OCTET STRING)|(OBJECT IDENTIFIER)|(NULL))");
 }
 
 

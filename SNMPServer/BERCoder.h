@@ -34,5 +34,6 @@ public:
 	bool isValueNumber;
 	long long pValueINT = LONG_MIN;
 	long long byteCount, bitCount;
+	int type = 0;
 };
 
