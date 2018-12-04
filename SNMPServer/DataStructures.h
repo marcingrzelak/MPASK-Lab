@@ -56,6 +56,18 @@ public:
 	int iName = 1, iSyntax = 2, iAccess = 3, iStatus = 4, iDescription = 5, iIndex = 6, iParent = 7, iOid = 8;
 };
 
+class SpecialDataType
+{
+public:
+	string name;
+	int size = -1;
+	long long sizeMin = -1;
+	long long sizeMax = -1;
+
+	//indexes from regex match
+	int iSize = 1, iSizeMin = 2, iSizeMax = 3;
+};
+
 class IndexTemp
 {
 public:
@@ -77,7 +89,7 @@ class DataType
 public:
 	string name;
 	string visibility;
-	string typeID;
+	unsigned long typeID = ULONG_MAX;
 	string keyword;
 	string type;
 	int size = -1;

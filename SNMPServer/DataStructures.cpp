@@ -22,7 +22,7 @@ void DataType::showDataTypes(vector<DataType> pVDataType)
 		if (pVDataType.at(i).visibility.length() > 0)
 			cout << pVDataType.at(i).visibility << endl;
 
-		if (pVDataType.at(i).typeID.length() > 0)
+		if (pVDataType.at(i).typeID != ULONG_MAX)
 			cout << pVDataType.at(i).typeID << endl;
 
 		if (pVDataType.at(i).keyword.length() > 0)
