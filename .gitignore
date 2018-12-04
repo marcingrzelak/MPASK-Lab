@@ -215,3 +215,9 @@ FakesAssemblies/
 **/*.Server/GeneratedArtifacts
 **/*.Server/ModelManifest.xml
 _Pvt_Extensions
+
+SNMPServer/MIBS/RFC-1213-MIB — kopia\.txt
+
+SNMPServer/MIBS/cleanedFile\.txt
+
+SNMPServer/MIBS/RFC1155clean\.txt
