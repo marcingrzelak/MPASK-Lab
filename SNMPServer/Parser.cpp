@@ -15,7 +15,7 @@ Parser::~Parser()
 {
 }
 
-void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType)
+void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
 {
 	FileHandler file(pFilePath);
 	regex rgx, rgx2;
@@ -38,7 +38,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	SequenceTemp sSequenceTemp;
 	vector<SequenceTemp> vSequenceTemp;
 	Sequence sSequence;
-	SpecialDataType sSpecialDataType;
+	ObjectTypeSize sObjectTypeSize;
 
 	sregex_iterator endIterator;
 
@@ -80,7 +80,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 		importsFilePath.append(vImportsTemp.at(i).fileName);
 		importsFilePath.append(".txt");
 
-		wholeFileParse(importsFilePath, pOIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVSpecialDataType); //rekurencyjne odpalenie pliku z importami do parsownia
+		wholeFileParse(importsFilePath, pOIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize); //rekurencyjne odpalenie pliku z importami do parsownia
 		importsFilePath.clear();
 	}
 #pragma endregion importy
@@ -195,42 +195,42 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 
 		if (tmp.size() != 0)
 		{
-			sSpecialDataType.name = sObjectType.name;
+			sObjectTypeSize.name = sObjectType.name;
 			regex_search(tmp, result, Regex::size());
 
-			if (result[sSpecialDataType.iSize].matched) //skladnia rozmiaru: (SIZE (4))
+			if (result[sObjectTypeSize.iSize].matched) //skladnia rozmiaru: (SIZE (4))
 			{
 				try
 				{
-					sSpecialDataType.size = stoi(result[sSpecialDataType.iSize]);
+					sObjectTypeSize.size = stoi(result[sObjectTypeSize.iSize]);
 				}
 				catch (const std::exception&)
 				{
-					sSpecialDataType.size = -1;
+					sObjectTypeSize.size = -1;
 				}
 
-				sSpecialDataType.sizeMin = -1;
-				sSpecialDataType.sizeMax = -1;
+				sObjectTypeSize.sizeMin = -1;
+				sObjectTypeSize.sizeMax = -1;
 
 			}
 			else //skladnia rozmiaru: (0..4294967295)
 			{
 				try
 				{
-					sSpecialDataType.sizeMin = stoll(result[sSpecialDataType.iSizeMin]);
-					sSpecialDataType.sizeMax = stoll(result[sSpecialDataType.iSizeMax]);
+					sObjectTypeSize.sizeMin = stoll(result[sObjectTypeSize.iSizeMin]);
+					sObjectTypeSize.sizeMax = stoll(result[sObjectTypeSize.iSizeMax]);
 				}
 				catch (const std::exception&)
 				{
-					sSpecialDataType.sizeMin = -1;
-					sSpecialDataType.sizeMax = -1;
+					sObjectTypeSize.sizeMin = -1;
+					sObjectTypeSize.sizeMax = -1;
 				}
 
-				sSpecialDataType.size = -1;
+				sObjectTypeSize.size = -1;
 			}
-			if (sSpecialDataType.size != -1 || sSpecialDataType.sizeMin != -1 || sSpecialDataType.sizeMax != -1)
+			if (sObjectTypeSize.size != -1 || sObjectTypeSize.sizeMin != -1 || sObjectTypeSize.sizeMax != -1)
 			{
-				pVSpecialDataType.push_back(sSpecialDataType);
+				pVObjectTypeSize.push_back(sObjectTypeSize);
 			}
 		}
 
