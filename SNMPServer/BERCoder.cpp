@@ -64,32 +64,6 @@ void BERCoder::clearValue()
 	value.octetWord.clear();
 }
 
-void BERCoder::checkIsNumber(string pValue)
-{
-	try
-	{
-		isValueNumber = true;
-		pValueINT = stoll(pValue);
-	}
-	catch (const std::exception&)
-	{
-		isValueNumber = false;
-	}
-}
-
-void BERCoder::lengthCalc(string pValue)
-{
-	if (isValueNumber)
-	{
-		bitCount = floor(log2(abs(pValueINT)) + 1) + 1;
-		byteCount = ceil(bitCount / 8.0);
-	}
-	else
-	{
-		byteCount = pValue.size();
-	}
-}
-
 string BERCoder::concatAllValues(bool pIsValueNumber)
 {
 	stringstream concatedValue;
@@ -123,228 +97,16 @@ string BERCoder::concatAllValues(bool pIsValueNumber)
 	return concatedValue.str();
 }
 
-int BERCoder::checkValueType(string pValue, TreeNode* pNode, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
-{
-	type = defaultTypeCheck(pNode->syntax, isValueNumber);
-	if (type < 0)//blad typu danych
-	{
-		return -1;
-	}
-	else if (type > 0)//podstawowy typ danych
-	{
-		return 0;
-	}
-	else if (type == 0)//niepodstawowy typ danych
-	{
-		//sprawdzamy czy obiekt nie jest typu data type
-		typeDataType = dataTypeCheck(pNode->syntax, pVDataType);
-		if (typeDataType < 0)//blad typu danych
-		{
-			return -1;
-		}
-		else if (typeDataType > 0)//podstawowy typ danych
-		{
-			return 0;
-		}
-		else if (typeDataType == 0)//obiekt nie jest typu data type
-		{
-			return -3;//obiekt nie ma zadnego typu
-		}
-	}
-	return -2;
-}
-
-short BERCoder::defaultTypeCheck(string pValue, bool &isValueNumber)
-{
-	//sprawdzamy czy podany obiekt ma jeden z domyslnych typow
-	smatch result;
-	regex_search(pValue, result, Regex::dataTypeEncoder());
-
-	if (result[0].matched)
-	{
-		if (result[1].matched)//integer
-		{
-			if (!isValueNumber)
-			{
-				return -1;
-			}
-			else
-			{
-				return INTEGER_TAG_NUMBER;
-			}
-		}
-		else if (result[2].matched)//octet string
-		{
-			isValueNumber = false;
-			return OCTET_STRING_TAG_NUMBER;
-		}
-		else if (result[3].matched)//object identifier
-		{
-			//todo sprawdzenie poprawnosci
-			isValueNumber = false;
-			return OBJECT_IDENTIFIER_TAG_NUMBER;
-		}
-		else if (result[4].matched)//null
-		{
-			if (byteCount > 0)
-			{
-				return -2;
-			}
-			else
-			{
-				return NULL_TAG_NUMBER;
-			}
-		}
-	}
-	return 0;
-}
-
-short BERCoder::dataTypeCheck(string pValue, vector<DataType> &pVDataType)
-{
-	indexDataType = -1;
-	//sprawdzamy czy podany obiekt ma typ zawarty w data type
-	for (size_t i = 0; i < pVDataType.size(); i++)
-	{
-		if (pValue.find(pVDataType.at(i).name) != string::npos)
-		{
-			indexDataType = i;
-			BERCoder tmp;
-			short returnedType;
-			returnedType = tmp.defaultTypeCheck(pVDataType.at(i).type, isValueNumber);
-
-			if (returnedType <= 0)//blad typu danych
-			{
-				return -1;
-			}
-			else//podstawowy typ danych
-			{
-				return returnedType;
-			}
-		}
-	}
-	return 0;//typ nie jest zawarty w data type
-}
-
-int BERCoder::checkValueSize(string pValue, TreeNode *pNode, vector<ObjectTypeSize> &pVObjectTypeSize, vector<DataType> &pVDataType)
-{
-	short oTSCreturned = objectTypeSizeCheck(pVObjectTypeSize, pNode->name);
-	if (oTSCreturned == 0)//rozmiar ok
-	{
-		return 0;
-	}
-	else if (oTSCreturned > 0)//brak ograniczen w objectTypeSize
-	{
-		if (typeDataType == 0)//podstawowy typ, todo dodac potem spradzanie typeSequence, typeIndex itp
-		{
-			//todo sprawdzamy domyslne ograniczenia rozmiaru dla typu podstawowego (zmienna type)
-			return 0;
-		}
-		else if (typeDataType > 0)//typ w data type
-		{
-			//sprawdzamy ograniczenia zawarte w data type
-			short dTSCretuened = dataTypeSizeCheck(pVDataType);
-			if (dTSCretuened == 0)//rozmiar ok
-			{
-				return 0;
-			}
-			else if (dTSCretuened > 0)//brak ograniczen w DataType
-			{
-				//todo sprawdzamy domyslne ograniczenia rozmiaru dla typu podstawowego (zmienna typeDataType)
-				return 0;
-			}
-			else if (dTSCretuened < 0)
-			{
-				return -1;
-			}
-		}
-		//todo kolejne else if do sprawdzania sekwencji indexow itp
-	}
-	else if (oTSCreturned < 0)//blad
-	{
-		return -1;
-	}
-}
-
-short BERCoder::objectTypeSizeCheck(vector<ObjectTypeSize> pVObjectTypeSize, string pName)
-{
-	//dla danej nazwy obiektu np. sysName
-	//sprawdzamy ograniczenia rozmiarow podane w deklaracji obiektu
-	//te ograniczenia maja wyzszy priorytet niz ograniczenia podane w deklaracji typu
-	//0 rozmiar ok
-	//<0 rozmiar poza zakresem lub brak definicji dopuszczalnego rozmiaru
-	//>0 nie znaleziono ograniczen
-	for (size_t i = 0; i < pVObjectTypeSize.size(); i++)
-	{
-		if (pVObjectTypeSize.at(i).name == pName)
-		{
-			checkSize(pVObjectTypeSize.at(i).size, pVObjectTypeSize.at(i).sizeMin, pVObjectTypeSize.at(i).sizeMax);
-		}
-	}
-	return 1;
-}
-
-short BERCoder::dataTypeSizeCheck(vector<DataType> &pVDataType)
-{
-	//nie trzeba sprawdzac indexDataType bo zawsze bedzie >= 0 w tym miejscu
-	short returnedValue = checkSize(pVDataType.at(indexDataType).size, pVDataType.at(indexDataType).sizeMax, pVDataType.at(indexDataType).sizeMax);
-	return returnedValue;
-}
-
-short BERCoder::checkSize(int pSize, long long pSizeMin, long long pSizeMax)
-{
-	if (pSize != -1)
-	{
-		if (byteCount > pSize)
-		{
-			return -1;
-		}
-		else
-		{
-			return 0;
-		}
-	}
-	else if (pSizeMin != -1 && pSizeMax != -1)
-	{
-		//todo zmienic regexa brak rozroznienia SIZE(x..y) od (x..y)
-		//todo co chodzi ze sprawdzeniem isValueNumber
-		if (isValueNumber)
-		{
-			if (byteCount < pSizeMin || byteCount > pSizeMax)
-			{
-				return -2;
-			}
-			else
-			{
-				return 0;
-			}
-		}
-		else
-		{
-			//todo jezeli inna wartosc niz integer moze miec ograniczenia rozmiaru x..y to zmienic
-			return 0;
-		}
-
-	}
-	else
-	{
-		//brak ograniczen
-		return -3;
-	}
-	return 1;
-}
-
-string BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
+string BERCoder::encode(string pValue)
 {
 	clearIdentifier();
 	clearLength();
 	clearValue();
 
 	string encodedValue;
-	int checkTypeStatus, checkSizeStatus;
+	//int checkTypeStatus, checkSizeStatus;
 
-	checkIsNumber(pValue);
-	lengthCalc(pValue);
-
+	/*
 	checkTypeStatus = checkValueType(pValue, pNode, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 	if (checkTypeStatus == 0)
 	{
@@ -441,7 +203,6 @@ string BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &pVData
 				}
 			}
 			//sequence
-			/*
 			for (size_t i = 0; i < pVSequence.size(); i++)
 			{
 				if (pNode->syntax.find(pVSequence.at(i).name) != string::npos)
@@ -540,7 +301,7 @@ string BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &pVData
 					}
 
 				}
-			}*/
+			}
 		}
 		else
 		{
@@ -551,4 +312,7 @@ string BERCoder::encode(TreeNode* pNode, string pValue, vector<DataType> &pVData
 	{
 		//todo blad typu
 	}
+	*/
+
+	return "test";
 }

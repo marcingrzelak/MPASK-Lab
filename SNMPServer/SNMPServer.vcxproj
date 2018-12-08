@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BERCoder.h" />
+    <ClInclude Include="CheckValue.h" />
     <ClInclude Include="DataStructures.h" />
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="Length.h" />
@@ -165,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BERCoder.cpp" />
+    <ClCompile Include="CheckValue.cpp" />
     <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Length.cpp" />
