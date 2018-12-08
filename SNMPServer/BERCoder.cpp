@@ -99,14 +99,14 @@ string BERCoder::concatAllValues(bool pIsValueNumber)
 
 string BERCoder::encode(string pValue)
 {
+	/*
 	clearIdentifier();
 	clearLength();
 	clearValue();
 
 	string encodedValue;
-	//int checkTypeStatus, checkSizeStatus;
+	int checkTypeStatus, checkSizeStatus;
 
-	/*
 	checkTypeStatus = checkValueType(pValue, pNode, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 	if (checkTypeStatus == 0)
 	{
@@ -313,6 +313,7 @@ string BERCoder::encode(string pValue)
 		//todo blad typu
 	}
 	*/
-
 	return "test";
+
+	
 }

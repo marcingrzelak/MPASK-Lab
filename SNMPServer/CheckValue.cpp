@@ -48,13 +48,13 @@ void CheckValue::lengthCalc(string pValue)
 	}
 }
 
-int CheckValue::checkValueType(string pValue, TreeNode* pNode, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
+int CheckValue::checkValueType(string pValue, string pSyntax, vector<DataType> &pVDataType, vector<Sequence> &pVSequence)
 {
 	type = 0;
 	typeDataType = 0;
 	typeSequence = 0;
 
-	type = defaultTypeCheck(pNode->syntax, isValueNumber);
+	type = defaultTypeCheck(pSyntax, isValueNumber);
 	if (type < 0)//blad typu danych
 	{
 		return -1;
@@ -66,7 +66,7 @@ int CheckValue::checkValueType(string pValue, TreeNode* pNode, vector<DataType> 
 	else if (type == 0)//niepodstawowy typ danych
 	{
 		//sprawdzamy czy obiekt jest typu data type
-		typeDataType = dataTypeCheck(pNode->syntax, pVDataType);
+		typeDataType = dataTypeCheck(pValue, pSyntax, pVDataType);
 		if (typeDataType < 0)//blad typu danych
 		{
 			return -1;
@@ -78,7 +78,7 @@ int CheckValue::checkValueType(string pValue, TreeNode* pNode, vector<DataType> 
 		else if (typeDataType == 0)//obiekt nie jest typu data type
 		{
 			//sprawdzamy czy obiekt jest typu sequence
-			typeSequence = sequenceTypeCheck(pNode->syntax, pVSequence, pVDataType, pValue);
+			typeSequence = sequenceTypeCheck(pSyntax, pVSequence, pVDataType, pValue);
 			if (typeSequence < 0)//blad typu danych
 			{
 				return -1;
@@ -107,7 +107,7 @@ short CheckValue::defaultTypeCheck(string pSyntax, bool &isValueNumber)
 	{
 		if (result[1].matched)//integer
 		{
-			if (!isValueNumber)
+			if (!(this->isValueNumber))
 			{
 				return -1;
 			}
@@ -129,7 +129,7 @@ short CheckValue::defaultTypeCheck(string pSyntax, bool &isValueNumber)
 		}
 		else if (result[4].matched)//null
 		{
-			if (byteCount > 0)
+			if ((this->byteCount) > 0)
 			{
 				return -2;
 			}
@@ -142,7 +142,7 @@ short CheckValue::defaultTypeCheck(string pSyntax, bool &isValueNumber)
 	return 0;
 }
 
-short CheckValue::dataTypeCheck(string pSyntax, vector<DataType> &pVDataType)
+short CheckValue::dataTypeCheck(string pValue, string pSyntax, vector<DataType> &pVDataType)
 {
 	indexDataType = -1;
 	//sprawdzamy czy podany obiekt ma typ zawarty w data type
@@ -152,6 +152,7 @@ short CheckValue::dataTypeCheck(string pSyntax, vector<DataType> &pVDataType)
 		{
 			indexDataType = i;
 			CheckValue tmp;
+			tmp.setValueParameters(pValue);
 			short returnedType;
 			returnedType = tmp.defaultTypeCheck(pVDataType.at(i).type, isValueNumber);
 
@@ -211,7 +212,7 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 				else if (type == 0)//niepodstawowy typ danych
 				{
 					//sprawdzamy czy obiekt jest typu data type
-					tmp.typeDataType = tmp.dataTypeCheck(pVSequence.at(i).type.at(j), pVDataType);
+					tmp.typeDataType = tmp.dataTypeCheck(sequenceValues.at(j), pVSequence.at(i).type.at(j), pVDataType);
 					if (tmp.typeDataType < 0)//blad typu danych
 					{
 						return -1;
@@ -234,7 +235,7 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 	return 0;//typ nie jest zawarty w sequence
 }
 
-int CheckValue::checkValueSize(string pValue, string pName, vector<ObjectTypeSize> &pVObjectTypeSize, vector<DataType> &pVDataType, vector<Sequence> &pVSequence)
+int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTypeSize, vector<DataType> &pVDataType, vector<Sequence> &pVSequence)
 {
 	short oTSCreturned = objectTypeSizeCheck(pVObjectTypeSize, pName);//pNode->name
 	if (oTSCreturned == 0)//rozmiar ok
@@ -313,7 +314,7 @@ short CheckValue::objectTypeSizeCheck(vector<ObjectTypeSize> pVObjectTypeSize, s
 short CheckValue::dataTypeSizeCheck(vector<DataType> &pVDataType)
 {
 	//nie trzeba sprawdzac indexDataType bo zawsze bedzie >= 0 w tym miejscu
-	short returnedValue = checkSize(pVDataType.at(indexDataType).size, pVDataType.at(indexDataType).sizeMax, pVDataType.at(indexDataType).sizeMax);
+	short returnedValue = checkSize(pVDataType.at(indexDataType).size, pVDataType.at(indexDataType).sizeMin, pVDataType.at(indexDataType).sizeMax);
 	return returnedValue;
 }
 
@@ -328,7 +329,7 @@ short CheckValue::sequenceSizeCheck(vector<ObjectTypeSize> &pVObjectTypeSize, ve
 		//jezeli typ podst to nic nie robic
 		//jezeli data type to ustawic tmp.indexDataType oraz tmp.typeDataType na podstawie wartosci zapisanych w sequenceTypeCheck
 
-		int returnedValue = tmp.checkValueSize(sequenceValues.at(i), "", pVObjectTypeSize, pVDataType, pVSequence);
+		int returnedValue = tmp.checkValueSize("", pVObjectTypeSize, pVDataType, pVSequence);
 
 		if (returnedValue < 0)
 		{
@@ -378,3 +379,26 @@ short CheckValue::checkSize(int pSize, long long pSizeMin, long long pSizeMax)
 		return 1;
 	}
 }
+
+short CheckValue::checkValue(string pValue, TreeNode *pNode, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
+{
+	int cVTreturned = checkValueType(pValue, pNode->syntax, pVDataType, pVSequence);
+	if (cVTreturned == 0)//typ ok
+	{
+		int cVSreturned = checkValueSize(pNode->name, pVObjectTypeSize, pVDataType, pVSequence);
+		if (cVSreturned == 0)//rozmiar ok
+		{
+			return 0;
+		}
+		else
+		{
+			return -2;
+		}
+	}
+	else
+	{
+		return -1;
+	}
+}
+
+
