@@ -20,6 +20,7 @@ void CheckValue::setValueParameters(string pValue)
 {
 	checkIsNumber(pValue);
 	lengthCalc(pValue);
+	checkIsObjectIdentifier(pValue);
 }
 
 void CheckValue::checkIsNumber(string pValue)
@@ -32,6 +33,7 @@ void CheckValue::checkIsNumber(string pValue)
 	catch (const std::exception&)
 	{
 		isValueNumber = false;
+		pValueINT = LLONG_MIN;
 	}
 }
 
@@ -39,12 +41,40 @@ void CheckValue::lengthCalc(string pValue)
 {
 	if (isValueNumber)
 	{
-		bitCount = floor(log2(abs(pValueINT)) + 1) + 1;
+		if (pValueINT < 0)
+		{
+			bitCount = floor(log2(abs(pValueINT)) + 1);
+		}
+		else
+		{
+			bitCount = floor(log2(abs(pValueINT)) + 1) + 1;
+		}
 		byteCount = ceil(bitCount / 8.0);
 	}
 	else
 	{
+		bitCount = 0;
 		byteCount = pValue.size();
+	}
+}
+
+void CheckValue::checkIsObjectIdentifier(string pValue)
+{
+	string objectTypeValue;
+	pValue += ".";
+	regex rgx = Regex::objectIdentifierCheckType();
+	sregex_iterator objectTypeIterator(pValue.begin(), pValue.end(), rgx), endIterator;
+	while (objectTypeIterator != endIterator)
+	{
+		objectTypeValue += (*objectTypeIterator)[0];
+	}
+	if (pValue == objectTypeValue)
+	{
+		isObjectIdentifier = true;
+	}
+	else
+	{
+		isObjectIdentifier = false;
 	}
 }
 
@@ -53,6 +83,8 @@ int CheckValue::checkValueType(string pValue, string pSyntax, vector<DataType> &
 	type = 0;
 	typeDataType = 0;
 	typeSequence = 0;
+
+	setValueParameters(pValue);
 
 	type = defaultTypeCheck(pSyntax, isValueNumber);
 	if (type < 0)//blad typu danych
@@ -89,7 +121,7 @@ int CheckValue::checkValueType(string pValue, string pSyntax, vector<DataType> &
 			}
 			else if (typeSequence == 0)
 			{
-				//todo jezeli analizujemy tez choice'y to dodac
+				//todo jezeli analizujemy tez choice'y to dodac kolejne sprawdzenie
 				return 0;
 			}
 		}
@@ -123,15 +155,22 @@ short CheckValue::defaultTypeCheck(string pSyntax, bool &isValueNumber)
 		}
 		else if (result[3].matched)//object identifier
 		{
-			//todo sprawdzenie poprawnosci
 			isValueNumber = false;
-			return OBJECT_IDENTIFIER_TAG_NUMBER;
+			//todo sprawdzenie poprawnosci typu
+			if (isObjectIdentifier)
+			{
+				return OBJECT_IDENTIFIER_TAG_NUMBER;
+			}
+			else
+			{
+				return -2;
+			}
 		}
 		else if (result[4].matched)//null
 		{
 			if ((this->byteCount) > 0)
 			{
-				return -2;
+				return -3;
 			}
 			else
 			{
@@ -191,7 +230,7 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 			//1. SYNTAX  IpRouteEntry
 			//2. SYNTAX  SEQUENCE OF IpRouteEntry
 			//gdzie IpRouteEntry jest sekwencja
-			//2. póki co pomijamy bo to typ tablicowy todo
+			//2. poki co pomijamy bo to typ tablicowy todo
 
 			//dla kazdego elem. sekwencji sprawdzamy typ
 			for (size_t j = 0; j < pVSequence.at(i).type.size(); j++)
@@ -208,6 +247,8 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 				else if (returnedType > 0)//podstawowy typ danych
 				{
 					//todo zapisac returnedType
+					sequenceDefaultTypes.push_back(returnedType);
+					sequenceDataTypeIndexes.push_back(-1);
 				}
 				else if (type == 0)//niepodstawowy typ danych
 				{
@@ -220,6 +261,8 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 					else if (tmp.typeDataType > 0)//podstawowy typ danych
 					{
 						//todo zapisac tmp.indexDataType oraz tmp.typeDataType
+						sequenceDefaultTypes.push_back(tmp.typeDataType);
+						sequenceDataTypeIndexes.push_back(tmp.indexDataType);
 					}
 					else if (tmp.typeDataType == 0)//obiekt nie jest typu data type
 					{
@@ -237,7 +280,7 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 
 int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTypeSize, vector<DataType> &pVDataType, vector<Sequence> &pVSequence)
 {
-	short oTSCreturned = objectTypeSizeCheck(pVObjectTypeSize, pName);//pNode->name
+	short oTSCreturned = objectTypeSizeCheck(pVObjectTypeSize, pName);
 	if (oTSCreturned == 0)//rozmiar ok
 	{
 		return 0;
@@ -247,7 +290,8 @@ int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTyp
 		if (typeDataType == 0 && typeSequence == 0)//podstawowy typ, dodac potem sprawdzanie typeChoice itp todo
 		{
 			//todo sprawdzamy domyslne ograniczenia rozmiaru dla typu podstawowego (zmienna type)
-			return 0;
+			short dSCreturned = defaultSizeCheck(type);
+			return dSCreturned;
 		}
 		else if (typeDataType > 0)//typ w data type
 		{
@@ -260,9 +304,10 @@ int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTyp
 			else if (dTSCretuened > 0)//brak ograniczen w DataType
 			{
 				//todo sprawdzamy domyslne ograniczenia rozmiaru dla typu podstawowego (zmienna typeDataType)
-				return 0;
+				short dSCreturned = defaultSizeCheck(type);
+				return dSCreturned;
 			}
-			else if (dTSCretuened < 0)//blad rozmiaru
+			else//blad rozmiaru
 			{
 				return -1;
 			}
@@ -275,19 +320,18 @@ int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTyp
 			{
 				return 0;
 			}
-			else if (sSCreturned > 0)//brak ograniczen
-			{
-
-			}
-			else if (sSCreturned < 0)//blad rozmiaru
+			else//blad rozmiaru
 			{
 				return -1;
 			}
-
 		}
-		//todo kolejne else if do sprawdzania choice'ow itp
+		else
+		{
+			//todo kolejne else if do sprawdzania choice'ow itp
+			return 0;
+		}
 	}
-	else if (oTSCreturned < 0)//blad
+	else//blad
 	{
 		return -1;
 	}
@@ -305,10 +349,38 @@ short CheckValue::objectTypeSizeCheck(vector<ObjectTypeSize> pVObjectTypeSize, s
 	{
 		if (pVObjectTypeSize.at(i).name == pName)
 		{
-			checkSize(pVObjectTypeSize.at(i).size, pVObjectTypeSize.at(i).sizeMin, pVObjectTypeSize.at(i).sizeMax);
+			short cSreturned = checkSize(pVObjectTypeSize.at(i).size, pVObjectTypeSize.at(i).sizeMin, pVObjectTypeSize.at(i).sizeMax);
+			return cSreturned;
 		}
 	}
 	return 1;
+}
+
+short CheckValue::defaultSizeCheck(int pType)
+{
+	short cSreturned;
+	if (type == INTEGER_TAG_NUMBER)
+	{
+		cSreturned = checkSize(-1, INT_MIN, INT_MAX);
+	}
+	else if (type == OCTET_STRING_TAG_NUMBER)
+	{
+		cSreturned = 0;
+	}
+	else if (type == NULL_TAG_NUMBER)
+	{
+		cSreturned = 0;
+	}
+	else if (type == OBJECT_IDENTIFIER_TAG_NUMBER)
+	{
+		cSreturned = 0;
+	}
+	else if (type == SEQUENCE_TAG_NUMBER)
+	{
+		cSreturned = 0;
+	}
+
+	return cSreturned;
 }
 
 short CheckValue::dataTypeSizeCheck(vector<DataType> &pVDataType)
@@ -326,8 +398,16 @@ short CheckValue::sequenceSizeCheck(vector<ObjectTypeSize> &pVObjectTypeSize, ve
 		tmp.setValueParameters(sequenceValues.at(i));
 
 		//todo sprawdzic czy pVSequence.at(indexSequence).type.at(i) jest typu podst. czy data type
-		//jezeli typ podst to nic nie robic
-		//jezeli data type to ustawic tmp.indexDataType oraz tmp.typeDataType na podstawie wartosci zapisanych w sequenceTypeCheck
+		if (sequenceDataTypeIndexes.at(i) == -1)//typ podst.
+		{
+			//todo jezeli typ podst to nic nie robic
+		}
+		else
+		{
+			//todo jezeli data type to ustawic tmp.indexDataType oraz tmp.typeDataType na podstawie wartosci zapisanych w sequenceTypeCheck
+			tmp.indexDataType = sequenceDataTypeIndexes.at(i);
+			tmp.typeDataType = sequenceDefaultTypes.at(i);
+		}
 
 		int returnedValue = tmp.checkValueSize("", pVObjectTypeSize, pVDataType, pVSequence);
 
@@ -336,13 +416,14 @@ short CheckValue::sequenceSizeCheck(vector<ObjectTypeSize> &pVObjectTypeSize, ve
 			return -1;
 		}
 	}
+	return 0;
 }
 
 short CheckValue::checkSize(int pSize, long long pSizeMin, long long pSizeMax)
 {
 	if (pSize != -1)
 	{
-		if (byteCount > pSize)
+		if ((this->byteCount) > pSize)
 		{
 			return -1;
 		}
@@ -354,10 +435,9 @@ short CheckValue::checkSize(int pSize, long long pSizeMin, long long pSizeMax)
 	else if (pSizeMin != -1 && pSizeMax != -1)
 	{
 		//todo zmienic regexa brak rozroznienia SIZE(x..y) od (x..y)
-		//todo co chodzi ze sprawdzeniem isValueNumber
-		if (isValueNumber)
+		if ((this->isValueNumber))
 		{
-			if (byteCount < pSizeMin || byteCount > pSizeMax)
+			if ((this->pValueINT) < pSizeMin || (this->pValueINT) > pSizeMax)
 			{
 				return -2;
 			}
@@ -400,5 +480,3 @@ short CheckValue::checkValue(string pValue, TreeNode *pNode, vector<DataType> &p
 		return -1;
 	}
 }
-
-

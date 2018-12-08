@@ -8,16 +8,19 @@ public:
 	CheckValue();
 	~CheckValue();
 
-	bool isValueNumber;
-	long long pValueINT = LONG_MIN, byteCount, bitCount;
+	bool isValueNumber, isObjectIdentifier;
+	long long pValueINT = LLONG_MIN, byteCount, bitCount;
 	int type = 0, typeDataType = 0, typeSequence = 0;
 	int indexDataType = -1, indexSequence = -1;
 	vector<string> sequenceValues;
+	//przechowuja id typu domysl danego elem. sekwencji lub index typu DataType
+	vector<int> sequenceDefaultTypes, sequenceDataTypeIndexes;
 
 	void setValueParameters(string pValue);
 
 	void checkIsNumber(string pValue);
 	void lengthCalc(string pValue);
+	void checkIsObjectIdentifier(string pValue);
 
 	int checkValueType(string pValue, string pSyntax, vector<DataType> &pVDataType, vector<Sequence> &pVSequence);
 
@@ -28,6 +31,7 @@ public:
 	int checkValueSize(string pName, vector<ObjectTypeSize>& pVObjectTypeSize, vector<DataType> &pVDataType, vector<Sequence> &pVSequence);
 
 	short objectTypeSizeCheck(vector<ObjectTypeSize> pVObjectTypeSize, string pName);
+	short defaultSizeCheck(int pType);
 	short dataTypeSizeCheck(vector<DataType>& pVDataType);
 	short sequenceSizeCheck(vector<ObjectTypeSize> &pVObjectTypeSize, vector<DataType> &pVDataType, vector<Sequence> &pVSequence);
 	short checkSize(int pSize, long long pSizeMin, long long pSizeMax);

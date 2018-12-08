@@ -99,3 +99,8 @@ regex Regex::sequenceOneElement()
 {
 	return regex(R"(\s?(\S*?)\s(.*?),)");
 }
+
+regex Regex::objectIdentifierCheckType()
+{
+	return regex(R"(\d+\.{1})");
+}
