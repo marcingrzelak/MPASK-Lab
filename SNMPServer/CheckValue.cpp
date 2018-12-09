@@ -67,6 +67,7 @@ void CheckValue::checkIsObjectIdentifier(string pValue)
 	while (objectTypeIterator != endIterator)
 	{
 		objectTypeValue += (*objectTypeIterator)[0];
+		++objectTypeIterator;
 	}
 	if (pValue == objectTypeValue)
 	{
@@ -266,7 +267,7 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 					}
 					else if (tmp.typeDataType == 0)//obiekt nie jest typu data type
 					{
-						//todo tu powinnismy sprawdzac kolejny raz sekwencje (rekurancja)??
+						//todo tu powinnismy sprawdzac kolejny raz sekwencje (rekurencja)??
 						return -2;//nie znaleziono zadnego typu
 					}
 				}
@@ -451,7 +452,6 @@ short CheckValue::checkSize(int pSize, long long pSizeMin, long long pSizeMax)
 			//todo jezeli inna wartosc niz integer moze miec ograniczenia rozmiaru x..y to zmienic
 			return 0;
 		}
-
 	}
 	else
 	{
