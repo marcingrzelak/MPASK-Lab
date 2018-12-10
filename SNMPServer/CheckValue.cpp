@@ -60,22 +60,31 @@ void CheckValue::lengthCalc(string pValue)
 
 void CheckValue::checkIsObjectIdentifier(string pValue)
 {
-	string objectTypeValue;
-	pValue += ".";
-	regex rgx = Regex::objectIdentifierCheckType();
-	sregex_iterator objectTypeIterator(pValue.begin(), pValue.end(), rgx), endIterator;
-	while (objectTypeIterator != endIterator)
+	if (isValueNumber == true)
 	{
-		objectTypeValue += (*objectTypeIterator)[0];
-		++objectTypeIterator;
-	}
-	if (pValue == objectTypeValue)
-	{
-		isObjectIdentifier = true;
+		isObjectIdentifier = false;
 	}
 	else
 	{
-		isObjectIdentifier = false;
+		string objectTypeValue;
+		pValue += ".";
+		regex rgx = Regex::objectIdentifierCheckType();
+		sregex_iterator objectTypeIterator(pValue.begin(), pValue.end(), rgx), endIterator;
+		while (objectTypeIterator != endIterator)
+		{
+			objectTypeValue += (*objectTypeIterator)[0];
+			objectIdentifierSubidentifiers.push_back(string((*objectTypeIterator)[0]).substr(0, string((*objectTypeIterator)[0]).size()-1));
+			++objectTypeIterator;
+		}
+		if (pValue == objectTypeValue)
+		{
+			isObjectIdentifier = true;
+		}
+		else
+		{
+			objectIdentifierSubidentifiers.clear();
+			isObjectIdentifier = false;
+		}
 	}
 }
 

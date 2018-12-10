@@ -6,6 +6,7 @@
 #include "Length.h"
 #include "Value.h"
 #include "Regex.h"
+#include "CheckValue.h"
 
 
 BERCoder::BERCoder()
@@ -58,6 +59,12 @@ void BERCoder::setValue(long long pValue, int pLength)
 	value.setValue(pValue, pLength);
 }
 
+unsigned long long BERCoder::setValue(vector<string> pObjectIdentifierSubidentifiers)
+{
+	value.setValue(pObjectIdentifierSubidentifiers);
+	return value.octet.size();
+}
+
 void BERCoder::clearValue()
 {
 	value.octet.clear();
@@ -97,223 +104,244 @@ string BERCoder::concatAllValues(bool pIsValueNumber)
 	return concatedValue.str();
 }
 
-string BERCoder::encode(string pValue)
+string BERCoder::nullEncode()
 {
-	/*
+	setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, IDENTIFIER_TYPE_NULL);
+	setLength(0);
+	string returnString = concatAllValues(false);
+	return returnString;
+}
+
+
+
+string BERCoder::encode(string pValue, CheckValue &pCheckValue, vector<DataType> &pVDataType)
+{
 	clearIdentifier();
 	clearLength();
 	clearValue();
 
 	string encodedValue;
-	int checkTypeStatus, checkSizeStatus;
 
-	checkTypeStatus = checkValueType(pValue, pNode, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
-	if (checkTypeStatus == 0)
+	if (pCheckValue.type == NULL_TAG_NUMBER)
 	{
-		checkSizeStatus = checkValueSize(pValue, pNode, pVObjectTypeSize, pVDataType);
-		if (checkSizeStatus == 0)
+		encodedValue = nullEncode();
+		return encodedValue;
+	}
+	//kodowanie BER
+
+	else if (pCheckValue.indexDataType != -1)
+	{
+		if (pVDataType.at(pCheckValue.indexDataType).keyword.size() == 0) //kodowanie uniwersalne
 		{
-			//kodowanie BER
-			//null
-			if (type == 4)
+			setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(pCheckValue.indexDataType).type);
+			if (!pCheckValue.isObjectIdentifier)
 			{
-				setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, IDENTIFIER_TYPE_NULL);
-				setLength(0);
-				encodedValue = concatAllValues(isValueNumber);
-				return encodedValue;
+				setLength(pCheckValue.byteCount);
 			}
-			//data type
-			for (unsigned int i = 0; i < pVDataType.size(); i++)
+
+			if (pCheckValue.isValueNumber)
 			{
-				if (pNode->syntax.find(pVDataType.at(i).name) != string::npos)
-				{
-					if (pVDataType.at(i).keyword.size() == 0) //kodowanie uniwersalne
-					{
-						setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(i).type);
-						setLength(byteCount);
-						if (isValueNumber)
-						{
-							setValue(pValueINT, byteCount);
-						}
-						else
-						{
-							setValue(pValue);
-						}
-						encodedValue = concatAllValues(isValueNumber);
-						return encodedValue;
-					}
-					else if (pVDataType.at(i).keyword == DATATYPE_KEYWORD_IMPLICIT)
-					{
-						if (pVDataType.at(i).visibility.size() == 0)//brak widocznosci klasy
-						{
-							setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(i).typeID);
-						}
-						else
-						{
-							setIdentifier(pVDataType.at(i).visibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(i).typeID);
-						}
-
-						setLength(byteCount);
-						if (isValueNumber)
-						{
-							setValue(pValueINT, byteCount);
-						}
-						else
-						{
-							setValue(pValue);
-						}
-						encodedValue = concatAllValues(isValueNumber);
-						return encodedValue;
-					}
-					else if (pVDataType.at(i).keyword == DATATYPE_KEYWORD_EXPLICIT)
-					{
-						if (pVDataType.at(i).visibility.size() == 0)//brak widocznosci klasy
-						{
-							setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(i).typeID);
-						}
-						else
-						{
-							setIdentifier(pVDataType.at(i).visibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(i).typeID);
-						}
-
-						BERCoder temp;
-
-						temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(i).type);
-						temp.setLength(byteCount);
-						if (isValueNumber)
-						{
-							temp.setValue(pValueINT, byteCount);
-						}
-						else
-						{
-							temp.setValue(pValue);
-						}
-						string explicitValue = temp.concatAllValues(isValueNumber);
-						isValueNumber = false;
-						string explicitString = explicitValue;
-
-						explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
-						unsigned int explicitLength = explicitString.size() / 2;
-
-						setLength(explicitLength);
-
-						encodedValue = concatAllValues(isValueNumber);
-						return encodedValue + " " + explicitValue;
-					}
-				}
+				setValue(pCheckValue.pValueINT, pCheckValue.byteCount);
 			}
-			//sequence
-			for (size_t i = 0; i < pVSequence.size(); i++)
+			else if (pCheckValue.isObjectIdentifier)
 			{
-				if (pNode->syntax.find(pVSequence.at(i).name) != string::npos)
-				{
-					stringstream test(pValue);
-					string segment;
-					vector<string> seglist;
-
-					while (std::getline(test, segment, ','))
-					{
-						seglist.push_back(segment);
-					}
-					for (size_t j = 0; j < pVSequence.at(i).type.size(); j++)
-					{
-						for (size_t k = 0; k < pVDataType.size(); k++)
-						{
-							if (pVSequence.at(i).type.at(j).find(pVDataType.at(k).name) != string::npos)
-							{
-								if (pVDataType.at(k).keyword.size() == 0) //kodowanie uniwersalne
-								{
-									setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).type);
-									setLength(byteCount);
-									if (isValueNumber)
-									{
-										setValue(pValueINT, byteCount);
-									}
-									else
-									{
-										setValue(pValue);
-									}
-									encodedValue = concatAllValues(isValueNumber);
-									 encodedValue.str()
-								}
-								else if (pVDataType.at(k).keyword == DATATYPE_KEYWORD_IMPLICIT)
-								{
-									if (pVDataType.at(k).visibility.size() == 0)//brak widocznosci klasy
-									{
-										setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).typeID);
-									}
-									else
-									{
-										setIdentifier(pVDataType.at(k).visibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).typeID);
-									}
-
-									setLength(byteCount);
-									if (isValueNumber)
-									{
-										setValue(pValueINT, byteCount);
-									}
-									else
-									{
-										setValue(pValue);
-									}
-									encodedValue = concatAllValues(isValueNumber);
-									 encodedValue.str()
-								}
-								else if (pVDataType.at(k).keyword == DATATYPE_KEYWORD_EXPLICIT)
-								{
-									if (pVDataType.at(k).visibility.size() == 0)//brak widocznosci klasy
-									{
-										setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(k).typeID);
-									}
-									else
-									{
-										setIdentifier(pVDataType.at(k).visibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(k).typeID);
-									}
-
-									BERCoder temp;
-
-									temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).type);
-									temp.setLength(byteCount);
-									if (isValueNumber)
-									{
-										temp.setValue(pValueINT, byteCount);
-									}
-									else
-									{
-										temp.setValue(pValue);
-									}
-									stringstream explicitValue = temp.concatAllValues(isValueNumber);
-									isValueNumber = false;
-									string explicitString = explicitValue.str();
-
-									explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
-									unsigned int explicitLength = explicitString.size() / 2;
-
-									setLength(explicitLength);
-
-									encodedValue = concatAllValues(isValueNumber);
-									 encodedValue.str() + " " + explicitValue.str()
-								}
-							}
-						}
-						BERCoder tmp;
-						tmp.setIdentifier
-					}
-
-				}
+				unsigned long long tmp = setValue(pCheckValue.objectIdentifierSubidentifiers);
+				setLength(tmp);
 			}
+			else
+			{
+				setValue(pValue);
+			}
+			encodedValue = concatAllValues(pCheckValue.isValueNumber);
+			return encodedValue;
 		}
+		else if (pVDataType.at(pCheckValue.indexDataType).keyword == DATATYPE_KEYWORD_IMPLICIT)
+		{
+			if (pVDataType.at(pCheckValue.indexDataType).visibility.size() == 0)//brak widocznosci klasy
+			{
+				setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(pCheckValue.indexDataType).typeID);
+			}
+			else
+			{
+				setIdentifier(pVDataType.at(pCheckValue.indexDataType).visibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(pCheckValue.indexDataType).typeID);
+			}
+
+			if (!pCheckValue.isObjectIdentifier)
+			{
+				setLength(pCheckValue.byteCount);
+			}
+
+			if (pCheckValue.isValueNumber)
+			{
+				setValue(pCheckValue.pValueINT, pCheckValue.byteCount);
+			}
+			else if (pCheckValue.isObjectIdentifier)
+			{
+				unsigned long long tmp = setValue(pCheckValue.objectIdentifierSubidentifiers);
+				setLength(tmp);
+			}
+			else
+			{
+				setValue(pValue);
+			}
+			encodedValue = concatAllValues(pCheckValue.isValueNumber);
+			return encodedValue;
+		}
+		else if (pVDataType.at(pCheckValue.indexDataType).keyword == DATATYPE_KEYWORD_EXPLICIT)
+		{
+			if (pVDataType.at(pCheckValue.indexDataType).visibility.size() == 0)//brak widocznosci klasy
+			{
+				setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(pCheckValue.indexDataType).typeID);
+			}
+			else
+			{
+				setIdentifier(pVDataType.at(pCheckValue.indexDataType).visibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(pCheckValue.indexDataType).typeID);
+			}
+
+			BERCoder temp;
+
+			temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(pCheckValue.indexDataType).type);
+			if (!pCheckValue.isObjectIdentifier)
+			{
+				temp.setLength(pCheckValue.byteCount);
+			}
+			if (pCheckValue.isValueNumber)
+			{
+				temp.setValue(pCheckValue.pValueINT, pCheckValue.byteCount);
+			}
+			else if (pCheckValue.isObjectIdentifier)
+			{
+				unsigned long long tmp = temp.setValue(pCheckValue.objectIdentifierSubidentifiers);
+				temp.setLength(tmp);
+			}
+			else
+			{
+				temp.setValue(pValue);
+			}
+			string explicitValue = temp.concatAllValues(pCheckValue.isValueNumber);
+			string explicitString = explicitValue;
+
+			explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
+			unsigned int explicitLength = explicitString.size() / 2;
+
+			setLength(explicitLength);
+
+			encodedValue = concatAllValues(false);
+			return encodedValue + " " + explicitValue;
+		}
+	}
+
+	//sequence
+	/*
+	for (size_t i = 0; i < pVSequence.size(); i++)
+	{
+		if (pNode->syntax.find(pVSequence.at(i).name) != string::npos)
+		{
+			stringstream test(pValue);
+			string segment;
+			vector<string> seglist;
+
+			while (std::getline(test, segment, ','))
+			{
+				seglist.push_back(segment);
+			}
+			for (size_t j = 0; j < pVSequence.at(i).type.size(); j++)
+			{
+				for (size_t k = 0; k < pVDataType.size(); k++)
+				{
+					if (pVSequence.at(i).type.at(j).find(pVDataType.at(k).name) != string::npos)
+					{
+						if (pVDataType.at(k).keyword.size() == 0) //kodowanie uniwersalne
+						{
+							setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).type);
+							setLength(byteCount);
+							if (isValueNumber)
+							{
+								setValue(pValueINT, byteCount);
+							}
+							else
+							{
+								setValue(pValue);
+							}
+							encodedValue = concatAllValues(isValueNumber);
+							encodedValue.str()
+						}
+						else if (pVDataType.at(k).keyword == DATATYPE_KEYWORD_IMPLICIT)
+						{
+							if (pVDataType.at(k).visibility.size() == 0)//brak widocznosci klasy
+							{
+								setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).typeID);
+							}
+							else
+							{
+								setIdentifier(pVDataType.at(k).visibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).typeID);
+							}
+
+							setLength(byteCount);
+							if (isValueNumber)
+							{
+								setValue(pValueINT, byteCount);
+							}
+							else
+							{
+								setValue(pValue);
+							}
+							encodedValue = concatAllValues(isValueNumber);
+							encodedValue.str()
+						}
+						else if (pVDataType.at(k).keyword == DATATYPE_KEYWORD_EXPLICIT)
+						{
+							if (pVDataType.at(k).visibility.size() == 0)//brak widocznosci klasy
+							{
+								setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(k).typeID);
+							}
+							else
+							{
+								setIdentifier(pVDataType.at(k).visibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(k).typeID);
+							}
+
+							BERCoder temp;
+
+							temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).type);
+							temp.setLength(byteCount);
+							if (isValueNumber)
+							{
+								temp.setValue(pValueINT, byteCount);
+							}
+							else
+							{
+								temp.setValue(pValue);
+							}
+							stringstream explicitValue = temp.concatAllValues(isValueNumber);
+							isValueNumber = false;
+							string explicitString = explicitValue.str();
+
+							explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
+							unsigned int explicitLength = explicitString.size() / 2;
+
+							setLength(explicitLength);
+
+							encodedValue = concatAllValues(isValueNumber);
+							encodedValue.str() + " " + explicitValue.str()
+						}
+					}
+				}
+				BERCoder tmp;
+				tmp.setIdentifier
+			}
+
+		}
+	}
+}
 		else
 		{
-			//todo blad rozmiaru
+		//todo blad rozmiaru
 		}
 	}
 	else
 	{
-		//todo blad typu
+	//todo blad typu
 	}
 	*/
 	return "test";
-
-	
 }

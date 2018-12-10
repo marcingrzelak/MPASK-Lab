@@ -12,5 +12,7 @@ public:
 
 	void setValue(string pValue);
 	void setValue(long long pValue, int pLength);
+	void setValue(vector<string> pObjectIdentifierSubidentifiers);
+	void valueObjectIdentifier(int pSubidentifier);
 };
 

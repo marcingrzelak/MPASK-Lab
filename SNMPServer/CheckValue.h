@@ -12,7 +12,7 @@ public:
 	long long pValueINT = LLONG_MIN, byteCount, bitCount;
 	int type = 0, typeDataType = 0, typeSequence = 0;
 	int indexDataType = -1, indexSequence = -1;
-	vector<string> sequenceValues;
+	vector<string> sequenceValues, objectIdentifierSubidentifiers;
 	//przechowuja id typu domysl danego elem. sekwencji lub index typu DataType
 	vector<int> sequenceDefaultTypes, sequenceDataTypeIndexes;
 

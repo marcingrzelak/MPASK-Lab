@@ -4,6 +4,7 @@
 #include "Value.h"
 #include "TreeStructure.h"
 #include "DataStructures.h"
+#include "CheckValue.h"
 
 class BERCoder
 {
@@ -25,8 +26,12 @@ public:
 
 	void setValue(string pValue);
 	void setValue(long long pValue, int pLength);
+	unsigned long long setValue(vector<string> pObjectIdentifierSubidentifiers);
 	void clearValue();
 
 	string concatAllValues(bool pIsValueNumber);
-	string encode(string pValue);
+	string nullEncode();
+
+
+	string encode(string pValue, CheckValue &pCheckValue, vector<DataType> &pVDataType);
 };
