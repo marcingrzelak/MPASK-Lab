@@ -32,6 +32,5 @@ public:
 	string concatAllValues(bool pIsValueNumber);
 	string nullEncode();
 
-
-	string encode(string pValue, CheckValue &pCheckValue, vector<DataType> &pVDataType);
+	string encode(string pValue, int pType, int pTypeID, long long pByteCount, string pKeyword, string pVisibility, vector<string> pSequenceValues, vector<int> pSequenceTypes, vector<int> pSequenceTypeID, vector<long long> pSequenceBytesCount, vector<string> pSequenceKeywords, vector<string> pSequenceVisibilities);
 };

@@ -125,7 +125,7 @@ int CheckValue::checkValueType(string pValue, string pSyntax, vector<DataType> &
 			{
 				return -1;
 			}
-			else if (typeSequence > 0)
+			else if (typeSequence > 0)//jest ok
 			{
 				return 0;
 			}
@@ -259,8 +259,12 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 					//todo zapisac returnedType
 					sequenceDefaultTypes.push_back(returnedType);
 					sequenceDataTypeIndexes.push_back(-1);
+					sequenceTypeID.push_back(NULL);
+					sequenceBytesCount.push_back(tmp.byteCount);
+					sequenceKeywords.push_back("");
+					sequenceVisibilities.push_back(IDENTIFIER_CLASS_UNIVERSAL);
 				}
-				else if (type == 0)//niepodstawowy typ danych
+				else if (returnedType == 0)//niepodstawowy typ danych
 				{
 					//sprawdzamy czy obiekt jest typu data type
 					tmp.typeDataType = tmp.dataTypeCheck(sequenceValues.at(j), pVSequence.at(i).type.at(j), pVDataType);
@@ -273,6 +277,10 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 						//todo zapisac tmp.indexDataType oraz tmp.typeDataType
 						sequenceDefaultTypes.push_back(tmp.typeDataType);
 						sequenceDataTypeIndexes.push_back(tmp.indexDataType);
+						sequenceTypeID.push_back(pVDataType.at(indexDataType).typeID);
+						sequenceBytesCount.push_back(tmp.byteCount);
+						sequenceKeywords.push_back(pVDataType.at(indexDataType).keyword);
+						sequenceVisibilities.push_back(pVDataType.at(indexDataType).visibility);
 					}
 					else if (tmp.typeDataType == 0)//obiekt nie jest typu data type
 					{

@@ -112,113 +112,136 @@ string BERCoder::nullEncode()
 	return returnString;
 }
 
-
-
-string BERCoder::encode(string pValue, CheckValue &pCheckValue, vector<DataType> &pVDataType)
+string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCount, string pKeyword, string pVisibility, vector<string> pSequenceValues, vector<int> pSequenceTypes, vector<int> pSequenceTypeID, vector<long long> pSequenceBytesCount, vector<string> pSequenceKeywords, vector<string> pSequenceVisibilities)
 {
 	clearIdentifier();
 	clearLength();
 	clearValue();
 
-	string encodedValue;
+	string typeName, encodedValue;
+	vector<string> pObjectIdentifierSubidentifiers;
+	long long valueINT;
 
-	if (pCheckValue.type == NULL_TAG_NUMBER)
+	if (pType == INTEGER_TAG_NUMBER)
+	{
+		valueINT = stoll(pValue);
+		typeName = IDENTIFIER_TYPE_INTEGER;
+	}
+
+	else if (pType == OBJECT_IDENTIFIER_TAG_NUMBER)
+	{
+		stringstream test(pValue);
+		string segment;
+
+		while (std::getline(test, segment, '.'))
+		{
+			pObjectIdentifierSubidentifiers.push_back(segment);
+		}
+		typeName = IDENTIFIER_TYPE_OBJECT_IDENTIFIER;
+	}
+
+	else if (pType == OCTET_STRING_TAG_NUMBER)
+	{
+		typeName = IDENTIFIER_TYPE_OCTET_STRING;
+	}
+
+	else if (pType == NULL_TAG_NUMBER)
 	{
 		encodedValue = nullEncode();
 		return encodedValue;
 	}
+
 	//kodowanie BER
-
-	else if (pCheckValue.indexDataType != -1)
+	if (pType != SEQUENCE_TAG_NUMBER)
 	{
-		if (pVDataType.at(pCheckValue.indexDataType).keyword.size() == 0) //kodowanie uniwersalne
+		if (pKeyword.size() == 0) //kodowanie uniwersalne
 		{
-			setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(pCheckValue.indexDataType).type);
-			if (!pCheckValue.isObjectIdentifier)
+			setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
-				setLength(pCheckValue.byteCount);
+				setLength(pByteCount);
 			}
 
-			if (pCheckValue.isValueNumber)
+			if (pType == INTEGER_TAG_NUMBER)
 			{
-				setValue(pCheckValue.pValueINT, pCheckValue.byteCount);
+				setValue(valueINT, pByteCount);
 			}
-			else if (pCheckValue.isObjectIdentifier)
+			else if (pType == OBJECT_IDENTIFIER_TAG_NUMBER)
 			{
-				unsigned long long tmp = setValue(pCheckValue.objectIdentifierSubidentifiers);
+				unsigned long long tmp = setValue(pObjectIdentifierSubidentifiers);
 				setLength(tmp);
 			}
 			else
 			{
 				setValue(pValue);
 			}
-			encodedValue = concatAllValues(pCheckValue.isValueNumber);
+			encodedValue = concatAllValues(pType == INTEGER_TAG_NUMBER);
 			return encodedValue;
 		}
-		else if (pVDataType.at(pCheckValue.indexDataType).keyword == DATATYPE_KEYWORD_IMPLICIT)
+		else if (pKeyword == DATATYPE_KEYWORD_IMPLICIT)
 		{
-			if (pVDataType.at(pCheckValue.indexDataType).visibility.size() == 0)//brak widocznosci klasy
+			if (pVisibility.size() == 0)//brak widocznosci klasy
 			{
-				setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(pCheckValue.indexDataType).typeID);
+				setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
 			}
 			else
 			{
-				setIdentifier(pVDataType.at(pCheckValue.indexDataType).visibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(pCheckValue.indexDataType).typeID);
+				setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
 			}
 
-			if (!pCheckValue.isObjectIdentifier)
+			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
-				setLength(pCheckValue.byteCount);
+				setLength(pByteCount);
 			}
 
-			if (pCheckValue.isValueNumber)
+			if (pType == INTEGER_TAG_NUMBER)
 			{
-				setValue(pCheckValue.pValueINT, pCheckValue.byteCount);
+				setValue(valueINT, pByteCount);
 			}
-			else if (pCheckValue.isObjectIdentifier)
+			else if (pType == OBJECT_IDENTIFIER_TAG_NUMBER)
 			{
-				unsigned long long tmp = setValue(pCheckValue.objectIdentifierSubidentifiers);
+				unsigned long long tmp = setValue(pObjectIdentifierSubidentifiers);
 				setLength(tmp);
 			}
 			else
 			{
 				setValue(pValue);
 			}
-			encodedValue = concatAllValues(pCheckValue.isValueNumber);
+			encodedValue = concatAllValues(pType == INTEGER_TAG_NUMBER);
 			return encodedValue;
 		}
-		else if (pVDataType.at(pCheckValue.indexDataType).keyword == DATATYPE_KEYWORD_EXPLICIT)
+		else if (pKeyword == DATATYPE_KEYWORD_EXPLICIT)
 		{
-			if (pVDataType.at(pCheckValue.indexDataType).visibility.size() == 0)//brak widocznosci klasy
+			if (pVisibility.size() == 0)//brak widocznosci klasy
 			{
-				setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(pCheckValue.indexDataType).typeID);
+				setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
 			}
 			else
 			{
-				setIdentifier(pVDataType.at(pCheckValue.indexDataType).visibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(pCheckValue.indexDataType).typeID);
+				setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
 			}
 
 			BERCoder temp;
 
-			temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(pCheckValue.indexDataType).type);
-			if (!pCheckValue.isObjectIdentifier)
+			temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
-				temp.setLength(pCheckValue.byteCount);
+				temp.setLength(pByteCount);
 			}
-			if (pCheckValue.isValueNumber)
+			if (pType == INTEGER_TAG_NUMBER)
 			{
-				temp.setValue(pCheckValue.pValueINT, pCheckValue.byteCount);
+				temp.setValue(valueINT, pByteCount);
 			}
-			else if (pCheckValue.isObjectIdentifier)
+			else if (pType == OBJECT_IDENTIFIER_TAG_NUMBER)
 			{
-				unsigned long long tmp = temp.setValue(pCheckValue.objectIdentifierSubidentifiers);
+				unsigned long long tmp = temp.setValue(pObjectIdentifierSubidentifiers);
 				temp.setLength(tmp);
 			}
 			else
 			{
 				temp.setValue(pValue);
 			}
-			string explicitValue = temp.concatAllValues(pCheckValue.isValueNumber);
+			string explicitValue = temp.concatAllValues(pType == INTEGER_TAG_NUMBER);
 			string explicitString = explicitValue;
 
 			explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
@@ -229,6 +252,19 @@ string BERCoder::encode(string pValue, CheckValue &pCheckValue, vector<DataType>
 			encodedValue = concatAllValues(false);
 			return encodedValue + " " + explicitValue;
 		}
+	}
+	else
+	{
+		setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_CONSTRUCTED, SEQUENCE_TAG_NUMBER);
+		string allSequenceValuesEncoded = "";
+
+		for (size_t i = 0; i < pSequenceValues.size(); i++)
+		{	
+			allSequenceValuesEncoded += encode(pSequenceValues.at(i), pSequenceTypes.at(i), pSequenceTypeID.at(i), pSequenceBytesCount.at(i), pSequenceKeywords.at(i), pSequenceVisibilities.at(i), pSequenceValues, pSequenceTypes, pSequenceTypeID, pSequenceBytesCount, pSequenceKeywords, pSequenceVisibilities);
+		}
+		setValue(allSequenceValuesEncoded);
+		allSequenceValuesEncoded.erase(remove_if(allSequenceValuesEncoded.begin(), allSequenceValuesEncoded.end(), isspace), allSequenceValuesEncoded.end());
+		setLength(allSequenceValuesEncoded.size() / 2);
 	}
 
 	//sequence
