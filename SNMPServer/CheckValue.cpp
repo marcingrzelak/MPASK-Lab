@@ -16,6 +16,28 @@ CheckValue::~CheckValue()
 }
 
 
+void CheckValue::clearValues()
+{
+	isValueNumber = false;
+	isObjectIdentifier = false;
+	pValueINT = LLONG_MIN;
+	byteCount = 0;
+	bitCount = 0;
+	type = 0;
+	typeDataType = 0;
+	typeSequence = 0;
+	indexDataType = -1;
+	indexSequence = -1;
+	sequenceValues.clear();
+	objectIdentifierSubidentifiers.clear();
+	sequenceDefaultTypes.clear();
+	sequenceDataTypeIndexes.clear();
+	sequenceTypeID.clear();
+	sequenceBytesCount.clear();
+	sequenceKeywords.clear();
+	sequenceVisibilities.clear();
+}
+
 void CheckValue::setValueParameters(string pValue)
 {
 	checkIsNumber(pValue);
@@ -236,6 +258,12 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 				sequenceValues.push_back(segment);
 			}
 
+			//czy ilosc wartosci zgadza sie iloscia w sekwencji
+			if (sequenceValues.size() != pVSequence.at(i).type.size())
+			{
+				return -1;
+			}
+
 			//mamy dwie opcje
 			//1. SYNTAX  IpRouteEntry
 			//2. SYNTAX  SEQUENCE OF IpRouteEntry
@@ -277,10 +305,10 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 						//todo zapisac tmp.indexDataType oraz tmp.typeDataType
 						sequenceDefaultTypes.push_back(tmp.typeDataType);
 						sequenceDataTypeIndexes.push_back(tmp.indexDataType);
-						sequenceTypeID.push_back(pVDataType.at(indexDataType).typeID);
+						sequenceTypeID.push_back(pVDataType.at(tmp.indexDataType).typeID);
 						sequenceBytesCount.push_back(tmp.byteCount);
-						sequenceKeywords.push_back(pVDataType.at(indexDataType).keyword);
-						sequenceVisibilities.push_back(pVDataType.at(indexDataType).visibility);
+						sequenceKeywords.push_back(pVDataType.at(tmp.indexDataType).keyword);
+						sequenceVisibilities.push_back(pVDataType.at(tmp.indexDataType).visibility);
 					}
 					else if (tmp.typeDataType == 0)//obiekt nie jest typu data type
 					{
@@ -288,7 +316,7 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 						return -2;//nie znaleziono zadnego typu
 					}
 				}
-				return -2;//nie znaleziono zadnego typu
+				//return -2;//nie znaleziono zadnego typu
 			}
 			return 1;
 		}
@@ -419,12 +447,14 @@ short CheckValue::sequenceSizeCheck(vector<ObjectTypeSize> &pVObjectTypeSize, ve
 		if (sequenceDataTypeIndexes.at(i) == -1)//typ podst.
 		{
 			//todo jezeli typ podst to nic nie robic
+			tmp.type = sequenceDefaultTypes.at(i);
 		}
 		else
 		{
 			//todo jezeli data type to ustawic tmp.indexDataType oraz tmp.typeDataType na podstawie wartosci zapisanych w sequenceTypeCheck
 			tmp.indexDataType = sequenceDataTypeIndexes.at(i);
 			tmp.typeDataType = sequenceDefaultTypes.at(i);
+			tmp.type = sequenceDefaultTypes.at(i);
 		}
 
 		int returnedValue = tmp.checkValueSize("", pVObjectTypeSize, pVDataType, pVSequence);
@@ -479,6 +509,7 @@ short CheckValue::checkSize(int pSize, long long pSizeMin, long long pSizeMax)
 
 short CheckValue::checkValue(string pValue, TreeNode *pNode, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
 {
+	clearValues();
 	int cVTreturned = checkValueType(pValue, pNode->syntax, pVDataType, pVSequence);
 	if (cVTreturned == 0)//typ ok
 	{

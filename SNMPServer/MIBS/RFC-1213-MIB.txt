@@ -618,7 +618,7 @@ AtEntry ::=
         atPhysAddress
             PhysAddress,
         atNetAddress
-            NetworkAddress
+            IpAddress
     }
 
 atIfIndex OBJECT-TYPE

@@ -156,24 +156,24 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 	{
 		if (pKeyword.size() == 0) //kodowanie uniwersalne
 		{
-			setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			this->setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
 			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
-				setLength(pByteCount);
+				this->setLength(pByteCount);
 			}
 
 			if (pType == INTEGER_TAG_NUMBER)
 			{
-				setValue(valueINT, pByteCount);
+				this->setValue(valueINT, pByteCount);
 			}
 			else if (pType == OBJECT_IDENTIFIER_TAG_NUMBER)
 			{
-				unsigned long long tmp = setValue(pObjectIdentifierSubidentifiers);
-				setLength(tmp);
+				unsigned long long tmp = this->setValue(pObjectIdentifierSubidentifiers);
+				this->setLength(tmp);
 			}
 			else
 			{
-				setValue(pValue);
+				this->setValue(pValue);
 			}
 			encodedValue = concatAllValues(pType == INTEGER_TAG_NUMBER);
 			return encodedValue;
@@ -182,30 +182,30 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 		{
 			if (pVisibility.size() == 0)//brak widocznosci klasy
 			{
-				setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+				this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
 			}
 			else
 			{
-				setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+				this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
 			}
 
 			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
-				setLength(pByteCount);
+				this->setLength(pByteCount);
 			}
 
 			if (pType == INTEGER_TAG_NUMBER)
 			{
-				setValue(valueINT, pByteCount);
+				this->setValue(valueINT, pByteCount);
 			}
 			else if (pType == OBJECT_IDENTIFIER_TAG_NUMBER)
 			{
-				unsigned long long tmp = setValue(pObjectIdentifierSubidentifiers);
-				setLength(tmp);
+				unsigned long long tmp = this->setValue(pObjectIdentifierSubidentifiers);
+				this->setLength(tmp);
 			}
 			else
 			{
-				setValue(pValue);
+				this->setValue(pValue);
 			}
 			encodedValue = concatAllValues(pType == INTEGER_TAG_NUMBER);
 			return encodedValue;
@@ -214,11 +214,11 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 		{
 			if (pVisibility.size() == 0)//brak widocznosci klasy
 			{
-				setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
 			}
 			else
 			{
-				setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
 			}
 
 			BERCoder temp;
@@ -247,7 +247,7 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 			explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
 			unsigned int explicitLength = explicitString.size() / 2;
 
-			setLength(explicitLength);
+			this->setLength(explicitLength);
 
 			encodedValue = concatAllValues(false);
 			return encodedValue + " " + explicitValue;
@@ -255,129 +255,29 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 	}
 	else
 	{
-		setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_CONSTRUCTED, SEQUENCE_TAG_NUMBER);
 		string allSequenceValuesEncoded = "";
 
 		for (size_t i = 0; i < pSequenceValues.size(); i++)
 		{	
+			if (i>0)
+			{
+				allSequenceValuesEncoded += " ";
+			}
 			allSequenceValuesEncoded += encode(pSequenceValues.at(i), pSequenceTypes.at(i), pSequenceTypeID.at(i), pSequenceBytesCount.at(i), pSequenceKeywords.at(i), pSequenceVisibilities.at(i), pSequenceValues, pSequenceTypes, pSequenceTypeID, pSequenceBytesCount, pSequenceKeywords, pSequenceVisibilities);
 		}
-		setValue(allSequenceValuesEncoded);
-		allSequenceValuesEncoded.erase(remove_if(allSequenceValuesEncoded.begin(), allSequenceValuesEncoded.end(), isspace), allSequenceValuesEncoded.end());
-		setLength(allSequenceValuesEncoded.size() / 2);
+		string allSequenceValuesEncodedString = allSequenceValuesEncoded;
+		allSequenceValuesEncodedString.erase(remove_if(allSequenceValuesEncodedString.begin(), allSequenceValuesEncodedString.end(), isspace), allSequenceValuesEncodedString.end());
+		
+		//todo prechodzenie wartosci z ostatniego elementu sekwencji
+		clearIdentifier();
+		clearLength();
+		clearValue();
+
+		this->setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_CONSTRUCTED, SEQUENCE_TAG_NUMBER);
+		this->setLength(allSequenceValuesEncodedString.size() / 2);
+
+		encodedValue = concatAllValues(false);
+		return encodedValue + " " + allSequenceValuesEncoded;
 	}
-
-	//sequence
-	/*
-	for (size_t i = 0; i < pVSequence.size(); i++)
-	{
-		if (pNode->syntax.find(pVSequence.at(i).name) != string::npos)
-		{
-			stringstream test(pValue);
-			string segment;
-			vector<string> seglist;
-
-			while (std::getline(test, segment, ','))
-			{
-				seglist.push_back(segment);
-			}
-			for (size_t j = 0; j < pVSequence.at(i).type.size(); j++)
-			{
-				for (size_t k = 0; k < pVDataType.size(); k++)
-				{
-					if (pVSequence.at(i).type.at(j).find(pVDataType.at(k).name) != string::npos)
-					{
-						if (pVDataType.at(k).keyword.size() == 0) //kodowanie uniwersalne
-						{
-							setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).type);
-							setLength(byteCount);
-							if (isValueNumber)
-							{
-								setValue(pValueINT, byteCount);
-							}
-							else
-							{
-								setValue(pValue);
-							}
-							encodedValue = concatAllValues(isValueNumber);
-							encodedValue.str()
-						}
-						else if (pVDataType.at(k).keyword == DATATYPE_KEYWORD_IMPLICIT)
-						{
-							if (pVDataType.at(k).visibility.size() == 0)//brak widocznosci klasy
-							{
-								setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).typeID);
-							}
-							else
-							{
-								setIdentifier(pVDataType.at(k).visibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).typeID);
-							}
-
-							setLength(byteCount);
-							if (isValueNumber)
-							{
-								setValue(pValueINT, byteCount);
-							}
-							else
-							{
-								setValue(pValue);
-							}
-							encodedValue = concatAllValues(isValueNumber);
-							encodedValue.str()
-						}
-						else if (pVDataType.at(k).keyword == DATATYPE_KEYWORD_EXPLICIT)
-						{
-							if (pVDataType.at(k).visibility.size() == 0)//brak widocznosci klasy
-							{
-								setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(k).typeID);
-							}
-							else
-							{
-								setIdentifier(pVDataType.at(k).visibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pVDataType.at(k).typeID);
-							}
-
-							BERCoder temp;
-
-							temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, pVDataType.at(k).type);
-							temp.setLength(byteCount);
-							if (isValueNumber)
-							{
-								temp.setValue(pValueINT, byteCount);
-							}
-							else
-							{
-								temp.setValue(pValue);
-							}
-							stringstream explicitValue = temp.concatAllValues(isValueNumber);
-							isValueNumber = false;
-							string explicitString = explicitValue.str();
-
-							explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
-							unsigned int explicitLength = explicitString.size() / 2;
-
-							setLength(explicitLength);
-
-							encodedValue = concatAllValues(isValueNumber);
-							encodedValue.str() + " " + explicitValue.str()
-						}
-					}
-				}
-				BERCoder tmp;
-				tmp.setIdentifier
-			}
-
-		}
-	}
-}
-		else
-		{
-		//todo blad rozmiaru
-		}
-	}
-	else
-	{
-	//todo blad typu
-	}
-	*/
-	return "test";
+	return "";
 }

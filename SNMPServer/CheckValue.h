@@ -19,6 +19,7 @@ public:
 	vector<long long> sequenceBytesCount;
 	vector<string> sequenceKeywords, sequenceVisibilities;
 
+	void clearValues();
 	void setValueParameters(string pValue);
 
 	void checkIsNumber(string pValue);
