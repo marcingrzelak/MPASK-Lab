@@ -175,7 +175,7 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 			{
 				this->setValue(pValue);
 			}
-			encodedValue = concatAllValues(pType == INTEGER_TAG_NUMBER);
+			encodedValue = concatAllValues(pType == INTEGER_TAG_NUMBER || pType == OBJECT_IDENTIFIER_TAG_NUMBER);
 			return encodedValue;
 		}
 		else if (pKeyword == DATATYPE_KEYWORD_IMPLICIT)
@@ -207,7 +207,7 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 			{
 				this->setValue(pValue);
 			}
-			encodedValue = concatAllValues(pType == INTEGER_TAG_NUMBER);
+			encodedValue = concatAllValues(pType == INTEGER_TAG_NUMBER || pType == OBJECT_IDENTIFIER_TAG_NUMBER);
 			return encodedValue;
 		}
 		else if (pKeyword == DATATYPE_KEYWORD_EXPLICIT)
@@ -241,7 +241,7 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 			{
 				temp.setValue(pValue);
 			}
-			string explicitValue = temp.concatAllValues(pType == INTEGER_TAG_NUMBER);
+			string explicitValue = temp.concatAllValues(pType == INTEGER_TAG_NUMBER || pType == OBJECT_IDENTIFIER_TAG_NUMBER);
 			string explicitString = explicitValue;
 
 			explicitString.erase(remove_if(explicitString.begin(), explicitString.end(), isspace), explicitString.end());
