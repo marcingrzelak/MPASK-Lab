@@ -77,7 +77,7 @@ void Identifier::setTag(unsigned long pTag)
 	{
 		firstOctet |= IDENTIFIER_TAG_LONG;
 		uint8_t x = 0, octet = 0;
-		int i = 31;
+		int i = 31;//4 bajty
 		unsigned int bitCounter = 0;
 		bool flag = false;
 		while (i >= 0)

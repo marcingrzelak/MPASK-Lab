@@ -32,5 +32,8 @@ public:
 	string concatAllValues(bool pIsValueNumber);
 	string nullEncode();
 
-	string encode(string pValue, int pType, int pTypeID, long long pByteCount, string pKeyword, string pVisibility, vector<string> pSequenceValues, vector<int> pSequenceTypes, vector<int> pSequenceTypeID, vector<long long> pSequenceBytesCount, vector<string> pSequenceKeywords, vector<string> pSequenceVisibilities);
+	string encode(string pValue, int pType, int pTypeID, unsigned long long pByteCount, string pKeyword, string pVisibility, vector<string> pSequenceValues, vector<int> pSequenceTypes, vector<int> pSequenceTypeID, vector<unsigned long long> pSequenceBytesCount, vector<string> pSequenceKeywords, vector<string> pSequenceVisibilities);
+
+	string treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize);
+	string anyValueEncoding(string encodedValue, bool isSequence);
 };

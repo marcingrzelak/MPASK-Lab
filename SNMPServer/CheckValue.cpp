@@ -75,6 +75,10 @@ void CheckValue::lengthCalc(string pValue)
 		{
 			bitCount = floor(log2(abs(pValueINT)) + 1);
 		}
+		else if (pValueINT == 0)
+		{
+			bitCount = 0;
+		}
 		else
 		{
 			bitCount = floor(log2(abs(pValueINT)) + 1) + 1;
@@ -94,13 +98,15 @@ void CheckValue::checkIsObjectIdentifier(string pValue)
 	pValue += ".";
 	regex rgx = Regex::objectIdentifierCheckType();
 	sregex_iterator objectTypeIterator(pValue.begin(), pValue.end(), rgx), endIterator;
+	int i = 0;
 	while (objectTypeIterator != endIterator)
 	{
 		objectTypeValue += (*objectTypeIterator)[0];
 		objectIdentifierSubidentifiers.push_back(string((*objectTypeIterator)[0]).substr(0, string((*objectTypeIterator)[0]).size() - 1));
 		++objectTypeIterator;
+		++i;
 	}
-	if (pValue == objectTypeValue)
+	if (pValue == objectTypeValue && i > 2)
 	{
 		isObjectIdentifier = true;
 	}
@@ -163,6 +169,24 @@ int CheckValue::checkValueType(string pValue, string pSyntax, vector<DataType> &
 	return -2;//nie znaleziono zadnego typu
 }
 
+int CheckValue::checkValueType(string pValue, string pSyntax)
+{
+	type = 0;
+
+	setValueParameters(pValue);
+
+	type = defaultTypeCheck(pSyntax, isValueNumber);
+
+	if (type <= 0)//blad typu danych
+	{
+		return -1;
+	}
+	else if (type > 0)//podstawowy typ danych
+	{
+		return 0;
+	}
+}
+
 short CheckValue::defaultTypeCheck(string pSyntax, bool &isValueNumber)
 {
 	//sprawdzamy czy podany obiekt ma jeden z domyslnych typow
@@ -204,7 +228,8 @@ short CheckValue::defaultTypeCheck(string pSyntax, bool &isValueNumber)
 		{
 			if ((this->byteCount) > 0)
 			{
-				return -3;
+				//return -3;
+				return NULL_TAG_NUMBER;
 			}
 			else
 			{
@@ -383,6 +408,13 @@ int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTyp
 	{
 		return -1;
 	}
+}
+
+int CheckValue::checkValueSize()
+{
+	//todo sprawdzanie zakresow podanych przez uzytkownika
+	short dSCreturned = defaultSizeCheck(type);
+	return dSCreturned;
 }
 
 short CheckValue::objectTypeSizeCheck(vector<ObjectTypeSize> pVObjectTypeSize, string pName)

@@ -20,9 +20,16 @@ void Value::setValue(string pValue)
 
 void Value::setValue(long long pValue, int pLength)
 {
-	for (int i = pLength - 1; i >= 0; i--)
+	if (pLength == 0)
 	{
-		octet.push_back((pValue >> (8 * i)) & 0xff);
+		octet.push_back(0);
+	}
+	else
+	{
+		for (int i = pLength - 1; i >= 0; i--)
+		{
+			octet.push_back((pValue >> (8 * i)) & 0xff);
+		}
 	}
 }
 
@@ -46,7 +53,7 @@ void Value::valueObjectIdentifier(int pSubidentifier)
 	if (pSubidentifier > 127)
 	{
 		uint8_t x = 0, oneOctet = 0;
-		int i = 127;
+		int i = 31;//4 bajty
 		unsigned int bitCounter = 0;
 		bool flag = false;
 		while (i >= 0)

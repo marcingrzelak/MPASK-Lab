@@ -112,7 +112,7 @@ string BERCoder::nullEncode()
 	return returnString;
 }
 
-string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCount, string pKeyword, string pVisibility, vector<string> pSequenceValues, vector<int> pSequenceTypes, vector<int> pSequenceTypeID, vector<long long> pSequenceBytesCount, vector<string> pSequenceKeywords, vector<string> pSequenceVisibilities)
+string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long long pByteCount, string pKeyword, string pVisibility, vector<string> pSequenceValues, vector<int> pSequenceTypes, vector<int> pSequenceTypeID, vector<unsigned long long> pSequenceBytesCount, vector<string> pSequenceKeywords, vector<string> pSequenceVisibilities)
 {
 	clearIdentifier();
 	clearLength();
@@ -258,17 +258,25 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 		string allSequenceValuesEncoded = "";
 
 		for (size_t i = 0; i < pSequenceValues.size(); i++)
-		{	
-			if (i>0)
+		{
+			if (i > 0)
 			{
 				allSequenceValuesEncoded += " ";
 			}
-			allSequenceValuesEncoded += encode(pSequenceValues.at(i), pSequenceTypes.at(i), pSequenceTypeID.at(i), pSequenceBytesCount.at(i), pSequenceKeywords.at(i), pSequenceVisibilities.at(i), pSequenceValues, pSequenceTypes, pSequenceTypeID, pSequenceBytesCount, pSequenceKeywords, pSequenceVisibilities);
+
+			if (pSequenceTypes.at(i) != SEQUENCE_TAG_NUMBER)
+			{
+				allSequenceValuesEncoded += encode(pSequenceValues.at(i), pSequenceTypes.at(i), pSequenceTypeID.at(i), pSequenceBytesCount.at(i), pSequenceKeywords.at(i), pSequenceVisibilities.at(i), pSequenceValues, pSequenceTypes, pSequenceTypeID, pSequenceBytesCount, pSequenceKeywords, pSequenceVisibilities);
+			}
+			else
+			{
+				allSequenceValuesEncoded += pSequenceValues.at(i);
+			}
 		}
 		string allSequenceValuesEncodedString = allSequenceValuesEncoded;
 		allSequenceValuesEncodedString.erase(remove_if(allSequenceValuesEncodedString.begin(), allSequenceValuesEncodedString.end(), isspace), allSequenceValuesEncodedString.end());
-		
-		//todo prechodzenie wartosci z ostatniego elementu sekwencji
+
+		//todo przechodzenie wartosci z ostatniego elementu sekwencji
 		clearIdentifier();
 		clearLength();
 		clearValue();
@@ -280,4 +288,221 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, long long pByteCo
 		return encodedValue + " " + allSequenceValuesEncoded;
 	}
 	return "";
+}
+
+string BERCoder::treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
+{
+	string nodeNameOrOID = "", valueToEncode = "", keyword = "", visibility = "";
+	CheckValue checkValue;
+	int encodingType = 0, type = 0, typeID = 0, encodingDataType = 0;
+	unsigned long long byteCount = 0;
+
+	cout << endl << "Podaj nazwe lub OID liscia:" << endl;
+	cin >> nodeNameOrOID;
+
+	TreeNode* node = pOIDTree.findOID(nodeNameOrOID, pOIDTree.root);
+	if (node == pOIDTree.root)
+	{
+		node = pOIDTree.findNode(nodeNameOrOID, pOIDTree.root);
+	}
+	if (node != nullptr && node != pOIDTree.root)
+	{
+		cout << "Podaj wartosc do zakodowania:" << endl;
+		cin >> valueToEncode;
+
+		int result = checkValue.checkValue(valueToEncode, node, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+		if (result == 0)
+		{
+			if (checkValue.typeDataType != 0)
+			{
+				typeID = pVDataType.at(checkValue.indexDataType).typeID;
+				byteCount = checkValue.byteCount;
+				keyword = pVDataType.at(checkValue.indexDataType).keyword;
+				visibility = pVDataType.at(checkValue.indexDataType).visibility;
+				type = checkValue.typeDataType;
+			}
+			else if (checkValue.type != 0)
+			{
+				typeID = NULL;
+				byteCount = checkValue.byteCount;
+				keyword = "";
+				visibility = "";
+				type = checkValue.type;
+			}
+			else
+			{
+				typeID = NULL;
+				byteCount = NULL;
+				keyword = "";
+				visibility = "";
+				type = SEQUENCE_TAG_NUMBER;
+			}
+
+			string encodedValue = encode(valueToEncode, type, typeID, byteCount, keyword, visibility, checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+			return encodedValue;
+		}
+		else if (result == -1)
+		{
+			cout << "Blad typu" << endl;
+		}
+		else if (result == -2)
+		{
+			cout << "Blad rozmiaru" << endl;
+		}
+	}
+	return string();
+}
+
+string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
+{
+	int encodingDataType = 0, type = 0, typeID = 0;
+	unsigned long long byteCount = 0;
+	string valueToEncode = "", syntax = "", keyword = "", visibility = "";
+	CheckValue checkValue;
+
+	if (!isSequence)
+	{
+		cout << "Wybierz typ danych do zakodowania" << endl << "2 - INTEGER" << endl << "4 - OCTET STRING" << endl << "5 - NULL" << endl << "6 - OBJECT IDENTIFIER" << endl << "16 - SEQUENCE" << endl;
+		cin >> encodingDataType;
+	}
+
+	if (encodingDataType != SEQUENCE_TAG_NUMBER && !isSequence)
+	{
+		cout << "Podaj dane do zakodowania" << endl;
+		cin >> valueToEncode;
+
+		switch (encodingDataType)
+		{
+		case INTEGER_TAG_NUMBER:
+			type = INTEGER_TAG_NUMBER;
+			syntax = IDENTIFIER_TYPE_INTEGER;
+			break;
+		case OCTET_STRING_TAG_NUMBER:
+			type = OCTET_STRING_TAG_NUMBER;
+			syntax = IDENTIFIER_TYPE_OCTET_STRING;
+			break;
+		case NULL_TAG_NUMBER:
+			type = NULL_TAG_NUMBER;
+			syntax = IDENTIFIER_TYPE_NULL;
+			break;
+		case OBJECT_IDENTIFIER_TAG_NUMBER:
+			type = OBJECT_IDENTIFIER_TAG_NUMBER;
+			syntax = IDENTIFIER_TYPE_OBJECT_IDENTIFIER;
+			break;
+		default:
+			type = 0;
+			syntax = "";
+			break;
+		}
+
+		checkValue.setValueParameters(valueToEncode);
+		int cVTreturned = checkValue.checkValueType(valueToEncode, syntax);
+		if (cVTreturned == 0)//typ ok
+		{
+			int cVSreturned = checkValue.checkValueSize();
+
+			if (cVSreturned == 0)//rozmiar ok
+			{
+				byteCount = checkValue.byteCount;
+
+				encodedValue += encode(valueToEncode, type, typeID, byteCount, keyword, visibility, checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+				return encodedValue;
+			}
+			else
+			{
+				return "";
+			}
+		}
+		else
+		{
+			return "";
+		}
+	}
+
+	else
+	{
+		int sequenceSize = 0, sequenceDataType;
+		vector<int> sequenceDataTypes, sequenceTypeIds;
+		vector<string> sequenceDataValues, sequenceKeywords, sequenceVisibilities;
+		vector<unsigned long long> sequenceDataSizes;
+
+		cout << "Podaj rozmiar sekwencji" << endl;
+		cin >> sequenceSize;
+		cout << "Podaj typy danych do zakodowania" << endl << "2 - INTEGER" << endl << "4 - OCTET STRING" << endl << "5 - NULL" << endl << "6 - OBJECT IDENTIFIER" << endl << "16 - SEQUENCE" << endl;
+		for (size_t i = 0; i < sequenceSize; i++)
+		{
+			cin >> sequenceDataType;
+			sequenceDataTypes.push_back(sequenceDataType);
+		}
+
+		if (sequenceSize > 1)
+		{
+			cout << "Podaj dane do zakodowania" << endl;
+
+		}
+
+		for (size_t i = 0; i < sequenceSize; i++)
+		{
+			if (sequenceDataTypes.at(i) == SEQUENCE_TAG_NUMBER)
+			{
+				string encodedSequence = anyValueEncoding(encodedValue, true);
+				sequenceDataValues.push_back(encodedSequence);
+				sequenceTypeIds.push_back(0);
+				sequenceDataSizes.push_back(0);
+				sequenceKeywords.push_back("");
+				sequenceVisibilities.push_back("");
+			}
+			else
+			{
+				switch (sequenceDataTypes.at(i))
+				{
+				case INTEGER_TAG_NUMBER:
+					syntax = IDENTIFIER_TYPE_INTEGER;
+					break;
+				case OCTET_STRING_TAG_NUMBER:
+					syntax = IDENTIFIER_TYPE_OCTET_STRING;
+					break;
+				case NULL_TAG_NUMBER:
+					syntax = IDENTIFIER_TYPE_NULL;
+					break;
+				case OBJECT_IDENTIFIER_TAG_NUMBER:
+					syntax = IDENTIFIER_TYPE_OBJECT_IDENTIFIER;
+					break;
+				default:
+					syntax = "";
+					break;
+				}
+
+				cin >> valueToEncode;
+
+				checkValue.setValueParameters(valueToEncode);
+				int cVTreturned = checkValue.checkValueType(valueToEncode, syntax);
+				if (cVTreturned == 0)//typ ok
+				{
+					int cVSreturned = checkValue.checkValueSize();
+
+					if (cVSreturned == 0)//rozmiar ok
+					{
+						byteCount = checkValue.byteCount;
+						sequenceDataValues.push_back(valueToEncode);
+						sequenceTypeIds.push_back(typeID);
+						sequenceDataSizes.push_back(byteCount);
+						sequenceKeywords.push_back(keyword);
+						sequenceVisibilities.push_back(visibility);
+					}
+					else
+					{
+						return "";
+					}
+				}
+				else
+				{
+					return "";
+				}
+			}
+		}
+
+		encodedValue += encode("", SEQUENCE_TAG_NUMBER, typeID, byteCount, keyword, visibility, sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+		return encodedValue;
+	}
 }
