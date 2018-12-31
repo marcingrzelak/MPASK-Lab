@@ -181,3 +181,53 @@ TreeNode * Tree::findOID(string pOID, TreeNode * node)
 
 	return newNode;
 }
+
+TreeNodeBER::TreeNodeBER()
+{
+}
+
+TreeNodeBER::~TreeNodeBER()
+{
+}
+
+TreeBER::TreeBER()
+{
+}
+
+TreeBER::~TreeBER()
+{
+}
+
+void TreeBER::addRoot(string pClassValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned long long pLengthValue)
+{
+	TreeNodeBER *newRoot = new TreeNodeBER;
+
+	newRoot->classValue = pClassValue;
+	newRoot->complexity = pComplexity;
+	newRoot->value = pValue;
+	newRoot->tagValue = pTagValue;
+	newRoot->lengthValue = pLengthValue;
+
+	if (root == 0)
+	{
+		root = newRoot;
+	}
+
+	else
+	{
+		//istnieje juz korzen
+	}
+}
+
+void TreeBER::addNode(TreeNodeBER *parent, string pClassValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned long long pLengthValue)
+{
+	TreeNodeBER *children = new TreeNodeBER;
+
+	children->classValue = pClassValue;
+	children->complexity = pComplexity;
+	children->value = pValue;
+	children->tagValue = pTagValue;
+	children->lengthValue = pLengthValue;
+
+	parent->next.push_back(children);
+}

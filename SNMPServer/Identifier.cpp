@@ -139,3 +139,73 @@ void Identifier::setTagFromType(string pType)
 		//error
 	}
 }
+
+string Identifier::getClass(uint8_t pOctet)
+{
+	uint8_t classBits = pOctet & 0xc0;
+
+	if (classBits == classes[IDENTIFIER_CLASS_UNIVERSAL])
+	{
+		return IDENTIFIER_CLASS_UNIVERSAL;
+	}
+	else if (classBits == classes[IDENTIFIER_CLASS_APPLICATION])
+	{
+		return IDENTIFIER_CLASS_APPLICATION;
+	}
+	else if (classBits == classes[IDENTIFIER_CLASS_CONTEXT_SPECIFIC])
+	{
+		return IDENTIFIER_CLASS_CONTEXT_SPECIFIC;
+	}
+	else if (classBits == classes[IDENTIFIER_CLASS_PRIVATE])
+	{
+		return IDENTIFIER_CLASS_PRIVATE;
+	}
+	else
+	{
+		//error
+	}
+}
+
+string Identifier::getComplexity(uint8_t pOctet)
+{
+	uint8_t complexityBits = pOctet & 0x20;
+
+	if (complexityBits == complexity[IDENTIFIER_COMPLEXITY_PRIMITIVE])
+	{
+		return IDENTIFIER_COMPLEXITY_PRIMITIVE;
+	}
+	else if (complexityBits == complexity[IDENTIFIER_COMPLEXITY_CONSTRUCTED])
+	{
+		return IDENTIFIER_COMPLEXITY_CONSTRUCTED;
+	}
+	else
+	{
+		//error
+	}
+}
+
+unsigned int Identifier::getTag(vector<uint8_t> pOctets, int &index)
+{
+	uint8_t tagFirstOctetBits = pOctets.at(index) & 0x1f;
+
+	if (tagFirstOctetBits != IDENTIFIER_TAG_LONG)
+	{
+		index++;
+		return tagFirstOctetBits;
+	}
+	else
+	{
+		index++;
+		int tagLongOctet = 0;
+		while (pOctets.at(index) >= 0x80) //pierwszy bit jest '1'
+		{
+			tagLongOctet <<= 7;
+			tagLongOctet |= (pOctets.at(index) & 0x7f);
+			index++;
+		}
+		tagLongOctet <<= 7;
+		tagLongOctet |= (pOctets.at(index) & 0x7f);
+		index++;
+		return tagLongOctet;
+	}
+}
