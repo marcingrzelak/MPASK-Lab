@@ -16,18 +16,19 @@ public:
 	Length length;
 	Value value;
 
-	string classValue, complexityValue, dataValue;
-	unsigned int tagValue;
+	string classValue, classConstructedValue, complexityValue, dataValue;
+	unsigned int tagValue, tagConstructedValue;
 	unsigned long long lengthValue;
 	bool undefinedFlag = false;
+	TreeNodeBER *currentParent = nullptr;
 
 	vector<uint8_t> octets;
 	vector<uint8_t> values;
 
 	void getVectorOfBytes(string pValue);
-	void getIdentifier(int &index);
-	void getLength(int &index);
-	void getValue(int &index);
+	void getIdentifier(int &pIndex);
+	void getLength(int &pIndex);
+	void getValue(int &pIndex);
 
-	void decode(string pValue, int & index, TreeBER & pTree);
+	void decode(string & pValue, int pIndex, TreeBER & pTree, TreeNodeBER *pParentNode);
 };

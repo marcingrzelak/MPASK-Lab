@@ -34,8 +34,8 @@ public:
 	TreeNodeBER();
 	~TreeNodeBER();
 
-	string classValue, complexity, value;
-	unsigned int tagValue;
+	string classValue, classConstructedValue, complexity, value;
+	unsigned int tagValue, tagConstructedValue;
 	unsigned long long lengthValue;
 	vector <TreeNodeBER*> next;
 
@@ -50,6 +50,6 @@ public:
 
 	TreeNodeBER *root;
 
-	void addRoot(string pClassValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned long long pLengthValue);
-	void addNode(TreeNodeBER * parent, string pClassValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned long long pLengthValue);
+	void addRoot(string pClassValue, string pClassConstructedValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned int pTagConstructedValue, unsigned long long pLengthValue);
+	TreeNodeBER* addNode(TreeNodeBER * parent, string pClassValue, string pClassConstructedValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned int pTagConstructedValue, unsigned long long pLengthValue);
 };

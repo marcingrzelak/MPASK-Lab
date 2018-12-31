@@ -25,147 +25,186 @@ void BERDecoder::getVectorOfBytes(string pValue)
 	}
 }
 
-void BERDecoder::getIdentifier(int &index)
+void BERDecoder::getIdentifier(int &pIndex)
 {
-	classValue = identifier.getClass(octets.at(index));
-	complexityValue = identifier.getComplexity(octets.at(index));
-	tagValue = identifier.getTag(octets, index);
+	classValue = identifier.getClass(octets.at(pIndex));
+	complexityValue = identifier.getComplexity(octets.at(pIndex));
+	tagValue = identifier.getTag(octets, pIndex);
 }
 
-void BERDecoder::getLength(int &index)
+void BERDecoder::getLength(int &pIndex)
 {
-	lengthValue = length.getLength(octets, index, undefinedFlag);
+	lengthValue = length.getLength(octets, pIndex, undefinedFlag);
 }
 
-void BERDecoder::getValue(int & index)
+void BERDecoder::getValue(int &pIndex)
 {
-	values = value.getValue(octets, index, lengthValue);
+	values = value.getValue(octets, pIndex, lengthValue);
 
-	if (tagValue == INTEGER_TAG_NUMBER)
-	{
-		stringstream data;
-		for (size_t i = 0; i < values.size(); i++)
-		{
-			data << hex << values.at(i);
-		}
-		int dataINT = stoi(data.str(), nullptr, 16);
-
-		stringstream ss;
-		ss << dataINT;
-		dataValue = ss.str();
-	}
-	else if (tagValue == OCTET_STRING_TAG_NUMBER)
-	{
-		for (size_t i = 0; i < values.size(); i++)
-		{
-			dataValue += (char)values.at(i);
-		}
-	}
-	else if (tagValue == NULL_TAG_NUMBER)
-	{
-		dataValue = "";
-	}
-	else if (tagValue == OBJECT_IDENTIFIER_TAG_NUMBER)
-	{
-		int objectIdentifierLongOctet = 0, objectIdentifierOctet = 0, i = 0;
-		bool longOctet = false;
-		vector<string> objectIdentifierSubidentifiers;
-		stringstream ss;
-		string str;
-
-		while (i < values.size())
-		{
-			if (values.at(i) >= 0x80) //pierwszy bit = '1'
-			{
-				longOctet = true;
-				objectIdentifierLongOctet <<= 7;
-				objectIdentifierLongOctet |= (values.at(i) & 0x7f);
-			}
-			else
-			{
-				if (longOctet == true)
-				{
-					longOctet = false;
-					objectIdentifierLongOctet <<= 7;
-					objectIdentifierLongOctet |= (values.at(i) & 0x7f);
-
-					ss << objectIdentifierLongOctet;
-					str = ss.str();
-				}
-				else
-				{
-					objectIdentifierOctet |= (values.at(i) & 0x7f);
-
-					ss << objectIdentifierOctet;
-					str = ss.str();
-				}
-
-				objectIdentifierSubidentifiers.push_back(str);
-			}
-		}
-
-		for (size_t i = 0; i < objectIdentifierSubidentifiers.size; i++)
-		{
-			if (i = 0)
-			{
-				string firstSubidentifier, secondSubidentifier;
-				int first = floor(stoi(objectIdentifierSubidentifiers.at(i)) / 40);
-				int second = stoi(objectIdentifierSubidentifiers.at(i)) % 40;
-
-				ss << first;
-				firstSubidentifier = ss.str();
-
-				ss << second;
-				secondSubidentifier = ss.str();
-
-				dataValue += firstSubidentifier + "." + secondSubidentifier + ".";
-			}
-			else
-			{
-				dataValue += objectIdentifierSubidentifiers.at(i);
-				if (i < objectIdentifierSubidentifiers.size() - 1)
-				{
-					dataValue += ".";
-				}
-			}			
-		}
-	}
-}
-
-void BERDecoder::decode(string pValue, int &index, TreeBER &pTree)
-{
-	getVectorOfBytes(pValue);
-	getIdentifier(index);
-
-	if (tagValue == SEQUENCE_TAG_NUMBER && complexityValue == IDENTIFIER_COMPLEXITY_CONSTRUCTED)
-	{
-
-	}
-	else
+	if (complexityValue == IDENTIFIER_COMPLEXITY_PRIMITIVE)
 	{
 		if (tagValue == INTEGER_TAG_NUMBER)
 		{
-			if (pTree.root == nullptr)
+			stringstream data;
+			for (size_t i = 0; i < values.size(); i++)
 			{
-				pTree.addRoot(classValue, complexityValue, dataValue, tagValue, lengthValue);
+				data << setfill('0') << setw(2) << hex << static_cast<int>(values.at(i));
 			}
+			string tmp = data.str();
+			long dataINT = stol(data.str(), nullptr, 16);
+
+			stringstream ss;
+			ss << dataINT;
+			dataValue = ss.str();
 		}
 		else if (tagValue == OCTET_STRING_TAG_NUMBER)
 		{
-
+			for (size_t i = 0; i < values.size(); i++)
+			{
+				dataValue += (char)values.at(i);
+			}
 		}
 		else if (tagValue == NULL_TAG_NUMBER)
 		{
-
+			dataValue = "";
 		}
 		else if (tagValue == OBJECT_IDENTIFIER_TAG_NUMBER)
 		{
+			int i = 0, objectIdentifierLongOctet = 0;
+			bool longOctet = false;
+			vector<string> objectIdentifierSubidentifiers;
+			string str;
 
+			while (i < values.size())
+			{
+				int objectIdentifierOctet = 0;
+				stringstream ss;
+
+				if (values.at(i) >= 0x80 && i>0) //pierwszy bit = '1'
+				{
+					longOctet = true;
+					objectIdentifierLongOctet <<= 7;
+					objectIdentifierLongOctet |= (values.at(i) & 0x7f);
+				}
+				else
+				{
+					if (longOctet == true)
+					{
+						longOctet = false;
+						objectIdentifierLongOctet <<= 7;
+						objectIdentifierLongOctet |= (values.at(i) & 0x7f);
+
+						ss << objectIdentifierLongOctet;
+						str = ss.str();
+					}
+					else
+					{
+						objectIdentifierOctet |= (values.at(i) & 0x7f);
+
+						ss << objectIdentifierOctet;
+						str = ss.str();
+					}
+
+					objectIdentifierSubidentifiers.push_back(str);
+				}
+				i++;
+			}
+
+			for (size_t i = 0; i < objectIdentifierSubidentifiers.size(); i++)
+			{
+				if (i == 0)
+				{
+					stringstream ss;
+					string firstSubidentifier, secondSubidentifier;
+					int first = floor(stoi(objectIdentifierSubidentifiers.at(i)) / 40);
+					int second = stoi(objectIdentifierSubidentifiers.at(i)) % 40;
+
+					ss << first;
+					firstSubidentifier = ss.str();
+					ss.str("");
+					ss << second;
+					secondSubidentifier = ss.str();
+
+					dataValue += firstSubidentifier + "." + secondSubidentifier + ".";
+				}
+				else
+				{
+					dataValue += objectIdentifierSubidentifiers.at(i);
+					if (i < objectIdentifierSubidentifiers.size() - 1)
+					{
+						dataValue += ".";
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (size_t i = 0; i < values.size(); i++)
+		{
+			dataValue += values.at(i);
+			if (i < values.size() - 1)
+			{
+				dataValue += " ";
+			}
+		}
+	}
+}
+
+void BERDecoder::decode(string &pValue, int pIndex, TreeBER &pTree, TreeNodeBER *pParentNode)
+{
+	getVectorOfBytes(pValue);
+	getIdentifier(pIndex);
+	getLength(pIndex);
+	getValue(pIndex);
+
+	if (tagValue == SEQUENCE_TAG_NUMBER && complexityValue == IDENTIFIER_COMPLEXITY_CONSTRUCTED)
+	{
+		TreeNodeBER* node;
+		int tmpIndex = 0;
+		if (pTree.root == nullptr)
+		{
+			pTree.addRoot(classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
+			currentParent = pTree.root;
+		}
+		else
+		{
+			node = pTree.addNode(pParentNode, classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
+			currentParent = node;
+		}
+		decode(dataValue, tmpIndex, pTree, currentParent);
+	}
+	else if (complexityValue == IDENTIFIER_COMPLEXITY_CONSTRUCTED)
+	{
+		TreeNodeBER* node;
+		int tmpIndex = 0;
+		if (pTree.root == nullptr)
+		{
+			pTree.addRoot(classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
+			currentParent = pTree.root;
+		}
+		else
+		{
+			node = pTree.addNode(pParentNode, classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
+			currentParent = node;
+		}
+		decode(dataValue, tmpIndex, pTree, currentParent);
+	}
+	else
+	{
+		if (pTree.root == nullptr)
+		{
+			pTree.addRoot(classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
+			currentParent = pTree.root;
+		}
+		else
+		{
+			pTree.addNode(pParentNode, classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
 		}
 	}
 
-	getLength(index);
-	getValue(index);
-
-
+	if (pIndex < octets.size())
+	{
+		decode(pValue, pIndex, pTree, currentParent);
+	}
 }
