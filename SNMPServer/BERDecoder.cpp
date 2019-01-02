@@ -50,7 +50,6 @@ void BERDecoder::getValue(int &pIndex)
 			{
 				data << setfill('0') << setw(2) << hex << static_cast<int>(values.at(i));
 			}
-			string tmp = data.str();
 			long dataINT = stol(data.str(), nullptr, 16);
 
 			stringstream ss;
@@ -80,7 +79,7 @@ void BERDecoder::getValue(int &pIndex)
 				int objectIdentifierOctet = 0;
 				stringstream ss;
 
-				if (values.at(i) >= 0x80 && i>0) //pierwszy bit = '1'
+				if (values.at(i) >= 0x80 && i > 0) //pierwszy bit = '1'
 				{
 					longOctet = true;
 					objectIdentifierLongOctet <<= 7;
@@ -140,14 +139,18 @@ void BERDecoder::getValue(int &pIndex)
 	}
 	else
 	{
+		stringstream data;
+
 		for (size_t i = 0; i < values.size(); i++)
 		{
-			dataValue += values.at(i);
+			data << setfill('0') << setw(2) << hex << static_cast<int>(values.at(i));
 			if (i < values.size() - 1)
 			{
-				dataValue += " ";
+				data << " ";
 			}
 		}
+
+		dataValue = data.str();
 	}
 }
 
@@ -172,7 +175,9 @@ void BERDecoder::decode(string &pValue, int pIndex, TreeBER &pTree, TreeNodeBER 
 			node = pTree.addNode(pParentNode, classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
 			currentParent = node;
 		}
-		decode(dataValue, tmpIndex, pTree, currentParent);
+		BERDecoder recursion;
+		recursion.decode(dataValue, tmpIndex, pTree, currentParent);
+		currentParent = pParentNode;
 	}
 	else if (complexityValue == IDENTIFIER_COMPLEXITY_CONSTRUCTED)
 	{
@@ -188,7 +193,8 @@ void BERDecoder::decode(string &pValue, int pIndex, TreeBER &pTree, TreeNodeBER 
 			node = pTree.addNode(pParentNode, classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
 			currentParent = node;
 		}
-		decode(dataValue, tmpIndex, pTree, currentParent);
+		BERDecoder recursion;
+		recursion.decode(dataValue, tmpIndex, pTree, currentParent);
 	}
 	else
 	{
@@ -200,11 +206,13 @@ void BERDecoder::decode(string &pValue, int pIndex, TreeBER &pTree, TreeNodeBER 
 		else
 		{
 			pTree.addNode(pParentNode, classValue, classConstructedValue, complexityValue, dataValue, tagValue, tagConstructedValue, lengthValue);
+			currentParent = pParentNode;
 		}
 	}
 
 	if (pIndex < octets.size())
 	{
-		decode(pValue, pIndex, pTree, currentParent);
+		BERDecoder recursion;
+		recursion.decode(pValue, pIndex, pTree, currentParent);
 	}
 }

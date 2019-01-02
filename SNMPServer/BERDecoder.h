@@ -21,7 +21,6 @@ public:
 	unsigned long long lengthValue;
 	bool undefinedFlag = false;
 	TreeNodeBER *currentParent = nullptr;
-
 	vector<uint8_t> octets;
 	vector<uint8_t> values;
 
