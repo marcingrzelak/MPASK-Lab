@@ -152,7 +152,7 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 	}
 
 	//kodowanie BER
-	if (pType != SEQUENCE_TAG_NUMBER)
+	if (pType != SEQUENCE_TAG_NUMBER && pType != GET_REQUEST_MY_TAG && pType != GET_RESPONSE_MY_TAG && pType != SET_REQUEST_MY_TAG && pType != GET_NEXT_REQUEST_MY_TAG)
 	{
 		if (pKeyword.size() == 0) //kodowanie uniwersalne
 		{
@@ -264,7 +264,7 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 				allSequenceValuesEncoded += " ";
 			}
 
-			if (pSequenceTypes.at(i) != SEQUENCE_TAG_NUMBER)
+			if (pSequenceTypes.at(i) != SEQUENCE_TAG_NUMBER && pSequenceTypes.at(i) != GET_REQUEST_MY_TAG && pSequenceTypes.at(i) != GET_RESPONSE_MY_TAG && pSequenceTypes.at(i) != SET_REQUEST_MY_TAG && pSequenceTypes.at(i) != GET_NEXT_REQUEST_MY_TAG)
 			{
 				allSequenceValuesEncoded += encode(pSequenceValues.at(i), pSequenceTypes.at(i), pSequenceTypeID.at(i), pSequenceBytesCount.at(i), pSequenceKeywords.at(i), pSequenceVisibilities.at(i), pSequenceValues, pSequenceTypes, pSequenceTypeID, pSequenceBytesCount, pSequenceKeywords, pSequenceVisibilities);
 			}
@@ -281,7 +281,26 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		clearLength();
 		clearValue();
 
-		this->setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_CONSTRUCTED, SEQUENCE_TAG_NUMBER);
+		if (pType == SEQUENCE_TAG_NUMBER)
+		{
+			this->setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_CONSTRUCTED, SEQUENCE_TAG_NUMBER);
+		}
+		else if (pType == GET_REQUEST_MY_TAG)
+		{
+			this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, GET_REQUEST_TAG_NUMBER);
+		}
+		else if (pType == GET_RESPONSE_MY_TAG)
+		{
+			this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, GET_RESPONSE_TAG_NUMBER);
+		}
+		else if (pType == SET_REQUEST_MY_TAG)
+		{
+			this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, SET_REQUEST_TAG_NUMBER);
+		}
+		else if (pType == GET_NEXT_REQUEST_MY_TAG)
+		{
+			this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, GET_NEXT_REQUEST_TAG_NUMBER);
+		}
 		this->setLength(allSequenceValuesEncodedString.size() / 2);
 
 		encodedValue = concatAllValues(false);

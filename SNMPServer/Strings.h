@@ -37,14 +37,21 @@ constexpr auto PACKET_TYPE_GET_RESPONSE = "GetResponse";
 constexpr auto PACKET_TYPE_SET_REQUEST = "SetRequest";
 constexpr auto PACKET_TYPE_GET_NEXT_REQUEST = "GetNextRequest";
 
-constexpr int PACKET_TYPE_GET_REQUEST_NUMBER = 0;
-constexpr int PACKET_TYPE_GET_RESPONSE_NUMBER = 2;
-constexpr int PACKET_TYPE_SET_REQUEST_NUMBER = 3;
-constexpr int PACKET_TYPE_GET_NEXT_REQUEST_NUMBER = 1;
+constexpr int GET_REQUEST_TAG_NUMBER = 0;
+constexpr int GET_RESPONSE_TAG_NUMBER = 2;
+constexpr int SET_REQUEST_TAG_NUMBER = 3;
+constexpr int GET_NEXT_REQUEST_TAG_NUMBER = 1;
 
-constexpr char GET_REQUEST_BYTE = 0xa0;
-constexpr char GET_RESPONSE_BYTE = 0xa2;
-constexpr char SET_REQUEST_BYTE = 0xa3;
-constexpr char GET_NEXT_REQUEST_BYTE = 0xa1;
+constexpr unsigned short GET_REQUEST_BYTE = 0xa0;
+constexpr unsigned short GET_RESPONSE_BYTE = 0xa2;
+constexpr unsigned short SET_REQUEST_BYTE = 0xa3;
+constexpr unsigned short GET_NEXT_REQUEST_BYTE = 0xa1;
+
+constexpr int GET_REQUEST_MY_TAG = 0x80;
+constexpr int GET_RESPONSE_MY_TAG = 0x82;
+constexpr int SET_REQUEST_MY_TAG = 0x83;
+constexpr int GET_NEXT_REQUEST_MY_TAG = 0x81;
+
+
 #pragma endregion
 

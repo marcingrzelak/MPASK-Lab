@@ -161,7 +161,7 @@ void BERDecoder::decode(string &pValue, int pIndex, TreeBER &pTree, TreeNodeBER 
 	getLength(pIndex);
 	getValue(pIndex);
 
-	if (tagValue == SEQUENCE_TAG_NUMBER && complexityValue == IDENTIFIER_COMPLEXITY_CONSTRUCTED)
+	if ((tagValue == SEQUENCE_TAG_NUMBER && complexityValue == IDENTIFIER_COMPLEXITY_CONSTRUCTED) || (complexityValue == IDENTIFIER_COMPLEXITY_CONSTRUCTED && classValue == IDENTIFIER_CLASS_CONTEXT_SPECIFIC && (tagValue == GET_REQUEST_TAG_NUMBER || tagValue == GET_RESPONSE_TAG_NUMBER || tagValue == SET_REQUEST_TAG_NUMBER || tagValue == GET_NEXT_REQUEST_TAG_NUMBER)))
 	{
 		TreeNodeBER* node;
 		int tmpIndex = 0;

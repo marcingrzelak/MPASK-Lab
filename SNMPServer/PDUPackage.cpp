@@ -2,7 +2,9 @@
 #include "PDUPackage.h"
 #include "Strings.h"
 #include "BERCoder.h"
+#include "BERDecoder.h"
 #include "CheckValue.h"
+#include "TreeStructure.h"
 
 
 PDUPackage::PDUPackage()
@@ -14,20 +16,13 @@ PDUPackage::~PDUPackage()
 {
 }
 
-string PDUPackage::GeneratePacket(string pPacketType, map<string, string> pVarBindList, int &requestID, int &errorStatus, int &errorIndex, string community)
+string PDUPackage::GenerateResponsePacket(map<string, string> pVarBindList, int &requestID, int &errorStatus, int &errorIndex, string pCommunity)
 {
-	//GetRequest
-	//client->serwer
-
 	//GetResponse
 	//serwer->client
-
-	//SetRequest
-	//client->serwer
-
-	//GetNextRequest
-	//client->serwer
-
+	//pVarBindList
+	//1)oid
+	//2)zakodowana wartosc liscia o id oid
 
 	BERCoder coder;
 	CheckValue checkValue;
@@ -35,82 +30,73 @@ string PDUPackage::GeneratePacket(string pPacketType, map<string, string> pVarBi
 
 	map<string, string>::iterator itr;
 
-	if (pPacketType == PACKET_TYPE_GET_REQUEST)
+	for (itr = pVarBindList.begin(); itr != pVarBindList.end(); ++itr)
 	{
-		for (itr = pVarBindList.begin(); itr != pVarBindList.end(); ++itr)
-		{
-			checkValue.setValueParameters(itr->first);
-			int cVTreturned = checkValue.checkValueType(itr->first, IDENTIFIER_TYPE_OBJECT_IDENTIFIER);
-			if (cVTreturned == 0)//typ ok
-			{
-				int cVSreturned = checkValue.checkValueSize();
+		checkValue.setValueParameters(itr->first);
+		addDataToVector(OBJECT_IDENTIFIER_TAG_NUMBER, 0, itr->first, "", "", checkValue.byteCount);
+		addDataToVector(SEQUENCE_TAG_NUMBER, 0, itr->second, "", "", 0);//zakodowana juz wartosc z drzewa
 
-				if (cVSreturned == 0)//rozmiar ok
-				{
-					addDataToVector(OBJECT_IDENTIFIER_TAG_NUMBER, 0, itr->first, "", "", checkValue.byteCount);
-				}
-				else
-				{
-					//error
-				}
-			}
-
-			checkValue.setValueParameters(itr->second);
-			cVTreturned = checkValue.checkValueType(itr->second, IDENTIFIER_TYPE_NULL);
-			if (cVTreturned == 0)//typ ok
-			{
-				int cVSreturned = checkValue.checkValueSize();
-
-				if (cVSreturned == 0)//rozmiar ok
-				{
-					addDataToVector(NULL_TAG_NUMBER, 0, itr->second, "", "", checkValue.byteCount);
-				}
-				else
-				{
-					//error
-				}
-			}
-			varBindEncoded += coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
-			clearVectors();
-		}
-
+		varBindEncoded += coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
 		clearVectors();
-		addDataToVector(SEQUENCE_TAG_NUMBER, 0, varBindEncoded, "", "", 0);
-		varBindListEncoded = coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
-		clearVectors();
-
-		//request ID
-		checkValue.setValueParameters(to_string(requestID));
-		addDataToVector(INTEGER_TAG_NUMBER, 0, to_string(requestID), "", "", checkValue.byteCount);
-
-		//error status
-		addDataToVector(INTEGER_TAG_NUMBER, 0, "0", "", "", 1);
-
-		//error index
-		addDataToVector(INTEGER_TAG_NUMBER, 0, "0", "", "", 1);
-
-		//varbind list
-		addDataToVector(SEQUENCE_TAG_NUMBER, 0, varBindListEncoded, "", "", 0);
-
-		PDUEncoded = coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
-		clearVectors();
-
-		//version
-		addDataToVector(INTEGER_TAG_NUMBER, 0, "0", "", "", 1);
-
-		//community string
-		checkValue.setValueParameters(community);
-		addDataToVector(OCTET_STRING_TAG_NUMBER, 0, community, "", "", checkValue.byteCount);
-
-		//pdu
-		addDataToVector(SEQUENCE_TAG_NUMBER, 0, PDUEncoded, "", "", 0);
-
-		messageEncoded = coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
-		clearVectors();
-
-		return messageEncoded;
 	}
 
+	clearVectors();
+	addDataToVector(SEQUENCE_TAG_NUMBER, 0, varBindEncoded, "", "", 0);
+	varBindListEncoded = coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	clearVectors();
+
+	//request ID
+	checkValue.setValueParameters(to_string(requestID));
+	addDataToVector(INTEGER_TAG_NUMBER, 0, to_string(requestID), "", "", checkValue.byteCount);
+
+	//error status
+	checkValue.setValueParameters(to_string(errorStatus));
+	addDataToVector(INTEGER_TAG_NUMBER, 0, "0", "", "", checkValue.byteCount);
+
+	//error index
+	checkValue.setValueParameters(to_string(errorIndex));
+	addDataToVector(INTEGER_TAG_NUMBER, 0, "0", "", "", checkValue.byteCount);
+
+	//varbind list
+	addDataToVector(SEQUENCE_TAG_NUMBER, 0, varBindListEncoded, "", "", 0);
+
+	PDUEncoded = coder.encode("", GET_RESPONSE_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	clearVectors();
+
+	//version
+	addDataToVector(INTEGER_TAG_NUMBER, 0, "0", "", "", 1);
+
+	//community string
+	checkValue.setValueParameters(pCommunity);
+	addDataToVector(OCTET_STRING_TAG_NUMBER, 0, pCommunity, "", "", checkValue.byteCount);
+
+	//pdu
+	addDataToVector(SEQUENCE_TAG_NUMBER, 0, PDUEncoded, "", "", 0);
+
+	messageEncoded = coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	clearVectors();
+
+	return messageEncoded;
+}
+
+void PDUPackage::analyzePacket(string packet)
+{
+	BERDecoder decoder;
+	TreeBER BERTree;
+
+	int index = 0;
+	decoder.decode(packet, index, BERTree, nullptr);
+	//BERTree.root->printTree("", true);
+
+	community = BERTree.root->next[1]->value;
+	requestID = stoi(BERTree.root->next[2]->next[0]->value);
+	errorStatus = stoi(BERTree.root->next[2]->next[1]->value);
+	errorIndex = stoi(BERTree.root->next[2]->next[2]->value);
+	packetType = to_string(BERTree.root->next[2]->tagValue);
+	for (size_t i = 0; i < BERTree.root->next[2]->next[3]->next.size(); i++)
+	{
+		varBindList.insert(pair<string, string>(BERTree.root->next[2]->next[3]->next[i]->next[0]->value, BERTree.root->next[2]->next[3]->next[i]->next[1]->value));
+	}
 }
 
 void PDUPackage::clearVectors()
@@ -132,6 +118,3 @@ void PDUPackage::addDataToVector(int dataType, int typeId, string dataValue, str
 	sequenceVisibilities.push_back(visibility);
 	sequenceDataSizes.push_back(dataSize);
 }
-
-
-//varBindList.insert(pair<string, string>("1", "40"));
