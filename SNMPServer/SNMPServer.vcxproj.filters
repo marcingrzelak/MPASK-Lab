@@ -54,6 +54,9 @@
     <ClInclude Include="BERDecoder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PDUPackage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -93,6 +96,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="BERDecoder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PDUPackage.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

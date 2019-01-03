@@ -32,6 +32,19 @@ constexpr int NULL_TAG_NUMBER = 5;
 constexpr int OBJECT_IDENTIFIER_TAG_NUMBER = 6;
 constexpr int SEQUENCE_TAG_NUMBER = 16;
 
+constexpr auto PACKET_TYPE_GET_REQUEST = "GetRequest";
+constexpr auto PACKET_TYPE_GET_RESPONSE = "GetResponse";
+constexpr auto PACKET_TYPE_SET_REQUEST = "SetRequest";
+constexpr auto PACKET_TYPE_GET_NEXT_REQUEST = "GetNextRequest";
 
+constexpr int PACKET_TYPE_GET_REQUEST_NUMBER = 0;
+constexpr int PACKET_TYPE_GET_RESPONSE_NUMBER = 2;
+constexpr int PACKET_TYPE_SET_REQUEST_NUMBER = 3;
+constexpr int PACKET_TYPE_GET_NEXT_REQUEST_NUMBER = 1;
+
+constexpr char GET_REQUEST_BYTE = 0xa0;
+constexpr char GET_RESPONSE_BYTE = 0xa2;
+constexpr char SET_REQUEST_BYTE = 0xa3;
+constexpr char GET_NEXT_REQUEST_BYTE = 0xa1;
 #pragma endregion
 

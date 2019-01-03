@@ -159,6 +159,7 @@
     <ClInclude Include="Length.h" />
     <ClInclude Include="Parser.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PDUPackage.h" />
     <ClInclude Include="Regex.h" />
     <ClInclude Include="Strings.h" />
     <ClInclude Include="TreeStructure.h" />
@@ -179,6 +180,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PDUPackage.cpp" />
     <ClCompile Include="Regex.cpp" />
     <ClCompile Include="SNMPServer.cpp" />
     <ClCompile Include="TreeStructure.cpp" />
