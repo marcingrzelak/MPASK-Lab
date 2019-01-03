@@ -27,3 +27,29 @@ public:
 	string findNodeWord(string pName, TreeNode* node, string OID);
 	TreeNode* findOID(string pOID, TreeNode* node);
 };
+
+class TreeNodeBER
+{
+public:
+	TreeNodeBER();
+	~TreeNodeBER();
+
+	string classValue, classConstructedValue, complexity, value;
+	unsigned int tagValue, tagConstructedValue;
+	unsigned long long lengthValue;
+	vector <TreeNodeBER*> next;
+
+	void printTree(string indent, bool last);
+};
+
+class TreeBER
+{
+public:
+	TreeBER();
+	~TreeBER();
+
+	TreeNodeBER *root;
+
+	void addRoot(string pClassValue, string pClassConstructedValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned int pTagConstructedValue, unsigned long long pLengthValue);
+	TreeNodeBER* addNode(TreeNodeBER * parent, string pClassValue, string pClassConstructedValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned int pTagConstructedValue, unsigned long long pLengthValue);
+};

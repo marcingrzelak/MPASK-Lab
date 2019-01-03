@@ -307,8 +307,11 @@ string BERCoder::treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, 
 	}
 	if (node != nullptr && node != pOIDTree.root)
 	{
-		cout << "Podaj wartosc do zakodowania:" << endl;
-		cin >> valueToEncode;
+		if (node->syntax != IDENTIFIER_TYPE_NULL)
+		{
+			cout << "Podaj wartosc do zakodowania:" << endl;
+			cin >> valueToEncode;
+		}
 
 		int result = checkValue.checkValue(valueToEncode, node, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 		if (result == 0)
@@ -368,8 +371,11 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 
 	if (encodingDataType != SEQUENCE_TAG_NUMBER && !isSequence)
 	{
-		cout << "Podaj dane do zakodowania" << endl;
-		cin >> valueToEncode;
+		if (encodingDataType != NULL_TAG_NUMBER)
+		{
+			cout << "Podaj dane do zakodowania" << endl;
+			cin >> valueToEncode;
+		}
 
 		switch (encodingDataType)
 		{
@@ -435,7 +441,7 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 			sequenceDataTypes.push_back(sequenceDataType);
 		}
 
-		if (sequenceSize > 1)
+		if (sequenceSize > 1 && syntax != IDENTIFIER_TYPE_NULL)
 		{
 			cout << "Podaj dane do zakodowania" << endl;
 
@@ -473,7 +479,10 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 					break;
 				}
 
-				cin >> valueToEncode;
+				if (syntax != IDENTIFIER_TYPE_NULL)
+				{
+					cin >> valueToEncode;
+				}
 
 				checkValue.setValueParameters(valueToEncode);
 				int cVTreturned = checkValue.checkValueType(valueToEncode, syntax);

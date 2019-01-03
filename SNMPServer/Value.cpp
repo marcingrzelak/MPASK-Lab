@@ -85,3 +85,14 @@ void Value::valueObjectIdentifier(int pSubidentifier)
 		octet.push_back(oneOctet);
 	}
 }
+
+vector<uint8_t> Value::getValue(vector<uint8_t> pOctets, int &index, unsigned long long pLength)
+{
+	vector<uint8_t> values;
+	for (size_t i = index; i < index + pLength; i++)
+	{
+		values.push_back(pOctets.at(i));
+	}
+	index += pLength;
+	return values;
+}

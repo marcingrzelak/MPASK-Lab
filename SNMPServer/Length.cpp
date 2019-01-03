@@ -53,3 +53,39 @@ void Length::setUndefinedForm(unsigned long long pLength)
 {
 	firstOctet |= 0x80;
 }
+
+unsigned long long Length::getLength(vector<uint8_t> pOctets, int &index, bool &undefinedFlag)
+{
+	if (pOctets.at(index) >= 0x80) //pierwszy bit = '1' forma dluga lub nieokreslona
+	{
+		K = pOctets.at(index) & 0x1f;
+		if (K > 0) //forma dluga
+		{
+			index++;
+			undefinedFlag = true;
+			unsigned long long lengthLong = 0;
+			for (size_t i = index; i < index + K; i++)
+			{
+				lengthLong <<= 8;
+				lengthLong |= (pOctets.at(i));
+			}
+			index += K;
+			return lengthLong;
+		}
+		else
+		{
+			index++;
+			undefinedFlag = false;
+			return 0;
+		}
+
+	}
+	else
+	{
+		uint8_t lengthShort = pOctets.at(index) & 0x1f;
+		undefinedFlag = false;
+		index++;
+		return lengthShort;
+	}
+
+}

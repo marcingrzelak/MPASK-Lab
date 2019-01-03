@@ -181,3 +181,80 @@ TreeNode * Tree::findOID(string pOID, TreeNode * node)
 
 	return newNode;
 }
+
+TreeNodeBER::TreeNodeBER()
+{
+}
+
+TreeNodeBER::~TreeNodeBER()
+{
+}
+
+void TreeNodeBER::printTree(string indent, bool last)
+{
+	cout << (indent);
+	if (last)
+	{
+		cout << ("\\-");
+		indent += "  ";
+	}
+	else
+	{
+		cout << ("|-");
+		indent += "| ";
+	}
+	cout << classValue << "\t" << complexity << "\t" << "TAG: " << tagValue << "\t" << "VALUE: " << value << endl;
+
+	for (unsigned int i = 0; i < next.size(); i++)
+	{
+		next.at(i)->printTree(indent, i == next.size() - 1);
+	}
+}
+
+TreeBER::TreeBER()
+{
+}
+
+TreeBER::~TreeBER()
+{
+}
+
+void TreeBER::addRoot(string pClassValue, string pClassConstructedValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned int pTagConstructedValue, unsigned long long pLengthValue)
+{
+	TreeNodeBER *newRoot = new TreeNodeBER;
+
+	newRoot->classValue = pClassValue;
+	newRoot->classConstructedValue = pClassConstructedValue;
+	newRoot->complexity = pComplexity;
+	newRoot->value = pValue;
+	newRoot->tagValue = pTagValue;
+	newRoot->tagConstructedValue = pTagConstructedValue;
+	newRoot->lengthValue = pLengthValue;
+
+	if (root == 0)
+	{
+		root = newRoot;
+	}
+
+	else
+	{
+		//istnieje juz korzen
+	}
+}
+
+TreeNodeBER* TreeBER::addNode(TreeNodeBER * parent, string pClassValue, string pClassConstructedValue, string pComplexity, string pValue, unsigned int pTagValue, unsigned int pTagConstructedValue, unsigned long long pLengthValue)
+{
+	TreeNodeBER *children = new TreeNodeBER;
+
+	children->classValue = pClassValue;
+	children->classConstructedValue = pClassConstructedValue;
+	children->complexity = pComplexity;
+	children->value = pValue;
+	children->tagValue = pTagValue;
+	children->tagConstructedValue = pTagConstructedValue;
+	children->lengthValue = pLengthValue;
+
+	parent->next.push_back(children);
+
+	return children;
+}
