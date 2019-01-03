@@ -16,7 +16,7 @@ PDUPackage::~PDUPackage()
 {
 }
 
-string PDUPackage::GenerateResponsePacket(map<string, string> pVarBindList, int &requestID, int &errorStatus, int &errorIndex, string pCommunity)
+string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int &requestID, int &errorStatus, int &errorIndex, string pCommunity)
 {
 	//GetResponse
 	//serwer->client
@@ -117,4 +117,20 @@ void PDUPackage::addDataToVector(int dataType, int typeId, string dataValue, str
 	sequenceKeywords.push_back(keyword);
 	sequenceVisibilities.push_back(visibility);
 	sequenceDataSizes.push_back(dataSize);
+}
+
+int PDUPackage::packetHandler(string packet)
+{
+	analyzePacket(packet);
+
+	map<string, string>::iterator itr;
+
+
+	for (itr = varBindList.begin(); itr != varBindList.end(); ++itr)
+	{
+		
+	}
+
+
+	return 0;
 }
