@@ -23,7 +23,7 @@
     <ProjectGuid>{DFA52D5E-4D4E-4B40-BB70-E438AB175AF5}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>SNMPServer</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="BERCoder.h" />
+    <ClInclude Include="CheckValue.h" />
     <ClInclude Include="DataStructures.h" />
     <ClInclude Include="FileHandler.h" />
     <ClInclude Include="Length.h" />
@@ -165,6 +166,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="BERCoder.cpp" />
+    <ClCompile Include="CheckValue.cpp" />
     <ClCompile Include="DataStructures.cpp" />
     <ClCompile Include="FileHandler.cpp" />
     <ClCompile Include="Length.cpp" />

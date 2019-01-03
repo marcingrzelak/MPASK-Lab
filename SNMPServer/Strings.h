@@ -25,5 +25,13 @@ constexpr auto IDENTIFIER_TYPE_SEQUENCE_OF = "SEQUENCE OF";
 constexpr unsigned int IDENTIFIER_TAG_LONG = 0x1F;
 constexpr auto DATATYPE_KEYWORD_IMPLICIT = "IMPLICIT";
 constexpr auto DATATYPE_KEYWORD_EXPLICIT = "EXPLICIT";
+
+constexpr int INTEGER_TAG_NUMBER = 2;
+constexpr int OCTET_STRING_TAG_NUMBER = 4;
+constexpr int NULL_TAG_NUMBER = 5;
+constexpr int OBJECT_IDENTIFIER_TAG_NUMBER = 6;
+constexpr int SEQUENCE_TAG_NUMBER = 16;
+
+
 #pragma endregion
 

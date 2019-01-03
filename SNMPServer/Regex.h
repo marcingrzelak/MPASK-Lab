@@ -27,4 +27,5 @@ public:
 	static regex choiceOneElement();
 	static regex sequenceGeneral();
 	static regex sequenceOneElement();
+	static regex objectIdentifierCheckType();
 };

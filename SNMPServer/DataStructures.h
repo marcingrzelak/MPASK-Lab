@@ -56,7 +56,7 @@ public:
 	int iName = 1, iSyntax = 2, iAccess = 3, iStatus = 4, iDescription = 5, iIndex = 6, iParent = 7, iOid = 8;
 };
 
-class SpecialDataType
+class ObjectTypeSize
 {
 public:
 	string name;

@@ -80,8 +80,6 @@ regex Regex::dataTypeEncoder()
 	return regex(R"((INTEGER)|(OCTET STRING)|(OBJECT IDENTIFIER)|(NULL))");
 }
 
-
-
 regex Regex::choiceGeneral()
 {
 	return regex(R"((\w*)\s::=\s?CHOICE\s\{\s(.*?)\s\})");
@@ -100,4 +98,9 @@ regex Regex::sequenceGeneral()
 regex Regex::sequenceOneElement()
 {
 	return regex(R"(\s?(\S*?)\s(.*?),)");
+}
+
+regex Regex::objectIdentifierCheckType()
+{
+	return regex(R"(\d+\.{1})");
 }

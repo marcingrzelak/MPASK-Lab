@@ -4,6 +4,7 @@
 #include "Value.h"
 #include "TreeStructure.h"
 #include "DataStructures.h"
+#include "CheckValue.h"
 
 class BERCoder
 {
@@ -25,15 +26,14 @@ public:
 
 	void setValue(string pValue);
 	void setValue(long long pValue, int pLength);
+	unsigned long long setValue(vector<string> pObjectIdentifierSubidentifiers);
 	void clearValue();
 
-	stringstream concatAllValues(bool pIsValueNumber);
-	int checkValue(string pValue, TreeNode* pNode, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType);
-	string encode(TreeNode* pNode, string pValue, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<SpecialDataType> &pVSpecialDataType);
+	string concatAllValues(bool pIsValueNumber);
+	string nullEncode();
 
-	bool isValueNumber;
-	long long pValueINT = LONG_MIN;
-	long long byteCount, bitCount;
-	int type = 0;
+	string encode(string pValue, int pType, int pTypeID, unsigned long long pByteCount, string pKeyword, string pVisibility, vector<string> pSequenceValues, vector<int> pSequenceTypes, vector<int> pSequenceTypeID, vector<unsigned long long> pSequenceBytesCount, vector<string> pSequenceKeywords, vector<string> pSequenceVisibilities);
+
+	string treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize);
+	string anyValueEncoding(string encodedValue, bool isSequence);
 };
-

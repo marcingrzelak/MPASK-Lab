@@ -148,6 +148,10 @@ string Tree::findNodeWord(string pName, TreeNode * node, string OID)
 
 TreeNode * Tree::findOID(string pOID, TreeNode * node)
 {
+	if (pOID.find(".") == string::npos)
+	{
+		return node;
+	}
 	stringstream streamOID(pOID);
 	string singleOID;
 	vector<int> OIDlist;
