@@ -86,7 +86,7 @@ void PDUPackage::analyzePacket(string packet)
 
 	int index = 0;
 	decoder.decode(packet, index, BERTree, nullptr);
-	//BERTree.root->printTree("", true);
+	BERTree.root->printTree("", true);
 
 	community = BERTree.root->next[1]->value;
 	requestID = stoi(BERTree.root->next[2]->next[0]->value);
@@ -119,18 +119,29 @@ void PDUPackage::addDataToVector(int dataType, int typeId, string dataValue, str
 	sequenceDataSizes.push_back(dataSize);
 }
 
-int PDUPackage::packetHandler(string packet)
+string PDUPackage::packetHandler(string packet, Tree &OIDTree)
 {
 	analyzePacket(packet);
 
 	map<string, string>::iterator itr;
 
-
+	int i = 0;
 	for (itr = varBindList.begin(); itr != varBindList.end(); ++itr)
 	{
-		
+		TreeNode *node = OIDTree.findOID(itr->first, OIDTree.root);
+		if (node != nullptr)//znaleziono oid
+		{
+			//node->name
+			cout << "znaleziono lisc" << endl;
+		}
+		else
+		{
+			//error brak liscia o podanym oid
+			errorIndex = i;
+			errorStatus = 2;
+			return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+		}
+		i++;
 	}
-
-
-	return 0;
+	return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
 }

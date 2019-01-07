@@ -156,6 +156,7 @@ TreeNode * Tree::findOID(string pOID, TreeNode * node)
 	string singleOID;
 	vector<int> OIDlist;
 	TreeNode* newNode = node;
+	bool isOIDFound = false;
 
 	while (getline(streamOID, singleOID, '.'))
 	{
@@ -166,19 +167,23 @@ TreeNode * Tree::findOID(string pOID, TreeNode * node)
 	{
 		for (unsigned int i = 1; i < OIDlist.size(); i++)
 		{
-			int counter = newNode->next.size();;
+			int counter = newNode->next.size();
 			for (int j = 0; j < counter; j++)
 			{
+				isOIDFound = false;
 				if (newNode->next.at(j)->OID == OIDlist.at(i))
 				{
+					isOIDFound = true;
 					newNode = newNode->next.at(j);
 					j = counter;
 				}
 			}
-			//return nullptr;
+			if (!isOIDFound || counter == 0)
+			{
+				return nullptr;
+			}
 		}
 	}
-
 	return newNode;
 }
 
