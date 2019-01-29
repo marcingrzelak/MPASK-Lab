@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28010.2046
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SNMPServer", "SNMPServer.vcxproj", "{DFA52D5E-4D4E-4B40-BB70-E438AB175AF5}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SNMPClient", "..\SNMPClient\SNMPClient.vcxproj", "{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -21,6 +23,14 @@ Global
 		{DFA52D5E-4D4E-4B40-BB70-E438AB175AF5}.Release|x64.Build.0 = Release|x64
 		{DFA52D5E-4D4E-4B40-BB70-E438AB175AF5}.Release|x86.ActiveCfg = Release|Win32
 		{DFA52D5E-4D4E-4B40-BB70-E438AB175AF5}.Release|x86.Build.0 = Release|Win32
+		{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}.Debug|x64.ActiveCfg = Debug|x64
+		{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}.Debug|x64.Build.0 = Debug|x64
+		{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}.Debug|x86.ActiveCfg = Debug|Win32
+		{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}.Debug|x86.Build.0 = Debug|Win32
+		{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}.Release|x64.ActiveCfg = Release|x64
+		{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}.Release|x64.Build.0 = Release|x64
+		{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}.Release|x86.ActiveCfg = Release|Win32
+		{AEDA7E07-AAC8-4B0B-918C-0AB45DA6C229}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
