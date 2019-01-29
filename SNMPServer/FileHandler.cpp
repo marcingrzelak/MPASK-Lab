@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "FileHandler.h"
 #include "Regex.h"
+#include "Exceptions.h"
+#include "Strings.h"
 
 
 FileHandler::FileHandler(string path)
@@ -15,6 +17,11 @@ FileHandler::~FileHandler()
 
 string FileHandler::FileRead()
 {
+	if (file.good() == false)
+	{
+		throw FileOpen();
+	}
+
 	string wholeFile = "", line;
 	while (!file.eof())
 	{

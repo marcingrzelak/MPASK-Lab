@@ -1,6 +1,7 @@
 #pragma once
 #include "Strings.h"
 #include "TreeStructure.h"
+#include "DataStructures.h"
 
 class PDUPackage
 {
@@ -12,7 +13,7 @@ public:
 	void analyzePacket(string packet);
 	void clearVectors();
 	void addDataToVector(int dataType, int typeId, string dataValue, string keyword, string visibility, unsigned long long dataSize);
-	string packetHandler(string packet, Tree &OIDTree);
+	string packetHandler(string packet, Tree &OIDTree, vector<DataType>& pVDataType, vector<Index>& pVIndex, vector<Choice>& pVChoice, vector<Sequence>& pVSequence, vector<ObjectTypeSize>& pVObjectTypeSize);
 
 	int requestID, errorStatus, errorIndex;
 	string packetType, community;

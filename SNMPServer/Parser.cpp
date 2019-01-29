@@ -4,6 +4,7 @@
 #include "TreeStructure.h"
 #include "Regex.h"
 #include "DataStructures.h"
+#include "Exceptions.h"
 
 
 Parser::Parser()
@@ -43,7 +44,15 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	sregex_iterator endIterator;
 
 	cout << "Odczyt pliku " << pFilePath << " do pamieci" << endl;
-	mainFile = file.FileRead();
+	try
+	{
+		mainFile = file.FileRead();
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		return;
+	}
 	cout << "Odczyt zakonczony" << endl;
 
 #pragma region IMPORTS

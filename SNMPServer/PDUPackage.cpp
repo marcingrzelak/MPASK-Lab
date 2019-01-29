@@ -34,7 +34,11 @@ string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int 
 	{
 		checkValue.setValueParameters(itr->first);
 		addDataToVector(OBJECT_IDENTIFIER_TAG_NUMBER, 0, itr->first, "", "", checkValue.byteCount);
-		addDataToVector(SEQUENCE_TAG_NUMBER, 0, itr->second, "", "", 0);//zakodowana juz wartosc z drzewa
+		if (itr->second == "")
+		{
+			addDataToVector(SEQUENCE_TAG_NUMBER, 0, coder.nullEncode(), "", "", 0);
+		}
+		addDataToVector(SEQUENCE_TAG_NUMBER, 0, itr->second, "", "", 0);//w itr->second mamy juz zakodowana wartosc z drzewa
 
 		varBindEncoded += coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
 		clearVectors();
@@ -51,11 +55,11 @@ string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int 
 
 	//error status
 	checkValue.setValueParameters(to_string(errorStatus));
-	addDataToVector(INTEGER_TAG_NUMBER, 0, "0", "", "", checkValue.byteCount);
+	addDataToVector(INTEGER_TAG_NUMBER, 0, to_string(errorStatus), "", "", checkValue.byteCount);
 
 	//error index
 	checkValue.setValueParameters(to_string(errorIndex));
-	addDataToVector(INTEGER_TAG_NUMBER, 0, "0", "", "", checkValue.byteCount);
+	addDataToVector(INTEGER_TAG_NUMBER, 0, to_string(errorIndex), "", "", checkValue.byteCount);
 
 	//varbind list
 	addDataToVector(SEQUENCE_TAG_NUMBER, 0, varBindListEncoded, "", "", 0);
@@ -119,8 +123,11 @@ void PDUPackage::addDataToVector(int dataType, int typeId, string dataValue, str
 	sequenceDataSizes.push_back(dataSize);
 }
 
-string PDUPackage::packetHandler(string packet, Tree &OIDTree)
+string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>& pVDataType, vector<Index>& pVIndex, vector<Choice>& pVChoice, vector<Sequence>& pVSequence, vector<ObjectTypeSize>& pVObjectTypeSize)
 {
+	BERCoder coder;
+	CheckValue checkValue;
+	string st;
 	analyzePacket(packet);
 
 	map<string, string>::iterator itr;
@@ -128,17 +135,67 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree)
 	int i = 0;
 	for (itr = varBindList.begin(); itr != varBindList.end(); ++itr)
 	{
-		TreeNode *node = OIDTree.findOID(itr->first, OIDTree.root);
+
+		TreeNode *node;
+		if (itr->first.back() == '0')
+		{
+			st = itr->first.substr(0, itr->first.size() - 2);
+		}
+		else
+		{
+			st = itr->first;
+		}
+
+		node = OIDTree.findOID(st, OIDTree.root);
+
 		if (node != nullptr)//znaleziono oid
 		{
-			//node->name
-			cout << "znaleziono lisc" << endl;
+			if (stoi(packetType) == GET_REQUEST_TAG_NUMBER)
+			{
+				//pobranie wartosci z drzewa todo
+				string value = "1";
+				string encodedNode = coder.treeNodeEncoding(st, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				if (encodedNode != "")
+				{
+					itr->second = encodedNode;
+				}
+			}
+
+			if (stoi(packetType) == SET_REQUEST_TAG_NUMBER)
+			{
+				if (node->access == READ_ONLY)
+				{
+					errorIndex = i;
+					errorStatus = PDU_ERR_READ_ONLY;
+					return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+				}
+				else
+				{
+					string test = coder.treeNodeEncoding(st, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+					if (test != "")//mozna zakodowac nowa wartosc - poprawny typ i rozmiar
+					{
+						//ustawienie wartosci w drzewie todo
+						itr->second = coder.nullEncode();
+					}
+					else
+					{
+						errorIndex = i;
+						errorStatus = PDU_ERR_BAD_VALUE;
+						return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+					}
+				}
+			}
+
+			if (stoi(packetType) == GET_NEXT_REQUEST_TAG_NUMBER)
+			{
+
+			}
 		}
 		else
 		{
 			//error brak liscia o podanym oid
 			errorIndex = i;
-			errorStatus = 2;
+			errorStatus = PDU_ERR_NO_SUCH_NAME;
 			return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
 		}
 		i++;

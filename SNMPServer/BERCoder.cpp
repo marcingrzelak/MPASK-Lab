@@ -375,6 +375,63 @@ string BERCoder::treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, 
 	return string();
 }
 
+string BERCoder::treeNodeEncoding(string nodeNameOrOID, string valueToEncode, Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
+{
+	string keyword = "", visibility = "";
+	CheckValue checkValue;
+	int encodingType = 0, type = 0, typeID = 0, encodingDataType = 0;
+	unsigned long long byteCount = 0;
+
+	TreeNode* node = pOIDTree.findOID(nodeNameOrOID, pOIDTree.root);
+	if (node == pOIDTree.root)
+	{
+		node = pOIDTree.findNode(nodeNameOrOID, pOIDTree.root);
+	}
+	if (node != nullptr && node != pOIDTree.root)
+	{
+		int result = checkValue.checkValue(valueToEncode, node, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+		if (result == 0)
+		{
+			if (checkValue.typeDataType != 0)
+			{
+				typeID = pVDataType.at(checkValue.indexDataType).typeID;
+				byteCount = checkValue.byteCount;
+				keyword = pVDataType.at(checkValue.indexDataType).keyword;
+				visibility = pVDataType.at(checkValue.indexDataType).visibility;
+				type = checkValue.typeDataType;
+			}
+			else if (checkValue.type != 0)
+			{
+				typeID = NULL;
+				byteCount = checkValue.byteCount;
+				keyword = "";
+				visibility = "";
+				type = checkValue.type;
+			}
+			else
+			{
+				typeID = NULL;
+				byteCount = NULL;
+				keyword = "";
+				visibility = "";
+				type = SEQUENCE_TAG_NUMBER;
+			}
+
+			string encodedValue = encode(valueToEncode, type, typeID, byteCount, keyword, visibility, checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+			return encodedValue;
+		}
+		else if (result == -1)
+		{
+			cout << "Blad typu" << endl;
+		}
+		else if (result == -2)
+		{
+			cout << "Blad rozmiaru" << endl;
+		}
+	}
+	return string();
+}
+
 string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 {
 	int encodingDataType = 0, type = 0, typeID = 0;
