@@ -5,8 +5,7 @@ int main()
 {
 	int bytesSent;
 	int bytesRecv = SOCKET_ERROR;
-	char sendbuf[32] = "Client says hello!";
-	char recvbuf[32] = "";
+	char *recvbuf;
 
 	WSADATA wsaData;
 
@@ -16,7 +15,7 @@ int main()
 		cout << "Initialization error." << endl;
 	}
 
-	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_UDP);
 	if (mainSocket == INVALID_SOCKET)
 	{
 		cout << "Error creating socket: " << WSAGetLastError() << endl;
@@ -36,6 +35,11 @@ int main()
 		WSACleanup();
 		return 1;
 	}
+
+	string pduString = "";
+	cout << "Wpisz pakiet PDU" << endl;
+	cin >> pduString;
+	const char *sendbuf = pduString.c_str();
 
 	bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
 	cout << "Bytes sent: " << bytesSent << endl;

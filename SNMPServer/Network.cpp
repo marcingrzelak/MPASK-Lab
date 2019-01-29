@@ -21,7 +21,7 @@ void Network::setSocket()
 		cout << "Initialization error." << endl;
 	}
 
-	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_UDP);
 	if (mainSocket == INVALID_SOCKET)
 	{
 		cout << "Error creating socket: " << WSAGetLastError() << endl;

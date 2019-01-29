@@ -11,6 +11,7 @@
 
 // TODO: add headers that you want to pre-compile here
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
+#include <string>
 #include <winsock2.h>
 #include <cstdlib>
 #include <cstdio>
