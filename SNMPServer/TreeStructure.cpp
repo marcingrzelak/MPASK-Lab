@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "TreeStructure.h"
+#include "Exceptions.h"
 
 TreeNode::TreeNode()
 {
@@ -63,6 +64,10 @@ void Tree::addRoot(string pName, int pOID)
 }
 void Tree::addNode(string pName, int pOID, TreeNode *parent)
 {
+	if (parent == NULL)
+	{
+		throw eAddNodeParentNull();
+	}
 	TreeNode *children = new TreeNode;
 
 	children->name = pName;
@@ -124,6 +129,10 @@ TreeNode * Tree::findNodeSpecificOID(string pName, int pOID, TreeNode * node)
 
 string Tree::findNodeWord(string pName, TreeNode * node, string OID)
 {
+	if (node == NULL)
+	{
+		throw eFindNodeWordParentNull();
+	}
 	if (node->name == pName)
 	{
 		OID.append(to_string(node->OID));
@@ -148,6 +157,10 @@ string Tree::findNodeWord(string pName, TreeNode * node, string OID)
 
 TreeNode * Tree::findOID(string pOID, TreeNode * node)
 {
+	if (node == NULL)
+	{
+		throw eFindOIDParentNull();
+	}
 	if (pOID.find(".") == string::npos)
 	{
 		return node;

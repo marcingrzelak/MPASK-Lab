@@ -2,8 +2,6 @@
 #include "FileHandler.h"
 #include "Regex.h"
 #include "Exceptions.h"
-#include "Strings.h"
-
 
 FileHandler::FileHandler(string path)
 {
@@ -19,7 +17,7 @@ string FileHandler::FileRead()
 {
 	if (file.good() == false)
 	{
-		throw FileOpen();
+		throw eFileOpen();
 	}
 
 	string wholeFile = "", line;
@@ -30,7 +28,10 @@ string FileHandler::FileRead()
 		wholeFile.append(line+" ");
 	}
 
+	cout << "\tKomentarze usuniete" << endl;
+
 	wholeFile = regex_replace(wholeFile, Regex::whitespaces(), " ");
+	cout << "\tBiale znaki usuniete" << endl;
 
 	return wholeFile;
 }

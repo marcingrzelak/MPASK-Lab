@@ -1,8 +1,16 @@
 #pragma once
 
 #pragma region errors
-constexpr auto FILE_OPEN_ERR_MSG = "Blad otwarcia pliku.\n\n";
-#define F_DIM_FORMAT_ERR_MSG "abc"
+constexpr auto FILE_OPEN_ERR_MSG = "Blad otwarcia pliku\n\n";
+constexpr auto PARSER_ERR_MSG = "Blad parsera\n\n";
+constexpr auto PARSER_STOI_ERR_MSG = "Blad parsera - konwersja stringa na liczbe\n\n";
+constexpr auto ADD_NODE_PARENT_NULL_ERR = "Probowano dodac wezel do niezainicjalizowanego rodzica\n\n";
+constexpr auto FIND_OID_PARENT_NULL_ERR= "Probowano wyszukac element w pustym drzewie\n\n";
+constexpr auto FIND_NODE_WORD_PARENT_NULL_ERR = "Probowano wyszukac element w pustym drzewie\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
 
 #pragma endregion
 
@@ -61,6 +69,26 @@ constexpr int PDU_ERR_READ_ONLY = 4;
 constexpr int PDU_ERR_GEN_ERR = 5;
 
 constexpr auto READ_ONLY = "read-only";
+
+//constexpr auto comments = R"(-{2}.*)";
+//constexpr auto whitespaces = R"(\s{2,})";
+//constexpr auto importsGeneral = R"(IMPORTS\s(.*?);)";
+//constexpr auto imports = R"((.*?)\sFROM\s(\S*))";
+//constexpr auto importsOneElement = R"(\s?(.*?),)";
+//constexpr auto objectIdentifierGeneral = R"((\S*)\sOBJECT\sIDENTIFIER\s::=\s\{\s(.*?)\s(\d+)\s\})";
+//constexpr auto objectIdentifierLongParent = R"((\S*?)(\((\d+)\))?\s)";
+//constexpr auto objectType = R"((\w*)\sOBJECT-TYPE\sSYNTAX\s(.*?)\sACCESS\s(.*?)\sSTATUS\s(.*?)\sDESCRIPTION\s(.*?)\s(INDEX\s\{.*?\}\s)?::=\s\{\s(\S*)\s(\d+)\s\})";
+//constexpr auto sizeGeneral = R"(\(.*?\)+)";
+//constexpr auto sizeR = R"(\(SIZE\((\d+)\)\)|\((\d+)\.\.(\d+)\))";
+//constexpr auto index = R"(\{\s(.*?)\s\})";
+//constexpr auto indexOneElement = R"(\s?(.*?),)";
+//constexpr auto dataType = R"((\w*?)\s::=\s?\[?(\S*?)?\s?(\d+)?\]?\s?(\S*?)?\s(INTEGER|OCTET STRING|OBJECT IDENTIFIER|NULL)\s\(?(((SIZE)?\s\((\d+)\))|((\d+)\.{2}(\d+)))?\)?)";
+//constexpr auto dataTypeEncoder = R"((INTEGER)|(OCTET STRING)|(OBJECT IDENTIFIER)|(NULL))";
+//constexpr auto choiceGeneral = R"((\w*)\s::=\s?CHOICE\s\{\s(.*?)\s\})";
+//constexpr auto choiceOneElement = R"(\s?(\S*?)\s(.*?),)";
+//constexpr auto sequenceGeneral = R"((\w*)\s::=\sSEQUENCE\s\{(.*?)\s\})";
+//constexpr auto sequenceOneElement = R"(\s?(\S*?)\s(.*?),)";
+//constexpr auto objectIdentifierCheckType = R"(\d+\.{1})";
 
 
 #pragma endregion
