@@ -31,3 +31,28 @@ void eFindNodeWordParentNull::message()
 {
 	cout << FIND_NODE_WORD_PARENT_NULL_ERR;
 }
+
+void eAnyValueEncodingWrongType::message()
+{
+	cout << ENCODING_INPUT_TYPE_ERR;
+}
+
+void eEncodingWrongType::message()
+{
+	cout << ENCODING_TYPE_ERR;
+}
+
+void eEncodingWrongSize::message()
+{
+	cout << ENCODING_SIZE_ERR;
+}
+
+void eEncoder::message()
+{
+	cout << ENCODER_ERR_MSG;
+}
+
+void eNodeNotFound::message()
+{
+	cout << NODE_NOT_FOUND;
+}

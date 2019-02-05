@@ -7,10 +7,13 @@ constexpr auto PARSER_STOI_ERR_MSG = "Blad parsera - konwersja stringa na liczbe
 constexpr auto ADD_NODE_PARENT_NULL_ERR = "Probowano dodac wezel do niezainicjalizowanego rodzica\n\n";
 constexpr auto FIND_OID_PARENT_NULL_ERR= "Probowano wyszukac element w pustym drzewie\n\n";
 constexpr auto FIND_NODE_WORD_PARENT_NULL_ERR = "Probowano wyszukac element w pustym drzewie\n\n";
-//constexpr auto = "\n\n";
-//constexpr auto = "\n\n";
-//constexpr auto = "\n\n";
-//constexpr auto = "\n\n";
+constexpr auto ENCODING_INPUT_TYPE_ERR = "Podano zly numer typu danych\n\n";
+constexpr auto ENCODING_TYPE_ERR = "Blad typu danych\n\n";
+constexpr auto ENCODING_SIZE_ERR = "Blad rozmiaru danych\n\n";
+constexpr auto ENCODER_ERR_MSG = "Blad kodera\n\n";
+constexpr auto NODE_NOT_FOUND = "Nie znaleziono liscia\n\n";
+
+
 
 #pragma endregion
 

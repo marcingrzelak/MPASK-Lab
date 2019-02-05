@@ -7,7 +7,7 @@
 #include "Value.h"
 #include "Regex.h"
 #include "CheckValue.h"
-
+#include "Exceptions.h"
 
 BERCoder::BERCoder()
 {
@@ -309,24 +309,43 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 	return "";
 }
 
-string BERCoder::treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
+string BERCoder::treeNodeEncoding(string nodeNameOrOID, string valueToEncode, Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
 {
-	string nodeNameOrOID = "", valueToEncode = "", keyword = "", visibility = "";
+	string keyword = "", visibility = "";
 	CheckValue checkValue;
 	int encodingType = 0, type = 0, typeID = 0, encodingDataType = 0;
+	bool askForValues = false;
 	unsigned long long byteCount = 0;
+	TreeNode* node;
 
-	cout << endl << "Podaj nazwe lub OID liscia:" << endl;
-	cin >> nodeNameOrOID;
+	if (nodeNameOrOID.length() == 0)
+	{
+		askForValues = true;
+	}
 
-	TreeNode* node = pOIDTree.findOID(nodeNameOrOID, pOIDTree.root);
+	if (askForValues)
+	{
+		cout << endl << "Podaj nazwe lub OID liscia:" << endl;
+		cin >> nodeNameOrOID;
+	}
+
+	try
+	{
+		node = pOIDTree.findOID(nodeNameOrOID, pOIDTree.root);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eEncoder();
+	}
+
 	if (node == pOIDTree.root)
 	{
 		node = pOIDTree.findNode(nodeNameOrOID, pOIDTree.root);
 	}
 	if (node != nullptr && node != pOIDTree.root)
 	{
-		if (node->syntax != IDENTIFIER_TYPE_NULL)
+		if (node->syntax != IDENTIFIER_TYPE_NULL && askForValues)
 		{
 			cout << "Podaj wartosc do zakodowania:" << endl;
 			cin >> valueToEncode;
@@ -365,71 +384,21 @@ string BERCoder::treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, 
 		}
 		else if (result == -1)
 		{
-			cout << "Blad typu" << endl;
+			throw eEncodingWrongType();
 		}
 		else if (result == -2)
 		{
-			cout << "Blad rozmiaru" << endl;
+			throw eEncodingWrongSize();
+		}
+		else
+		{
+			throw eEncoder();
 		}
 	}
-	return string();
-}
-
-string BERCoder::treeNodeEncoding(string nodeNameOrOID, string valueToEncode, Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
-{
-	string keyword = "", visibility = "";
-	CheckValue checkValue;
-	int encodingType = 0, type = 0, typeID = 0, encodingDataType = 0;
-	unsigned long long byteCount = 0;
-
-	TreeNode* node = pOIDTree.findOID(nodeNameOrOID, pOIDTree.root);
-	if (node == pOIDTree.root)
+	else
 	{
-		node = pOIDTree.findNode(nodeNameOrOID, pOIDTree.root);
+		throw eNodeNotFound();
 	}
-	if (node != nullptr && node != pOIDTree.root)
-	{
-		int result = checkValue.checkValue(valueToEncode, node, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
-		if (result == 0)
-		{
-			if (checkValue.typeDataType != 0)
-			{
-				typeID = pVDataType.at(checkValue.indexDataType).typeID;
-				byteCount = checkValue.byteCount;
-				keyword = pVDataType.at(checkValue.indexDataType).keyword;
-				visibility = pVDataType.at(checkValue.indexDataType).visibility;
-				type = checkValue.typeDataType;
-			}
-			else if (checkValue.type != 0)
-			{
-				typeID = NULL;
-				byteCount = checkValue.byteCount;
-				keyword = "";
-				visibility = "";
-				type = checkValue.type;
-			}
-			else
-			{
-				typeID = NULL;
-				byteCount = NULL;
-				keyword = "";
-				visibility = "";
-				type = SEQUENCE_TAG_NUMBER;
-			}
-
-			string encodedValue = encode(valueToEncode, type, typeID, byteCount, keyword, visibility, checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
-			return encodedValue;
-		}
-		else if (result == -1)
-		{
-			cout << "Blad typu" << endl;
-		}
-		else if (result == -2)
-		{
-			cout << "Blad rozmiaru" << endl;
-		}
-	}
-	return string();
 }
 
 string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
@@ -443,6 +412,10 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 	{
 		cout << "Wybierz typ danych do zakodowania" << endl << "2 - INTEGER" << endl << "4 - OCTET STRING" << endl << "5 - NULL" << endl << "6 - OBJECT IDENTIFIER" << endl << "16 - SEQUENCE" << endl;
 		cin >> encodingDataType;
+		if (encodingDataType != INTEGER_TAG_NUMBER && encodingDataType != OCTET_STRING_TAG_NUMBER && encodingDataType != NULL_TAG_NUMBER && encodingDataType != OBJECT_IDENTIFIER_TAG_NUMBER && encodingDataType != SEQUENCE_TAG_NUMBER)
+		{
+			throw eAnyValueEncodingWrongType();
+		}
 	}
 
 	if (encodingDataType != SEQUENCE_TAG_NUMBER && !isSequence)
@@ -492,12 +465,12 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 			}
 			else
 			{
-				return "";
+				throw eEncodingWrongSize();
 			}
 		}
 		else
 		{
-			return "";
+			throw eEncodingWrongType();
 		}
 	}
 
@@ -514,13 +487,16 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 		for (size_t i = 0; i < sequenceSize; i++)
 		{
 			cin >> sequenceDataType;
+			if (sequenceDataType != INTEGER_TAG_NUMBER && sequenceDataType != OCTET_STRING_TAG_NUMBER && sequenceDataType != NULL_TAG_NUMBER && sequenceDataType != OBJECT_IDENTIFIER_TAG_NUMBER && sequenceDataType != SEQUENCE_TAG_NUMBER)
+			{
+				throw eAnyValueEncodingWrongType();
+			}
 			sequenceDataTypes.push_back(sequenceDataType);
 		}
 
 		if (sequenceSize > 1 && syntax != IDENTIFIER_TYPE_NULL)
 		{
 			cout << "Podaj dane do zakodowania" << endl;
-
 		}
 
 		for (size_t i = 0; i < sequenceSize; i++)
@@ -577,12 +553,12 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 					}
 					else
 					{
-						return "";
+						throw eEncodingWrongSize();
 					}
 				}
 				else
 				{
-					return "";
+					throw eEncodingWrongType();
 				}
 			}
 		}
