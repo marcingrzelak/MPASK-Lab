@@ -70,3 +70,75 @@ class eNodeNotFound : public Exceptions
 public:
 	void message();
 };
+
+class eUnknownClass : public Exceptions
+{
+public:
+	void message();
+};
+
+class eUnknownComplexity : public Exceptions
+{
+public:
+	void message();
+};
+
+class eIdentifier : public Exceptions
+{
+public:
+	void message();
+};
+
+class eLength : public Exceptions
+{
+public:
+	void message();
+};
+
+class eValue : public Exceptions
+{
+public:
+	void message();
+};
+
+class eWrongTag : public Exceptions
+{
+public:
+	void message();
+};
+
+class eUnknownTagType : public Exceptions
+{
+public:
+	void message();
+};
+
+class eLengthKEqual127 : public Exceptions
+{
+public:
+	void message();
+};
+
+class eLengthKGraterThen127 : public Exceptions
+{
+public:
+	void message();
+};
+
+class eLengthEqual128 : public Exceptions
+{
+public:
+	void message();
+};
+
+class eValueObjectIdentifier : public Exceptions
+{
+public:
+	void message();
+};
+
+class eDecoder : public Exceptions
+{
+public:
+	void message();
+};

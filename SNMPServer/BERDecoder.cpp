@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "BERDecoder.h"
 #include "TreeStructure.h"
+#include "Exceptions.h"
 
 
 BERDecoder::BERDecoder()
@@ -27,9 +28,18 @@ void BERDecoder::getVectorOfBytes(string pValue)
 
 void BERDecoder::getIdentifier(int &pIndex)
 {
-	classValue = identifier.getClass(octets.at(pIndex));
-	complexityValue = identifier.getComplexity(octets.at(pIndex));
-	tagValue = identifier.getTag(octets, pIndex);
+	try
+	{
+		classValue = identifier.getClass(octets.at(pIndex));
+		complexityValue = identifier.getComplexity(octets.at(pIndex));
+		tagValue = identifier.getTag(octets, pIndex);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eDecoder();
+	}
+
 }
 
 void BERDecoder::getLength(int &pIndex)

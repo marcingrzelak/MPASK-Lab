@@ -12,8 +12,24 @@ constexpr auto ENCODING_TYPE_ERR = "Blad typu danych\n\n";
 constexpr auto ENCODING_SIZE_ERR = "Blad rozmiaru danych\n\n";
 constexpr auto ENCODER_ERR_MSG = "Blad kodera\n\n";
 constexpr auto NODE_NOT_FOUND = "Nie znaleziono liscia\n\n";
-
-
+constexpr auto UNKNOWN_CLASS_ERR = "Niepoprawny typ klasy w bajcie identyfikatora\n\n";
+constexpr auto UNKNOWN_COMPLEXITY_ERR = "Typ nie jest ani prosty, ani zlozony\n\n";
+constexpr auto WRONG_TAG_ERR = "Tag nie moze miec wartosci 31\n\n";
+constexpr auto UNKNOWN_TAG_TYPE_ERR = "Nie rozpoznano tagu\n\n";
+constexpr auto LENGTH_K_ERR = "Niepoprawna ilosc oktetow (K) pola dlugosc\n\n";
+constexpr auto LENGTH_ERR = "Pole dlugosci nie moze miec 128 bajtow\n\n";
+constexpr auto VALUE_OBJECT_IDENTIFIER_ERR = "Niepoprawne dane dla typu object identifier\n\n";
+constexpr auto DECODER_ERR_MSG = "Blad dekodera\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
+//constexpr auto = "\n\n";
 
 #pragma endregion
 

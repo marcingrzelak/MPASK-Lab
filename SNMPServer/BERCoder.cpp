@@ -20,16 +20,34 @@ BERCoder::~BERCoder()
 
 void BERCoder::setIdentifier(string pClass, string pComplexity, string pType)
 {
-	identifier.setClass(pClass);
-	identifier.setComplexity(pComplexity);
-	identifier.setTagFromType(pType);
+	try
+	{
+		identifier.setClass(pClass);
+		identifier.setComplexity(pComplexity);
+		identifier.setTagFromType(pType);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eIdentifier();
+	}
+
 }
 
 void BERCoder::setIdentifier(string pClass, string pComplexity, unsigned int pTag)
 {
-	identifier.setClass(pClass);
-	identifier.setComplexity(pComplexity);
-	identifier.setTag(pTag);
+	try
+	{
+		identifier.setClass(pClass);
+		identifier.setComplexity(pComplexity);
+		identifier.setTag(pTag);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eIdentifier();
+	}
+
 }
 
 void BERCoder::clearIdentifier()
@@ -40,7 +58,15 @@ void BERCoder::clearIdentifier()
 
 void BERCoder::setLength(unsigned long long pLength)
 {
-	length.setDefinedForm(pLength);
+	try
+	{
+		length.setDefinedForm(pLength);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eLength();
+	}
 }
 
 void BERCoder::clearLength()
@@ -61,7 +87,15 @@ void BERCoder::setValue(long long pValue, int pLength)
 
 unsigned long long BERCoder::setValue(vector<string> pObjectIdentifierSubidentifiers)
 {
-	value.setValue(pObjectIdentifierSubidentifiers);
+	try
+	{
+		value.setValue(pObjectIdentifierSubidentifiers);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eValue();
+	}
 	return value.octet.size();
 }
 
@@ -133,7 +167,7 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		stringstream test(pValue);
 		string segment;
 
-		while (std::getline(test, segment, '.'))
+		while (getline(test, segment, '.'))
 		{
 			pObjectIdentifierSubidentifiers.push_back(segment);
 		}
@@ -156,7 +190,15 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 	{
 		if (pKeyword.size() == 0) //kodowanie uniwersalne
 		{
-			this->setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			try
+			{
+				this->setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+
+			}
+			catch (Exceptions&)
+			{
+				throw eEncoder();
+			}
 			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
 				this->setLength(pByteCount);
@@ -182,11 +224,26 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		{
 			if (pVisibility.size() == 0)//brak widocznosci klasy
 			{
-				this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+				try
+				{
+					this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+
+				}
+				catch (Exceptions&)
+				{
+					throw eEncoder();
+				}
 			}
 			else
 			{
-				this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+				try
+				{
+					this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+				}
+				catch (Exceptions&)
+				{
+					throw eEncoder();
+				}
 			}
 
 			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
@@ -214,16 +271,38 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		{
 			if (pVisibility.size() == 0)//brak widocznosci klasy
 			{
-				this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				try
+				{
+					this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				}
+				catch (Exceptions&)
+				{
+					throw eEncoder();
+				}
 			}
 			else
 			{
-				this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				try
+				{
+					this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				}
+				catch (Exceptions&)
+				{
+					throw eEncoder();
+				}
 			}
 
 			BERCoder temp;
 
-			temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			try
+			{
+				temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			}
+			catch (Exceptions&)
+			{
+				throw eEncoder();
+			}
+
 			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
 				temp.setLength(pByteCount);

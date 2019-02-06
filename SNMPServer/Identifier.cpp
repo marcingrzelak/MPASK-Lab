@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Identifier.h"
 #include "Strings.h"
+#include "Exceptions.h"
 
 Identifier::Identifier()
 {
@@ -47,7 +48,7 @@ void Identifier::setClass(string pClass)
 	}
 	else
 	{
-		//error
+		throw eUnknownClass();
 	}
 }
 
@@ -63,7 +64,7 @@ void Identifier::setComplexity(string pComplexity)
 	}
 	else
 	{
-		//error
+		throw eUnknownComplexity();
 	}
 }
 
@@ -104,7 +105,7 @@ void Identifier::setTag(unsigned long pTag)
 	}
 	else
 	{
-		//error
+		throw eWrongTag();
 	}
 }
 
@@ -136,7 +137,7 @@ void Identifier::setTagFromType(string pType)
 	}
 	else
 	{
-		//error
+		throw eUnknownTagType();
 	}
 }
 
@@ -162,7 +163,7 @@ string Identifier::getClass(uint8_t pOctet)
 	}
 	else
 	{
-		//error
+		throw eUnknownClass();
 	}
 }
 
@@ -180,7 +181,7 @@ string Identifier::getComplexity(uint8_t pOctet)
 	}
 	else
 	{
-		//error
+		throw eUnknownComplexity();
 	}
 }
 

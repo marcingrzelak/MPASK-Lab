@@ -44,22 +44,22 @@ int main()
 	bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
 	cout << "Bytes sent: " << bytesSent << endl;
 
-	while (bytesRecv == SOCKET_ERROR)
-	{
-		bytesRecv = recv(mainSocket, recvbuf, 32, 0);
+	//while (bytesRecv == SOCKET_ERROR)
+	//{
+	//	bytesRecv = recv(mainSocket, recvbuf, 32, 0);
 
-		if (bytesRecv == 0 || bytesRecv == WSAECONNRESET)
-		{
-			cout << "Connection closed." << endl;
-			break;
-		}
+	//	if (bytesRecv == 0 || bytesRecv == WSAECONNRESET)
+	//	{
+	//		cout << "Connection closed." << endl;
+	//		break;
+	//	}
 
-		if (bytesRecv < 0)
-			return 1;
+	//	if (bytesRecv < 0)
+	//		return 1;
 
-		cout << "Bytes received: " << bytesRecv << endl;
-		cout << "Received text: " << recvbuf << endl;
-	}
+	//	cout << "Bytes received: " << bytesRecv << endl;
+	//	cout << "Received text: " << recvbuf << endl;
+	//}
 
 	system("pause");
 	return (0);

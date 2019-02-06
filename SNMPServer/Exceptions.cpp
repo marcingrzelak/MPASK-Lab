@@ -56,3 +56,61 @@ void eNodeNotFound::message()
 {
 	cout << NODE_NOT_FOUND;
 }
+
+void eUnknownClass::message()
+{
+	cout << UNKNOWN_CLASS_ERR;
+}
+
+void eUnknownComplexity::message()
+{
+	cout << UNKNOWN_COMPLEXITY_ERR;
+}
+
+void eIdentifier::message()
+{
+}
+
+void eLength::message()
+{
+}
+
+void eValue::message()
+{
+}
+
+void eWrongTag::message()
+{
+	cout << WRONG_TAG_ERR;
+}
+
+void eUnknownTagType::message()
+{
+	cout << UNKNOWN_TAG_TYPE_ERR;
+}
+
+void eLengthKEqual127::message()
+{
+	cout << LENGTH_K_ERR;
+}
+
+void eLengthKGraterThen127::message()
+{
+	cout << LENGTH_K_ERR;
+}
+
+void eLengthEqual128::message()
+{
+	cout << LENGTH_ERR;
+}
+
+void eValueObjectIdentifier::message()
+{
+	cout << VALUE_OBJECT_IDENTIFIER_ERR;
+}
+
+void eDecoder::message()
+{
+	cout << DECODER_ERR_MSG;
+
+}
