@@ -355,7 +355,6 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		string allSequenceValuesEncodedString = allSequenceValuesEncoded;
 		allSequenceValuesEncodedString.erase(remove_if(allSequenceValuesEncodedString.begin(), allSequenceValuesEncodedString.end(), isspace), allSequenceValuesEncodedString.end());
 
-		//todo przechodzenie wartosci z ostatniego elementu sekwencji
 		clearIdentifier();
 		clearLength();
 		clearValue();

@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Exceptions.h"
 #include "Strings.h"
+#include "ConsoleColor.h"
 
 void eFileOpen::message()
 {

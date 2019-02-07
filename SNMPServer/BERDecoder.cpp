@@ -60,8 +60,21 @@ void BERDecoder::getValue(int &pIndex)
 			{
 				data << setfill('0') << setw(2) << hex << static_cast<int>(values.at(i));
 			}
-			long dataINT = stol(data.str(), nullptr, 16);
 
+			if (stoi(to_string(data.str()[0]), nullptr, 16) > 7)//ujemna liczba
+			{
+				string newData;
+				for (size_t i = data.str().length(); i < (sizeof(long))*2; i++)
+				{
+					newData += "f";
+				}
+				newData += data.str();
+				data.str("");
+				data << newData;
+			}
+			long dataINT = stoll(data.str(), nullptr, 16);
+
+			dataValue = to_string(dataINT);
 			stringstream ss;
 			ss << dataINT;
 			dataValue = ss.str();

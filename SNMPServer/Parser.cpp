@@ -316,7 +316,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 			}
 			catch (const std::exception&)
 			{
-				throw eParserSTOI();
+				//nic nie dodawac
 			}
 			sDataType.keyword = (*dataTypeIterator)[sDataType.iKeyword];
 			sDataType.type = (*dataTypeIterator)[sDataType.iType];
