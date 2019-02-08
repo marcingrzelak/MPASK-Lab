@@ -15,7 +15,7 @@ int main()
 		cout << "Initialization error." << endl;
 	}
 
-	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_UDP);
+	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (mainSocket == INVALID_SOCKET)
 	{
 		cout << "Error creating socket: " << WSAGetLastError() << endl;
@@ -40,6 +40,14 @@ int main()
 	cout << "Wpisz pakiet PDU" << endl;
 	cin >> pduString;
 	const char *sendbuf = pduString.c_str();
+
+	bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
+	cout << "Bytes sent: " << bytesSent << endl;
+
+	pduString = "";
+	cout << "Wpisz pakiet PDU" << endl;
+	cin >> pduString;
+	sendbuf = pduString.c_str();
 
 	bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
 	cout << "Bytes sent: " << bytesSent << endl;

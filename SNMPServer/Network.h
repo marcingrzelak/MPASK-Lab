@@ -4,6 +4,6 @@ class Network
 public:
 	Network();
 	~Network();
-	void setSocket();
+	void setServer();
 };
 

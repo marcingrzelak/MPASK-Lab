@@ -11,9 +11,9 @@ Network::~Network()
 {
 }
 
-void Network::setSocket()
+void Network::setServer()
 {
-	/*WSADATA wsaData;
+	WSADATA wsaData;
 
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != NO_ERROR)
@@ -21,7 +21,7 @@ void Network::setSocket()
 		cout << "Initialization error." << endl;
 	}
 
-	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_UDP);
+	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (mainSocket == INVALID_SOCKET)
 	{
 		cout << "Error creating socket: " << WSAGetLastError() << endl;
@@ -47,28 +47,50 @@ void Network::setSocket()
 		cout << "Error listening on socket." << endl;
 	}
 
-	SOCKET acceptSocket = SOCKET_ERROR;
-	cout << "Waiting for a client to connect..." << endl;
-
-	while (acceptSocket == SOCKET_ERROR)
-	{
-		acceptSocket = accept(mainSocket, NULL, NULL);
-	}
-
-	cout << "Client connected." << endl;
-	mainSocket = acceptSocket;
-
+	SOCKET clientSocket;
 	int bytesSent;
 	int bytesRecv = SOCKET_ERROR;
-	char sendbuf[32] = "Server says hello!";
-	char recvbuf[32] = "";
+	char sendbuf[256] = "";
+	char recvbuf[128] = "";
 
-	bytesRecv = recv(mainSocket, recvbuf, 32, 0);
-	printf("Bytes received: %ld\n", bytesRecv);
-	printf("Received text: %s\n", recvbuf);
+	bool exit = false;
 
-	bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
-	printf("Bytes sent: %ld\n", bytesSent);
+	while (!exit)
+	{
+		clientSocket = SOCKET_ERROR;
 
-	system("pause");*/
+		bytesSent = 0;
+		bytesRecv = SOCKET_ERROR;
+		memset(sendbuf, 0, sizeof sendbuf);
+		memset(recvbuf, 0, sizeof recvbuf);
+
+		cout << "Waiting for a client to connect..." << endl;
+
+		while (clientSocket == SOCKET_ERROR)
+		{
+			if (GetAsyncKeyState(VK_ESCAPE)!=0)
+			{
+				exit = true;
+				break;
+			}
+
+			clientSocket = accept(mainSocket, NULL, NULL);
+		}
+
+		cout << "Client connected." << endl;
+
+		int bytesSent;
+		int bytesRecv = SOCKET_ERROR;
+		char sendbuf[256] = "";
+		char recvbuf[128] = "";
+
+		bytesRecv = recv(clientSocket, recvbuf, 128, 0);
+		printf("Bytes received: %ld\n", bytesRecv);
+		printf("Received text: %s\n", recvbuf);
+
+		//bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
+		//printf("Bytes sent: %ld\n", bytesSent);
+		//printf("Bytes sent: %ld\n", bytesSent);
+	}
+	system("pause");
 }
