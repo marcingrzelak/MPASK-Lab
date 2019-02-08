@@ -13,7 +13,7 @@ Network::~Network()
 
 void Network::setSocket()
 {
-	WSADATA wsaData;
+	/*WSADATA wsaData;
 
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != NO_ERROR)
@@ -70,5 +70,5 @@ void Network::setSocket()
 	bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
 	printf("Bytes sent: %ld\n", bytesSent);
 
-	system("pause");
+	system("pause");*/
 }

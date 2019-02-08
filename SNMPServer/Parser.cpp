@@ -225,7 +225,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 				sIndex.name = sObjectType.name;
 				sIndexTemp.indexes = (*objectTypeIterator)[sObjectType.iIndex];
 
-				regex_search(sIndexTemp.indexes, result, Regex::index()); //ciag indexow
+				regex_search(sIndexTemp.indexes, result, Regex::indexRgx()); //ciag indexow
 				sIndexTemp.indexesClean = result[1];
 				sIndexTemp.indexesClean.append(",");
 

@@ -19,7 +19,7 @@ public:
 	static regex objectType();
 	static regex sizeGeneral();
 	static regex size();
-	static regex index();
+	static regex indexRgx();
 	static regex indexOneElement();
 	static regex dataType();
 	static regex dataTypeEncoder();

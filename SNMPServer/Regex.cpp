@@ -60,7 +60,7 @@ regex Regex::size()
 	return regex(R"(\(SIZE\((\d+)\)\)|\((\d+)\.\.(\d+)\))");
 }
 
-regex Regex::index()
+regex Regex::indexRgx()
 {
 	return regex(R"(\{\s(.*?)\s\})");
 }
