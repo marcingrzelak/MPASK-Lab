@@ -20,11 +20,11 @@ constexpr auto LENGTH_K_ERR = "Niepoprawna ilosc oktetow (K) pola dlugosc\n\n";
 constexpr auto LENGTH_ERR = "Pole dlugosci nie moze miec 128 bajtow\n\n";
 constexpr auto VALUE_OBJECT_IDENTIFIER_ERR = "Niepoprawne dane dla typu object identifier\n\n";
 constexpr auto DECODER_ERR_MSG = "Blad dekodera\n\n";
-//constexpr auto = "\n\n";
-//constexpr auto = "\n\n";
-//constexpr auto = "\n\n";
-//constexpr auto = "\n\n";
-//constexpr auto = "\n\n";
+constexpr auto SOCKET_INIT_ERR = "Blad inicjalizacji socketa\n\n";
+constexpr auto SOCKET_CREATE_ERR = "Blad podczas tworzenia socketa\n\n";
+constexpr auto SOCKET_BIND_ERR = "Blad - socket bind\n\n";
+constexpr auto SOCKET_LISTEN_ERR = "Blad - sluchanie na sockecie\n\n";
+constexpr auto SOCKET_CONNECT_ERR = "Socket - blad polaczenia \n\n";
 //constexpr auto = "\n\n";
 //constexpr auto = "\n\n";
 //constexpr auto = "\n\n";
@@ -34,6 +34,10 @@ constexpr auto DECODER_ERR_MSG = "Blad dekodera\n\n";
 #pragma endregion
 
 #pragma region messages
+constexpr auto SOCKET_CONNECT_WAITING = "Oczekuje na polaczenie od klienta...\n";
+constexpr auto SOCKET_CONNECTED = "Klient podlaczony...\n";
+constexpr auto CLIENT_PDU_ENTER = "Wpisz pakiet PDU\n";
+
 
 #pragma endregion
 

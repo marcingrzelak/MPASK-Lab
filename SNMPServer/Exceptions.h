@@ -142,3 +142,33 @@ class eDecoder : public Exceptions
 public:
 	void message();
 };
+
+class eSocketInitialization : public Exceptions
+{
+public:
+	void message();
+};
+
+class eSocketCreate : public Exceptions
+{
+public:
+	void message();
+};
+
+class eSocketBind : public Exceptions
+{
+public:
+	void message();
+};
+
+class eSocketListening : public Exceptions
+{
+public:
+	void message();
+};
+
+class eSocketConnect : public Exceptions
+{
+public:
+	void message();
+};

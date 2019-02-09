@@ -4,6 +4,7 @@ class Network
 public:
 	Network();
 	~Network();
-	void setServer();
+	void setServer(const char* addr, u_short port);
+	void setClient(const char* addr, u_short port);
 };
 

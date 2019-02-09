@@ -1,26 +1,29 @@
 #include "pch.h"
 #include <iostream>
+#include "../SNMPServer/Strings.h"
+#include "../SNMPServer/Exceptions.h"
+#include "../SNMPServer/Network.h"
 
 int main()
 {
-	int bytesSent;
-	int bytesRecv = SOCKET_ERROR;
-	char *recvbuf;
+	//Network net;
+
+	//net.setClient("127.0.0.1", 161);
+
 
 	WSADATA wsaData;
 
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != NO_ERROR)
 	{
-		cout << "Initialization error." << endl;
+		//throw eSocketInitialization();
 	}
 
-	SOCKET mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (mainSocket == INVALID_SOCKET)
+	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (serverSocket == INVALID_SOCKET)
 	{
-		cout << "Error creating socket: " << WSAGetLastError() << endl;
 		WSACleanup();
-		return 1;
+		//throw eSocketCreate();
 	}
 
 	sockaddr_in service;
@@ -29,32 +32,43 @@ int main()
 	service.sin_addr.s_addr = inet_addr("127.0.0.1");
 	service.sin_port = htons(161);
 
-	if (connect(mainSocket, (SOCKADDR *)& service, sizeof(service)) == SOCKET_ERROR)
+	string pduString = "";
+	int bytesSent, bytesRecv;
+	char *recvBuffor;
+	const char *sendBuffor;
+
+	while (true)
 	{
-		cout << "Failed to connect." << endl;
-		WSACleanup();
-		return 1;
+		bytesSent = 0;
+		bytesRecv = SOCKET_ERROR;
+		cout << CLIENT_PDU_ENTER << endl;
+		cin >> pduString;
+
+		sendBuffor = pduString.c_str();
+
+		if (connect(serverSocket, (SOCKADDR *)& service, sizeof(service)) == SOCKET_ERROR)
+		{
+			WSACleanup();
+			//throw eSocketConnect();
+		}
+
+		bytesSent = send(serverSocket, sendBuffor, strlen(sendBuffor), 0);
+		cout << "Bytes sent: " << bytesSent << endl;
+
+		closesocket(serverSocket);
+
+		serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+		if (serverSocket == INVALID_SOCKET)
+		{
+			WSACleanup();
+			//throw eSocketCreate();
+		}
 	}
 
-	string pduString = "";
-	cout << "Wpisz pakiet PDU" << endl;
-	cin >> pduString;
-	const char *sendbuf = pduString.c_str();
-
-	bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
-	cout << "Bytes sent: " << bytesSent << endl;
-
-	pduString = "";
-	cout << "Wpisz pakiet PDU" << endl;
-	cin >> pduString;
-	sendbuf = pduString.c_str();
-
-	bytesSent = send(mainSocket, sendbuf, strlen(sendbuf), 0);
-	cout << "Bytes sent: " << bytesSent << endl;
 
 	//while (bytesRecv == SOCKET_ERROR)
 	//{
-	//	bytesRecv = recv(mainSocket, recvbuf, 32, 0);
+	//	bytesRecv = recv(serverSocket, recvBuffor, 32, 0);
 
 	//	if (bytesRecv == 0 || bytesRecv == WSAECONNRESET)
 	//	{
@@ -66,7 +80,7 @@ int main()
 	//		return 1;
 
 	//	cout << "Bytes received: " << bytesRecv << endl;
-	//	cout << "Received text: " << recvbuf << endl;
+	//	cout << "Received text: " << recvBuffor << endl;
 	//}
 
 	system("pause");
