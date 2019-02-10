@@ -36,8 +36,6 @@ constexpr auto SOCKET_CONNECT_ERR = "Socket - blad polaczenia \n\n";
 #pragma region messages
 constexpr auto SOCKET_CONNECT_WAITING = "Oczekuje na polaczenie od klienta...\n";
 constexpr auto SOCKET_CONNECTED = "Klient podlaczony...\n";
-constexpr auto CLIENT_PDU_ENTER = "Wpisz pakiet PDU\n";
-
 
 #pragma endregion
 

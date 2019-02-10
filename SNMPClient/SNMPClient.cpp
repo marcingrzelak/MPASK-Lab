@@ -1,87 +1,90 @@
 #include "pch.h"
-#include <iostream>
-#include "../SNMPServer/Strings.h"
-#include "../SNMPServer/Exceptions.h"
-#include "../SNMPServer/Network.h"
+#include "Strings.h"
+#include "Exceptions.h"
 
-int main()
+#define SEND_BUFFOR_SIZE 256
+#define RECV_BUFFOR_SIZE 256
+
+SOCKET clientSocket;
+
+void socketInit()
 {
-	//Network net;
-
-	//net.setClient("127.0.0.1", 161);
-
-
 	WSADATA wsaData;
-
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != NO_ERROR)
 	{
-		//throw eSocketInitialization();
+		throw eSocketInitialization();
 	}
+}
 
-	SOCKET serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (serverSocket == INVALID_SOCKET)
+void socketCreate()
+{
+	clientSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (clientSocket == INVALID_SOCKET)
 	{
 		WSACleanup();
-		//throw eSocketCreate();
+		throw eSocketCreate();
 	}
+}
 
+void sendPacket(const char* addr, u_short port)
+{
 	sockaddr_in service;
-	memset(&service, 0, sizeof(service));
-	service.sin_family = AF_INET;
-	service.sin_addr.s_addr = inet_addr("127.0.0.1");
-	service.sin_port = htons(161);
-
 	string pduString = "";
-	int bytesSent, bytesRecv;
-	char *recvBuffor;
-	const char *sendBuffor;
+	int bytesSent = 0;
+	const char *sendBuffor = "";
 
-	while (true)
+	service.sin_family = AF_INET;
+	service.sin_addr.s_addr = inet_addr(addr);
+	service.sin_port = htons(port);
+
+	cout << CLIENT_PDU_ENTER << endl;
+	cin >> pduString;
+
+	sendBuffor = pduString.c_str();
+
+	if (connect(clientSocket, (SOCKADDR *)& service, sizeof(service)) == SOCKET_ERROR)
 	{
-		bytesSent = 0;
-		bytesRecv = SOCKET_ERROR;
-		cout << CLIENT_PDU_ENTER << endl;
-		cin >> pduString;
+		WSACleanup();
+		throw eSocketConnect();
+	}
 
-		sendBuffor = pduString.c_str();
+	bytesSent = send(clientSocket, sendBuffor, strlen(sendBuffor), 0);
+}
 
-		if (connect(serverSocket, (SOCKADDR *)& service, sizeof(service)) == SOCKET_ERROR)
+void receivePacket()
+{
+	int bytesRecv = 0;
+	char recvBuffor[RECV_BUFFOR_SIZE] = "";
+
+	while (bytesRecv == 0)
+	{
+		bytesRecv = recv(clientSocket, recvBuffor, RECV_BUFFOR_SIZE, 0);
+
+		if (bytesRecv < 0)
 		{
-			WSACleanup();
-			//throw eSocketConnect();
-		}
-
-		bytesSent = send(serverSocket, sendBuffor, strlen(sendBuffor), 0);
-		cout << "Bytes sent: " << bytesSent << endl;
-
-		closesocket(serverSocket);
-
-		serverSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-		if (serverSocket == INVALID_SOCKET)
-		{
-			WSACleanup();
-			//throw eSocketCreate();
+			throw eServerToClient();
 		}
 	}
 
+	cout << "Odpowiedz serwera: " << recvBuffor << endl;
+	closesocket(clientSocket);
+}
 
-	//while (bytesRecv == SOCKET_ERROR)
-	//{
-	//	bytesRecv = recv(serverSocket, recvBuffor, 32, 0);
-
-	//	if (bytesRecv == 0 || bytesRecv == WSAECONNRESET)
-	//	{
-	//		cout << "Connection closed." << endl;
-	//		break;
-	//	}
-
-	//	if (bytesRecv < 0)
-	//		return 1;
-
-	//	cout << "Bytes received: " << bytesRecv << endl;
-	//	cout << "Received text: " << recvBuffor << endl;
-	//}
+int main()
+{
+	try
+	{
+		socketInit();
+		socketCreate();
+		sendPacket("127.0.0.1", 161);
+		receivePacket();
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		return 1;
+	}
 
 	system("pause");
 	return (0);
