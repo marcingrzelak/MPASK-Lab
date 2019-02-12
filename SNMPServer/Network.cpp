@@ -22,64 +22,113 @@ void Network::socketInit()
 	}
 }
 
-void Network::socketCreate()
+void Network::socketCreate(SOCKET &pSocket)
 {
-	mainSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (mainSocket == INVALID_SOCKET)
+	pSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (pSocket == INVALID_SOCKET)
 	{
 		WSACleanup();
 		throw eSocketCreate();
 	}
 }
 
-void Network::socketBind(const char* addr, u_short port)
+void Network::setSocketParam(const char* addr, u_short port, sockaddr_in &pSocketAddr)
 {
-	sockaddr_in service;
-	memset(&service, 0, sizeof(service));
-	service.sin_family = AF_INET;
-	service.sin_addr.s_addr = inet_addr(addr);
-	service.sin_port = htons(port);
+	pSocketAddr.sin_family = AF_INET;
+	pSocketAddr.sin_addr.s_addr = inet_addr(addr);
+	pSocketAddr.sin_port = htons(port);
+}
 
-	if (bind(mainSocket, (SOCKADDR *)& service, sizeof(service)) == SOCKET_ERROR)
+void Network::socketBind(SOCKET &pListenSocket, sockaddr_in &pSocketAddr)
+{
+	if (bind(pListenSocket, (SOCKADDR *)& pSocketAddr, sizeof(pSocketAddr)) == SOCKET_ERROR)
 	{
-		closesocket(mainSocket);
+		closesocket(pListenSocket);
 		throw eSocketBind();
 	}
 }
 
-void Network::socketListen()
+void Network::socketListen(SOCKET &pListenSocket)
 {
-	if (listen(mainSocket, 1) == SOCKET_ERROR)
+	if (listen(pListenSocket, 1) == SOCKET_ERROR)
 	{
 		throw eSocketListening();
 	}
+	cout << SOCKET_CONNECT_WAITING;
 }
 
-void Network::receivePacket()
+void Network::connectToServer(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 {
-	clientSocket = SOCKET_ERROR;
-	int bytesRecv = SOCKET_ERROR;
-	char recvBuffor[RECV_BUFFOR_SIZE] = "";
-
-	cout << SOCKET_CONNECT_WAITING;
-
-	while (clientSocket == SOCKET_ERROR)
+	if (connect(pSocket, (SOCKADDR *)& pSocketAddr, sizeof(pSocketAddr)) == SOCKET_ERROR)
 	{
-		clientSocket = accept(mainSocket, NULL, NULL);
+		WSACleanup();
+		throw eSocketConnect();
+	}
+}
+
+void Network::acceptConnection(SOCKET &pListenSocket, SOCKET &pServerSocket)
+{
+	while (pServerSocket == SOCKET_ERROR)
+	{
+		pServerSocket = accept(pListenSocket, NULL, NULL);
+	}
+	cout << SOCKET_CONNECTED;
+}
+
+void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
+{
+	string pduString = "";
+	const char *sendBuffor = "";
+
+	cout << CLIENT_PDU_ENTER << endl;
+	cin >> pduString;
+	sendBuffor = pduString.c_str();
+
+	try
+	{
+		connectToServer(pSocket, pSocketAddr);
+	}
+	catch (Exceptions &e)
+	{
+		throw eSocketConnect();
 	}
 
-	cout << SOCKET_CONNECTED;
-
-	bytesRecv = recv(clientSocket, recvBuffor, RECV_BUFFOR_SIZE, 0);
-	cout << "Client -> Serwer: " << recvBuffor << endl;
-
+	send(pSocket, sendBuffor, strlen(sendBuffor), 0);
 }
 
-void Network::sendPacket()
+void Network::clientReceivePacket(SOCKET &pSocket)
 {
-	int bytesSent;
-	char sendBuffor[SEND_BUFFOR_SIZE] = "odp serwera";
+	int bytesRecv = 0;
+	char recvBuffor[CLIENT_RECV_BUFFOR_SIZE] = "";
 
-	bytesSent = send(clientSocket, sendBuffor, strlen(sendBuffor), 0);
+	while (bytesRecv == 0)
+	{
+		bytesRecv = recv(pSocket, recvBuffor, CLIENT_RECV_BUFFOR_SIZE, 0);
+
+		if (bytesRecv < 0)
+		{
+			throw eServerToClient();
+		}
+	}
+
+	cout << "Odpowiedz serwera: " << recvBuffor << endl;
+	closesocket(pSocket);
+}
+
+void Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket)
+{
+	char recvBuffor[SERVER_RECV_BUFFOR_SIZE] = "";
+
+	acceptConnection(pListenSocket, pServerSocket);
+
+	recv(pServerSocket, recvBuffor, SERVER_RECV_BUFFOR_SIZE, 0);
+	cout << "Client -> Serwer: " << recvBuffor << endl;
+}
+
+void Network::serverSendPacket(SOCKET &serverSocket)
+{
+	char sendBuffor[SERVER_SEND_BUFFOR_SIZE] = "odp serwera";
+
+	send(serverSocket, sendBuffor, strlen(sendBuffor), 0);
 	cout << "Serwer -> Client: " << sendBuffor << endl;
 }

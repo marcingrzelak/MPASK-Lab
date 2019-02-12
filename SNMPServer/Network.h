@@ -1,7 +1,9 @@
 #pragma once
 
-#define SEND_BUFFOR_SIZE 256
-#define RECV_BUFFOR_SIZE 256
+#define SERVER_SEND_BUFFOR_SIZE 256
+#define SERVER_RECV_BUFFOR_SIZE 256
+#define CLIENT_SEND_BUFFOR_SIZE 256
+#define CLIENT_RECV_BUFFOR_SIZE 256
 
 class Network
 {
@@ -9,10 +11,14 @@ public:
 	Network();
 	~Network();
 	void socketInit();
-	void socketCreate();
-	void socketBind(const char* addr, u_short port);
-	void socketListen();
-	void receivePacket();
-	void sendPacket();
-	SOCKET mainSocket, clientSocket;
+	void socketCreate(SOCKET &pSocket);
+	void setSocketParam(const char* addr, u_short port, sockaddr_in &pSocketAddr);
+	void socketBind(SOCKET &pServerSocket, sockaddr_in &pSocketAddr);
+	void socketListen(SOCKET &pServerSocket);
+	void connectToServer(SOCKET &pSocket, sockaddr_in &pSocketAddr);
+	void acceptConnection(SOCKET &pListenSocket, SOCKET &pServerSocket);
+	void clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr);
+	void clientReceivePacket(SOCKET &pSocket);
+	void serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket);
+	void serverSendPacket(SOCKET &pServerSocket);
 };

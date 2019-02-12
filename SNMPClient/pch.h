@@ -5,7 +5,6 @@
 #include <iostream>
 #include <cstdlib>
 #include <cstdio>
-#include <winsock2.h>
-#include <Ws2tcpip.h>
+#include <Windows.h>
 
 using namespace std;

@@ -139,3 +139,8 @@ void eSocketConnect::message()
 {
 	cout << SOCKET_CONNECT_ERR;
 }
+
+void eServerToClient::message()
+{
+	cout << SERVER_TO_CLIENT_ERR;
+}

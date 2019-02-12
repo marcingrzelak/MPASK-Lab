@@ -172,3 +172,9 @@ class eSocketConnect : public Exceptions
 public:
 	void message();
 };
+
+class eServerToClient : public Exceptions
+{
+public:
+	void message();
+};
