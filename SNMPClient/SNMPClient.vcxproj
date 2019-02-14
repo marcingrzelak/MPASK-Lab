@@ -158,6 +158,7 @@
     <ClInclude Include="..\SNMPServer\Regex.h" />
     <ClInclude Include="..\SNMPServer\Strings.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Strings.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\SNMPServer\Exceptions.cpp" />
