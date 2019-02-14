@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "Network.h"
+#include "Regex.h"
 #include "Exceptions.h"
 #include "Strings.h"
 
@@ -20,6 +21,7 @@ void Network::socketInit()
 	{
 		throw eSocketInitialization();
 	}
+	return;
 }
 
 void Network::socketCreate(SOCKET &pSocket)
@@ -30,6 +32,7 @@ void Network::socketCreate(SOCKET &pSocket)
 		WSACleanup();
 		throw eSocketCreate();
 	}
+	return;
 }
 
 void Network::setSocketParam(const char* addr, u_short port, sockaddr_in &pSocketAddr)
@@ -37,6 +40,7 @@ void Network::setSocketParam(const char* addr, u_short port, sockaddr_in &pSocke
 	pSocketAddr.sin_family = AF_INET;
 	pSocketAddr.sin_addr.s_addr = inet_addr(addr);
 	pSocketAddr.sin_port = htons(port);
+	return;
 }
 
 void Network::socketBind(SOCKET &pListenSocket, sockaddr_in &pSocketAddr)
@@ -46,6 +50,7 @@ void Network::socketBind(SOCKET &pListenSocket, sockaddr_in &pSocketAddr)
 		closesocket(pListenSocket);
 		throw eSocketBind();
 	}
+	return;
 }
 
 void Network::socketListen(SOCKET &pListenSocket)
@@ -54,7 +59,7 @@ void Network::socketListen(SOCKET &pListenSocket)
 	{
 		throw eSocketListening();
 	}
-	cout << SOCKET_CONNECT_WAITING;
+	return;
 }
 
 void Network::connectToServer(SOCKET &pSocket, sockaddr_in &pSocketAddr)
@@ -64,25 +69,72 @@ void Network::connectToServer(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 		WSACleanup();
 		throw eSocketConnect();
 	}
+	return;
 }
 
 void Network::acceptConnection(SOCKET &pListenSocket, SOCKET &pServerSocket)
 {
-	while (pServerSocket == SOCKET_ERROR)
+	while (pServerSocket == INVALID_SOCKET)
 	{
 		pServerSocket = accept(pListenSocket, NULL, NULL);
 	}
 	cout << SOCKET_CONNECTED;
+	return;
 }
 
 void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 {
 	string pduString = "";
+	smatch result;
+	regex rgx;
 	const char *sendBuffor = "";
 
 	cout << CLIENT_PDU_ENTER << endl;
-	cin >> pduString;
+	getline(cin, pduString);
+
+	try
+	{
+		regex_search(pduString, result, Regex::snmpGeneral());
+	}
+	catch (regex_error& e)
+	{
+		cout << e.what() << endl;
+		throw eNetwork();
+	}
+
+	if (result.size() != 4)
+	{
+		throw eNetworkClientWrongCommand();
+	}
+	command = result[iCommand];
+	community = result[iCommunity];
+	nodesAll = result[iNodes];
+	nodesAll.append(" ");
+
+	try
+	{
+		rgx = Regex::snmpOneElement();
+		sregex_iterator nodesIterator(nodesAll.begin(), nodesAll.end(), rgx);
+		sregex_iterator endIterator;
+
+		while (nodesIterator != endIterator)
+		{
+			nodes.push_back((*nodesIterator)[1]);
+			++nodesIterator;
+		}
+	}
+	catch (regex_error& e)
+	{
+		cout << e.what() << endl;
+		throw eNetwork();
+	}
+
+	//todo zbudowac pakiet pdu dla podanych danych
+	//todo wyslanie pakietu pdu
+
+
 	sendBuffor = pduString.c_str();
+
 
 	try
 	{
@@ -94,6 +146,7 @@ void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 	}
 
 	send(pSocket, sendBuffor, strlen(sendBuffor), 0);
+	return;
 }
 
 void Network::clientReceivePacket(SOCKET &pSocket)
@@ -110,9 +163,10 @@ void Network::clientReceivePacket(SOCKET &pSocket)
 			throw eServerToClient();
 		}
 	}
-
+	//todo analiza odebranego pakietu
 	cout << "Odpowiedz serwera: " << recvBuffor << endl;
 	closesocket(pSocket);
+	return;
 }
 
 void Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket)
@@ -123,12 +177,17 @@ void Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket)
 
 	recv(pServerSocket, recvBuffor, SERVER_RECV_BUFFOR_SIZE, 0);
 	cout << "Client -> Serwer: " << recvBuffor << endl;
+	//todo analiza odebranego pakietu
+	//todo odpalenie packet handler z PDUPackage.cpp
+	return;
 }
 
 void Network::serverSendPacket(SOCKET &serverSocket)
 {
+	//todo wyslanie odpowiedzi (pakietu pdu) z packethandlera
 	char sendBuffor[SERVER_SEND_BUFFOR_SIZE] = "odp serwera";
 
 	send(serverSocket, sendBuffor, strlen(sendBuffor), 0);
 	cout << "Serwer -> Client: " << sendBuffor << endl;
+	return;
 }

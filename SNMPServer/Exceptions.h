@@ -178,3 +178,15 @@ class eServerToClient : public Exceptions
 public:
 	void message();
 };
+
+class eNetwork : public Exceptions
+{
+public:
+	void message();
+}; 
+
+class eNetworkClientWrongCommand : public Exceptions
+{
+public:
+	void message();
+};

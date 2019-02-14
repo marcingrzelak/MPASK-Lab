@@ -104,3 +104,13 @@ regex Regex::objectIdentifierCheckType()
 {
 	return regex(R"(\d+\.{1})");
 }
+
+regex Regex::snmpGeneral()
+{
+	return regex(R"((\w*?)\s(\w*?)\s(.*))");
+}
+
+regex Regex::snmpOneElement()
+{
+	return regex(R"((.*?)\s)");
+}

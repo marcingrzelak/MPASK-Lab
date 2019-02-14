@@ -21,4 +21,8 @@ public:
 	void clientReceivePacket(SOCKET &pSocket);
 	void serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket);
 	void serverSendPacket(SOCKET &pServerSocket);
+
+	short iCommand = 1, iCommunity = 2, iNodes = 3;
+	string command, community, nodesAll;
+	vector<string> nodes;
 };

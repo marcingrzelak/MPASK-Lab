@@ -28,4 +28,6 @@ public:
 	static regex sequenceGeneral();
 	static regex sequenceOneElement();
 	static regex objectIdentifierCheckType();
+	static regex snmpGeneral();
+	static regex snmpOneElement();
 };

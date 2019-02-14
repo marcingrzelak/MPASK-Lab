@@ -57,13 +57,13 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	cout << "Odczyt zakonczony" << endl << endl;
 
 #pragma region IMPORTS
-	//wyszukanie sekcji z importami
-	regex_search(mainFile, result, Regex::importsGeneral());
-	importsGeneral = result[1];
-
-	//podzial na ciag elementow do zaimportowania i nazwe pliku
 	try
 	{
+		//wyszukanie sekcji z importami
+		regex_search(mainFile, result, Regex::importsGeneral());
+		importsGeneral = result[1];
+
+		//podzial na ciag elementow do zaimportowania i nazwe pliku
 		rgx = Regex::imports();
 		sregex_iterator import1Iterator(importsGeneral.begin(), importsGeneral.end(), rgx);
 		while (import1Iterator != endIterator)
@@ -193,7 +193,7 @@ void Parser::wholeFileParse(string pFilePath, Tree pOIDTree, vector<DataType> &p
 	{
 		cout << e.what() << endl;
 		throw eParser();
-	}	
+	}
 	cout << "Zaimportowano deklaracje OBJECT IDENTIFIER z pliku " << pFilePath << endl << endl;
 #pragma endregion nowe OIDy
 

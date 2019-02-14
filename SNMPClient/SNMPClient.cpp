@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "../SNMPServer/Network.h"
 #include "../SNMPServer/Exceptions.h"
+#include "../SNMPServer/Regex.h"
 
 void runClient(Network client, const char* addr, u_short port, SOCKET clientSocket, sockaddr_in socketAddr)
 {

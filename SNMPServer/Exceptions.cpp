@@ -144,3 +144,13 @@ void eServerToClient::message()
 {
 	cout << SERVER_TO_CLIENT_ERR;
 }
+
+void eNetwork::message()
+{
+	cout << NETWORK_ERR_MSG;
+}
+
+void eNetworkClientWrongCommand::message()
+{
+	cout << NETWORK_CLIENT_WRONG_COMMAND;
+}

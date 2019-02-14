@@ -155,12 +155,14 @@
   <ItemGroup>
     <ClInclude Include="..\SNMPServer\Exceptions.h" />
     <ClInclude Include="..\SNMPServer\Network.h" />
+    <ClInclude Include="..\SNMPServer\Regex.h" />
     <ClInclude Include="..\SNMPServer\Strings.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\SNMPServer\Exceptions.cpp" />
     <ClCompile Include="..\SNMPServer\Network.cpp" />
+    <ClCompile Include="..\SNMPServer\Regex.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
