@@ -153,17 +153,35 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\SNMPServer\BERCoder.h" />
+    <ClInclude Include="..\SNMPServer\BERDecoder.h" />
+    <ClInclude Include="..\SNMPServer\CheckValue.h" />
+    <ClInclude Include="..\SNMPServer\DataStructures.h" />
     <ClInclude Include="..\SNMPServer\Exceptions.h" />
+    <ClInclude Include="..\SNMPServer\Identifier.h" />
+    <ClInclude Include="..\SNMPServer\Length.h" />
     <ClInclude Include="..\SNMPServer\Network.h" />
+    <ClInclude Include="..\SNMPServer\PDUPackage.h" />
     <ClInclude Include="..\SNMPServer\Regex.h" />
     <ClInclude Include="..\SNMPServer\Strings.h" />
+    <ClInclude Include="..\SNMPServer\TreeStructure.h" />
+    <ClInclude Include="..\SNMPServer\Value.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Strings.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\SNMPServer\BERCoder.cpp" />
+    <ClCompile Include="..\SNMPServer\BERDecoder.cpp" />
+    <ClCompile Include="..\SNMPServer\CheckValue.cpp" />
+    <ClCompile Include="..\SNMPServer\DataStructures.cpp" />
     <ClCompile Include="..\SNMPServer\Exceptions.cpp" />
+    <ClCompile Include="..\SNMPServer\Identifier.cpp" />
+    <ClCompile Include="..\SNMPServer\Length.cpp" />
     <ClCompile Include="..\SNMPServer\Network.cpp" />
+    <ClCompile Include="..\SNMPServer\PDUPackage.cpp" />
     <ClCompile Include="..\SNMPServer\Regex.cpp" />
+    <ClCompile Include="..\SNMPServer\TreeStructure.cpp" />
+    <ClCompile Include="..\SNMPServer\Value.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

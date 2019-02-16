@@ -28,8 +28,8 @@ constexpr auto SOCKET_CONNECT_ERR = "Socket - blad polaczenia \n\n";
 constexpr auto SERVER_TO_CLIENT_ERR = "Brak odpowiedzi z serwera\n\n";
 constexpr auto NETWORK_ERR_MSG = "Blad sieci\n\n";
 constexpr auto NETWORK_CLIENT_WRONG_COMMAND = "Bledna skladnia polecenia\n\n";
-//constexpr auto = "\n\n";
-//constexpr auto = "\n\n";
+constexpr auto WRONG_TAG_GENERATE_PDU = "Niepoprawna komenda snmp\n\n";
+constexpr auto OID_WORD_ERROR= "Nie obsluguje OIDow jako wyrazy. Wprowadz liczbowy OID\n\n";
 //constexpr auto = "\n\n";
 
 #pragma endregion
@@ -37,7 +37,7 @@ constexpr auto NETWORK_CLIENT_WRONG_COMMAND = "Bledna skladnia polecenia\n\n";
 #pragma region messages
 constexpr auto SOCKET_CONNECT_WAITING = "Oczekuje na polaczenie od klienta...\n";
 constexpr auto SOCKET_CONNECTED = "Klient podlaczony...\n";
-constexpr auto CLIENT_PDU_ENTER = "Wpisz pakiet PDU\n";
+constexpr auto CLIENT_COMMAND_ENTER = "Wpisz polecenie snmp\n";
 #pragma endregion
 
 #pragma region constants

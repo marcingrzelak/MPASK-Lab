@@ -154,3 +154,13 @@ void eNetworkClientWrongCommand::message()
 {
 	cout << NETWORK_CLIENT_WRONG_COMMAND;
 }
+
+void eWrongTagGeneratePDU::message()
+{
+	cout << WRONG_TAG_GENERATE_PDU;
+}
+
+void eOIDWord::message()
+{
+	cout << OID_WORD_ERROR;
+}

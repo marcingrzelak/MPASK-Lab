@@ -105,12 +105,22 @@ regex Regex::objectIdentifierCheckType()
 	return regex(R"(\d+\.{1})");
 }
 
-regex Regex::snmpGeneral()
+regex Regex::snmpCommand()
 {
-	return regex(R"((\w*?)\s(\w*?)\s(.*))");
+	return regex(R"((\w*?)(\s))");
 }
 
-regex Regex::snmpOneElement()
+regex Regex::snmpGeneral()
+{
+	return regex(R"((\w*?)\s(\w*?)\s(.*?)\s(.*))");
+}
+
+regex Regex::snmpgetOneElement()
 {
 	return regex(R"((.*?)\s)");
+}
+
+regex Regex::snmpsetOneElement()
+{
+	return regex(R"((.*?)\s(.*?)\s)");
 }

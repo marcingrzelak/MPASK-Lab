@@ -3,6 +3,10 @@
 #include "Regex.h"
 #include "Exceptions.h"
 #include "Strings.h"
+#include "PDUPackage.h"
+#include "BERCoder.h"
+#include "CheckValue.h"
+#include "TreeStructure.h"
 
 Network::Network()
 {
@@ -84,17 +88,25 @@ void Network::acceptConnection(SOCKET &pListenSocket, SOCKET &pServerSocket)
 
 void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 {
-	string pduString = "";
+	string commandString = "", OIDNumber, commandAsPDU;
 	smatch result;
 	regex rgx;
+	PDUPackage pduPackage;
+	map<string, string> varBindList;
+	BERCoder encoder;
+	CheckValue checkValue;
+	int requestID;
 	const char *sendBuffor = "";
 
-	cout << CLIENT_PDU_ENTER << endl;
-	getline(cin, pduString);
+	cout << CLIENT_COMMAND_ENTER;
+	getline(cin, commandString);
 
+	requestID = 1000 + (rand() % (14001)); //1000-15000
+
+	//jaka komenda
 	try
 	{
-		regex_search(pduString, result, Regex::snmpGeneral());
+		regex_search(commandString, result, Regex::snmpCommand());
 	}
 	catch (regex_error& e)
 	{
@@ -102,38 +114,78 @@ void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 		throw eNetwork();
 	}
 
-	if (result.size() != 4)
+	if (result[1] == "snmpget" || result[1] == "snmpgetnext")
 	{
-		throw eNetworkClientWrongCommand();
-	}
-	command = result[iCommand];
-	community = result[iCommunity];
-	nodesAll = result[iNodes];
-	nodesAll.append(" ");
-
-	try
-	{
-		rgx = Regex::snmpOneElement();
-		sregex_iterator nodesIterator(nodesAll.begin(), nodesAll.end(), rgx);
-		sregex_iterator endIterator;
-
-		while (nodesIterator != endIterator)
+		commandParsing(commandString, true);
+		for (size_t i = 0; i < nodesOID.size(); i++)
 		{
-			nodes.push_back((*nodesIterator)[1]);
-			++nodesIterator;
+			try
+			{
+				OIDNumber = OIDtoNumber(nodesOID[i]);
+			}
+			catch (Exceptions &e)
+			{
+				e.message();
+				throw eNetwork();
+			}
+			varBindList.insert(pair<string, string>(OIDNumber, encoder.nullEncode()));
+		}
+		if (result[1] == "snmpgetnext")
+		{
+			commandAsPDU = pduPackage.generatePacket(varBindList, GET_NEXT_REQUEST_TAG_NUMBER, requestID, 0, 0, community);
+		}
+		else
+		{
+			commandAsPDU = pduPackage.generatePacket(varBindList, GET_REQUEST_TAG_NUMBER, requestID, 0, 0, community);
 		}
 	}
-	catch (regex_error& e)
+	else if (result[1] == "snmpset")
 	{
-		cout << e.what() << endl;
-		throw eNetwork();
+		commandParsing(commandString, false);
+
+		for (size_t i = 0; i < nodesValue.size(); i++)
+		{
+			checkValue.setValueParameters(nodesValue[i]);
+			if (checkValue.isValueNumber)
+			{
+				nodesValueEncoded[i] = encoder.encode(nodesValue[i], INTEGER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+			}
+			else if (checkValue.isObjectIdentifier)
+			{
+				nodesValueEncoded[i] = encoder.encode(nodesValue[i], OBJECT_IDENTIFIER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+			}
+			else
+			{
+				nodesValueEncoded[i] = encoder.encode(nodesValue[i], OCTET_STRING_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+			}
+		}
+
+		for (size_t i = 0; i < nodesOID.size(); i++)
+		{
+			try
+			{
+				OIDNumber = OIDtoNumber(nodesOID[i]);
+			}
+			catch (Exceptions &e)
+			{
+				e.message();
+				throw eNetwork();
+			}
+			varBindList.insert(pair<string, string>(OIDNumber, nodesValueEncoded[i]));
+		}
+
+		commandAsPDU = pduPackage.generatePacket(varBindList, GET_NEXT_REQUEST_TAG_NUMBER, requestID, 0, 0, community);
+	}
+	else
+	{
+		throw eNetworkClientWrongCommand();
 	}
 
 	//todo zbudowac pakiet pdu dla podanych danych
 	//todo wyslanie pakietu pdu
 
 
-	sendBuffor = pduString.c_str();
+	sendBuffor = commandAsPDU.c_str();
 
 
 	try
@@ -164,7 +216,7 @@ void Network::clientReceivePacket(SOCKET &pSocket)
 		}
 	}
 	//todo analiza odebranego pakietu
-	cout << "Odpowiedz serwera: " << recvBuffor << endl;
+	cout << "Odpowiedz serwera: " << recvBuffor << endl << endl;
 	closesocket(pSocket);
 	return;
 }
@@ -176,7 +228,7 @@ void Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket)
 	acceptConnection(pListenSocket, pServerSocket);
 
 	recv(pServerSocket, recvBuffor, SERVER_RECV_BUFFOR_SIZE, 0);
-	cout << "Client -> Serwer: " << recvBuffor << endl;
+	cout << "Klient -> Serwer: " << recvBuffor << endl;
 	//todo analiza odebranego pakietu
 	//todo odpalenie packet handler z PDUPackage.cpp
 	return;
@@ -188,6 +240,95 @@ void Network::serverSendPacket(SOCKET &serverSocket)
 	char sendBuffor[SERVER_SEND_BUFFOR_SIZE] = "odp serwera";
 
 	send(serverSocket, sendBuffor, strlen(sendBuffor), 0);
-	cout << "Serwer -> Client: " << sendBuffor << endl;
+	cout << "Serwer -> Klient: " << sendBuffor << endl << endl;
+	closesocket(serverSocket);
 	return;
+}
+
+void Network::commandParsing(string commandString, bool isSnmpGet)
+{
+	smatch result;
+	regex rgx;
+	try
+	{
+		regex_search(commandString, result, Regex::snmpGeneral());
+	}
+	catch (regex_error& e)
+	{
+		cout << e.what() << endl;
+		throw eNetwork();
+	}
+
+	if (result.size() != 5)
+	{
+		throw eNetworkClientWrongCommand();
+	}
+
+	command = result[iCommand];
+	community = result[iCommunity];
+	address = result[iAddress];
+	nodesAll = result[iNodes];
+	nodesAll.append(" ");
+
+	if (isSnmpGet)
+	{
+		rgx = Regex::snmpgetOneElement();
+	}
+	else
+	{
+		rgx = Regex::snmpsetOneElement();
+	}
+
+	try
+	{
+		sregex_iterator nodesIterator(nodesAll.begin(), nodesAll.end(), rgx);
+		sregex_iterator endIterator;
+
+		while (nodesIterator != endIterator)
+		{
+			nodesOID.push_back((*nodesIterator)[1]);
+			if (!isSnmpGet)
+			{
+				nodesValue.push_back((*nodesIterator)[2]);
+			}
+			++nodesIterator;
+		}
+	}
+	catch (regex_error& e)
+	{
+		cout << e.what() << endl;
+		throw eNetwork();
+	}
+}
+
+string Network::OIDtoNumber(string OID)
+{
+	CheckValue checkValue;
+	string st;
+	//sprawdzam czy oid jest liczba czy slowem
+	checkValue.checkIsObjectIdentifier(OID);
+
+	if (!checkValue.isObjectIdentifier)//nie jest liczba
+	{
+		//usuwanie ew 0 z konca oida
+		if (OID.back() == '0')
+		{
+			st = OID.substr(0, OID.size() - 2);
+		}
+		else
+		{
+			st = OID;
+		}
+
+		//todo poki co brak mozliwosci odczytania numeru oid bo drzewo jest na serwerze
+		//Tree OIDTree;
+		//st = OIDTree.findNodeWord(st, OIDTree.root, "");	
+		throw eOIDWord();
+	}
+	else
+	{
+		st = OID;
+	}
+
+	return st;
 }

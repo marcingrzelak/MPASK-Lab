@@ -190,3 +190,15 @@ class eNetworkClientWrongCommand : public Exceptions
 public:
 	void message();
 };
+
+class eWrongTagGeneratePDU : public Exceptions
+{
+public:
+	void message();
+};
+
+class eOIDWord : public Exceptions
+{
+public:
+	void message();
+};

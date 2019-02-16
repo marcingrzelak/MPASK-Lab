@@ -5,6 +5,7 @@
 #include "BERDecoder.h"
 #include "CheckValue.h"
 #include "TreeStructure.h"
+#include "Exceptions.h"
 
 
 PDUPackage::PDUPackage()
@@ -15,7 +16,7 @@ PDUPackage::~PDUPackage()
 {
 }
 
-string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int &requestID, int &errorStatus, int &errorIndex, string pCommunity)
+string PDUPackage::generatePacket(map<string, string> pVarBindList, int tag, int requestID, int errorStatus, int errorIndex, string pCommunity)
 {
 	//GetResponse
 	//serwer->client
@@ -31,13 +32,20 @@ string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int 
 
 	for (itr = pVarBindList.begin(); itr != pVarBindList.end(); ++itr)
 	{
+		if (itr != pVarBindList.begin()) //dodanie spacji pomiedzy elem. varbindlist
+		{
+			varBindEncoded += " ";
+		}
 		checkValue.setValueParameters(itr->first);
 		addDataToVector(OBJECT_IDENTIFIER_TAG_NUMBER, 0, itr->first, "", "", checkValue.byteCount);
 		if (itr->second == "")
 		{
 			addDataToVector(SEQUENCE_TAG_NUMBER, 0, coder.nullEncode(), "", "", 0);
 		}
-		addDataToVector(SEQUENCE_TAG_NUMBER, 0, itr->second, "", "", 0);//w itr->second mamy juz zakodowana wartosc z drzewa
+		else
+		{
+			addDataToVector(SEQUENCE_TAG_NUMBER, 0, itr->second, "", "", 0);//w itr->second mamy juz zakodowana wartosc z drzewa
+		}
 
 		varBindEncoded += coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
 		clearVectors();
@@ -63,7 +71,27 @@ string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int 
 	//varbind list
 	addDataToVector(SEQUENCE_TAG_NUMBER, 0, varBindListEncoded, "", "", 0);
 
-	PDUEncoded = coder.encode("", GET_RESPONSE_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	if (tag == GET_RESPONSE_TAG_NUMBER)
+	{
+		PDUEncoded = coder.encode("", GET_RESPONSE_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	}
+	else if (tag == GET_REQUEST_TAG_NUMBER)
+	{
+		PDUEncoded = coder.encode("", GET_REQUEST_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	}
+	else if (tag == GET_NEXT_REQUEST_TAG_NUMBER)
+	{
+		PDUEncoded = coder.encode("", GET_NEXT_REQUEST_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	}
+	else if (tag == SET_REQUEST_TAG_NUMBER)
+	{
+		PDUEncoded = coder.encode("", SET_REQUEST_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	}
+	else
+	{
+		throw eWrongTagGeneratePDU();
+	}
+
 	clearVectors();
 
 	//version
@@ -166,7 +194,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 				{
 					errorIndex = i;
 					errorStatus = PDU_ERR_READ_ONLY;
-					return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 				}
 				else
 				{
@@ -180,7 +208,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 					{
 						errorIndex = i;
 						errorStatus = PDU_ERR_BAD_VALUE;
-						return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+						return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 					}
 				}
 			}
@@ -195,9 +223,9 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 			//error brak liscia o podanym oid
 			errorIndex = i;
 			errorStatus = PDU_ERR_NO_SUCH_NAME;
-			return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+			return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 		}
 		i++;
 	}
-	return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+	return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 }

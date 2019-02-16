@@ -9,7 +9,7 @@ public:
 	PDUPackage();
 	~PDUPackage();
 
-	string generateResponsePacket(map<string, string> pVarBindList, int & requestID, int & errorStatus, int & errorIndex, string pCommunity);
+	string generatePacket(map<string, string> pVarBindList, int tag, int requestID, int errorStatus, int errorIndex, string pCommunity);
 	void analyzePacket(string packet);
 	void clearVectors();
 	void addDataToVector(int dataType, int typeId, string dataValue, string keyword, string visibility, unsigned long long dataSize);
