@@ -181,12 +181,7 @@ void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 		throw eNetworkClientWrongCommand();
 	}
 
-	//todo zbudowac pakiet pdu dla podanych danych
-	//todo wyslanie pakietu pdu
-
-
 	sendBuffor = commandAsPDU.c_str();
-
 
 	try
 	{
@@ -221,23 +216,19 @@ void Network::clientReceivePacket(SOCKET &pSocket)
 	return;
 }
 
-void Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket)
+string Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket)
 {
 	char recvBuffor[SERVER_RECV_BUFFOR_SIZE] = "";
 
 	acceptConnection(pListenSocket, pServerSocket);
 
 	recv(pServerSocket, recvBuffor, SERVER_RECV_BUFFOR_SIZE, 0);
-	cout << "Klient -> Serwer: " << recvBuffor << endl;
-	//todo analiza odebranego pakietu
-	//todo odpalenie packet handler z PDUPackage.cpp
-	return;
+	return recvBuffor;
 }
 
-void Network::serverSendPacket(SOCKET &serverSocket)
+void Network::serverSendPacket(SOCKET &serverSocket, string response)
 {
-	//todo wyslanie odpowiedzi (pakietu pdu) z packethandlera
-	char sendBuffor[SERVER_SEND_BUFFOR_SIZE] = "odp serwera";
+	const char *sendBuffor = response.c_str();
 
 	send(serverSocket, sendBuffor, strlen(sendBuffor), 0);
 	cout << "Serwer -> Klient: " << sendBuffor << endl << endl;

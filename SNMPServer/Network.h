@@ -19,8 +19,8 @@ public:
 	void acceptConnection(SOCKET &pListenSocket, SOCKET &pServerSocket);
 	void clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr);
 	void clientReceivePacket(SOCKET &pSocket);
-	void serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket);
-	void serverSendPacket(SOCKET &pServerSocket);
+	string serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket);
+	void serverSendPacket(SOCKET &pServerSocket, string response);
 
 	void commandParsing(string commandString, bool isSnmpGet);
 	string OIDtoNumber(string OID);
