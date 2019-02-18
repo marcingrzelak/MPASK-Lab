@@ -83,12 +83,22 @@ constexpr int GET_RESPONSE_MY_TAG = 0x82;
 constexpr int SET_REQUEST_MY_TAG = 0x83;
 constexpr int GET_NEXT_REQUEST_MY_TAG = 0x81;
 
-constexpr int PDU_ERR_NO_ERROR = 0;
-constexpr int PDU_ERR_TOO_BIG = 1;
-constexpr int PDU_ERR_NO_SUCH_NAME = 2;
-constexpr int PDU_ERR_BAD_VALUE = 3;
-constexpr int PDU_ERR_READ_ONLY = 4;
-constexpr int PDU_ERR_GEN_ERR = 5;
+constexpr int PDU_ERR_NO_ERROR_CODE = 0;
+constexpr int PDU_ERR_TOO_BIG_CODE = 1;
+constexpr int PDU_ERR_NO_SUCH_NAME_CODE = 2;
+constexpr int PDU_ERR_BAD_VALUE_CODE = 3;
+constexpr int PDU_ERR_READ_ONLY_CODE = 4;
+constexpr int PDU_ERR_GEN_ERR_CODE = 5;
+
+constexpr auto PDU_ERR_TOO_BIG = "tooBig";
+constexpr auto PDU_ERR_NO_SUCH_NAME = "noSuchName";
+constexpr auto PDU_ERR_BAD_VALUE = "badValue";
+constexpr auto PDU_ERR_READ_ONLY = "readOnly";
+constexpr auto PDU_ERR_GEN_ERR = "genErr";
+
+constexpr auto PDU_ERROR_IN_PACKET = "Blad w pakiecie";
+constexpr auto ERR_REASON = "Powod: ";
+
 
 constexpr auto READ_ONLY = "read-only";
 

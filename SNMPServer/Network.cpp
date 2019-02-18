@@ -196,7 +196,7 @@ void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 	return;
 }
 
-void Network::clientReceivePacket(SOCKET &pSocket)
+string Network::clientReceivePacket(SOCKET &pSocket)
 {
 	int bytesRecv = 0;
 	char recvBuffor[CLIENT_RECV_BUFFOR_SIZE] = "";
@@ -210,10 +210,8 @@ void Network::clientReceivePacket(SOCKET &pSocket)
 			throw eServerToClient();
 		}
 	}
-	//todo analiza odebranego pakietu
-	cout << "Odpowiedz serwera: " << recvBuffor << endl << endl;
 	closesocket(pSocket);
-	return;
+	return recvBuffor;
 }
 
 string Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket)
@@ -221,8 +219,8 @@ string Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket
 	char recvBuffor[SERVER_RECV_BUFFOR_SIZE] = "";
 
 	acceptConnection(pListenSocket, pServerSocket);
-
 	recv(pServerSocket, recvBuffor, SERVER_RECV_BUFFOR_SIZE, 0);
+	cout << "Klient -> Serwer: " << recvBuffor << endl << endl;
 	return recvBuffor;
 }
 

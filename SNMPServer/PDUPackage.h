@@ -10,10 +10,11 @@ public:
 	~PDUPackage();
 
 	string generatePacket(map<string, string> pVarBindList, int tag, int requestID, int errorStatus, int errorIndex, string pCommunity);
-	void analyzePacket(string packet);
+	void analyzePacket(string packet, bool printTree);
 	void clearVectors();
 	void addDataToVector(int dataType, int typeId, string dataValue, string keyword, string visibility, unsigned long long dataSize);
 	string packetHandler(string packet, Tree &OIDTree, vector<DataType>& pVDataType, vector<Index>& pVIndex, vector<Choice>& pVChoice, vector<Sequence>& pVSequence, vector<ObjectTypeSize>& pVObjectTypeSize);
+	void printResponse();
 
 	int requestID, errorStatus, errorIndex;
 	string packetType, community;

@@ -18,7 +18,7 @@ public:
 	void connectToServer(SOCKET &pSocket, sockaddr_in &pSocketAddr);
 	void acceptConnection(SOCKET &pListenSocket, SOCKET &pServerSocket);
 	void clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr);
-	void clientReceivePacket(SOCKET &pSocket);
+	string clientReceivePacket(SOCKET &pSocket);
 	string serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket);
 	void serverSendPacket(SOCKET &pServerSocket, string response);
 

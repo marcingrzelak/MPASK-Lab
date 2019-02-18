@@ -15,13 +15,47 @@
 
 void runClient(Network client, const char* addr, u_short port, SOCKET clientSocket, sockaddr_in socketAddr)
 {
+	PDUPackage pdu;
+	string response;
 	try
 	{
 		client.socketInit();
 		client.socketCreate(clientSocket);
 		client.setSocketParam(addr, port, socketAddr);
 		client.clientSendPacket(clientSocket, socketAddr);
-		client.clientReceivePacket(clientSocket);
+		response = client.clientReceivePacket(clientSocket);
+		pdu.analyzePacket(response, false);
+
+		if (pdu.errorIndex == 0 && pdu.errorStatus == PDU_ERR_NO_ERROR_CODE)
+		{
+			pdu.printResponse();
+		}
+		else if (pdu.errorStatus != PDU_ERR_NO_ERROR_CODE)
+		{
+			cout << PDU_ERROR_IN_PACKET << endl << ERR_REASON;
+			
+			if (pdu.errorStatus == PDU_ERR_TOO_BIG_CODE)
+			{
+				cout << PDU_ERR_TOO_BIG << endl;
+			}
+			else if (pdu.errorStatus == PDU_ERR_NO_SUCH_NAME_CODE)
+			{
+				cout << PDU_ERR_NO_SUCH_NAME << endl;
+			}
+			else if (pdu.errorStatus == PDU_ERR_BAD_VALUE_CODE)
+			{
+				cout << PDU_ERR_BAD_VALUE << endl;
+			}
+			else if (pdu.errorStatus == PDU_ERR_READ_ONLY_CODE)
+			{
+				cout << PDU_ERR_READ_ONLY << endl;
+			}
+			else if (pdu.errorStatus == PDU_ERR_GEN_ERR_CODE)
+			{
+				cout << PDU_ERR_GEN_ERR << endl;
+			}
+			cout << endl;
+		}
 	}
 	catch (Exceptions &e)
 	{

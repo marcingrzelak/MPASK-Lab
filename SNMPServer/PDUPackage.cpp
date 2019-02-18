@@ -110,14 +110,17 @@ string PDUPackage::generatePacket(map<string, string> pVarBindList, int tag, int
 	return messageEncoded;
 }
 
-void PDUPackage::analyzePacket(string packet)
+void PDUPackage::analyzePacket(string packet, bool printTree)
 {
 	BERDecoder decoder;
 	TreeBER BERTree;
 
 	int index = 0;
 	decoder.decode(packet, index, BERTree, nullptr);
-	BERTree.root->printTree("", true);
+	if (printTree)
+	{
+		BERTree.root->printTree("", true);
+	}
 
 	community = BERTree.root->next[1]->value;
 	requestID = stoi(BERTree.root->next[2]->next[0]->value);
@@ -155,7 +158,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 	BERCoder coder;
 	CheckValue checkValue;
 	string st;
-	analyzePacket(packet);
+	analyzePacket(packet, true);
 
 	map<string, string>::iterator itr;
 
@@ -193,7 +196,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 				if (node->access == READ_ONLY)
 				{
 					errorIndex = i;
-					errorStatus = PDU_ERR_READ_ONLY;
+					errorStatus = PDU_ERR_READ_ONLY_CODE;
 					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 				}
 				else
@@ -207,7 +210,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 					else
 					{
 						errorIndex = i;
-						errorStatus = PDU_ERR_BAD_VALUE;
+						errorStatus = PDU_ERR_BAD_VALUE_CODE;
 						return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 					}
 				}
@@ -222,10 +225,20 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 		{
 			//error brak liscia o podanym oid
 			errorIndex = i;
-			errorStatus = PDU_ERR_NO_SUCH_NAME;
+			errorStatus = PDU_ERR_NO_SUCH_NAME_CODE;
 			return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 		}
 		i++;
 	}
 	return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+}
+
+void PDUPackage::printResponse()
+{
+	map<string, string>::iterator itr;
+
+	for (itr = varBindList.begin(); itr != varBindList.end(); ++itr)
+	{
+		cout << itr->first << " = " << itr->second << endl;
+	}
 }
