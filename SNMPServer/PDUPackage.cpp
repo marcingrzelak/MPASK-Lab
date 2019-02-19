@@ -158,7 +158,7 @@ void PDUPackage::addDataToVector(int dataType, int typeId, string dataValue, str
 
 string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>& pVDataType, vector<Index>& pVIndex, vector<Choice>& pVChoice, vector<Sequence>& pVSequence, vector<ObjectTypeSize>& pVObjectTypeSize)
 {
-	BERCoder coder;
+	BERCoder encoder;
 	CheckValue checkValue;
 	string st;
 	analyzePacket(packet, true);
@@ -186,7 +186,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 			{
 				//pobranie wartosci z drzewa todo
 				string value = "1";
-				string encodedNode = coder.treeNodeEncoding(st, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				string encodedNode = encoder.treeNodeEncoding(st, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 				if (encodedNode != "")
 				{
 					itr->second = encodedNode;
@@ -199,24 +199,47 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 				{
 					errorIndex = i;
 					errorStatus = PDU_ERR_READ_ONLY_CODE;
-					//todo zakodowac wartosci w varBindList (teraz mamy "1" a ma byc "02 01 01" itd
-					//todo w przypadku bledu zakodowac wszystkie kolejne na null
+					while (itr != varBindList.end())
+					{
+						itr->second = encoder.nullEncode();
+						itr++;
+					}
 					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 				}
 				else
 				{
-					//todo wrzucic to w try catch
-					string test = coder.treeNodeEncoding(st, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
-					if (test != "")//mozna zakodowac nowa wartosc - poprawny typ i rozmiar
+					string test;
+					try
 					{
-						//ustawienie wartosci w drzewie todo
-						itr->second = coder.nullEncode();
+						test = encoder.treeNodeEncoding(st, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 					}
-					else
+					catch (Exceptions &e)
 					{
 						errorIndex = i;
 						errorStatus = PDU_ERR_BAD_VALUE_CODE;
+						while (itr != varBindList.end())
+						{
+							itr->second = encoder.nullEncode();
+							itr++;
+						}
 						return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+					}
+					if (test != "")//mozna zakodowac nowa wartosc - poprawny typ i rozmiar
+					{
+						//ustawienie wartosci w drzewie todo
+						checkValue.setValueParameters(itr->second);
+						if (checkValue.isValueNumber)
+						{
+							itr->second = (encoder.encode(itr->second, INTEGER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
+						}
+						else if (checkValue.isObjectIdentifier)
+						{
+							itr->second = (encoder.encode(itr->second, OBJECT_IDENTIFIER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
+						}
+						else
+						{
+							itr->second = (encoder.encode(itr->second, OCTET_STRING_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
+						}
 					}
 				}
 			}
@@ -231,6 +254,11 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 			//error brak liscia o podanym oid
 			errorIndex = i;
 			errorStatus = PDU_ERR_NO_SUCH_NAME_CODE;
+			while (itr != varBindList.end())
+			{
+				itr->second = encoder.nullEncode();
+				itr++;
+			}
 			return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 		}
 		i++;
