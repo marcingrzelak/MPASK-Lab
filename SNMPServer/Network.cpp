@@ -148,15 +148,15 @@ void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 			checkValue.setValueParameters(nodesValue[i]);
 			if (checkValue.isValueNumber)
 			{
-				nodesValueEncoded[i] = encoder.encode(nodesValue[i], INTEGER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+				nodesValueEncoded.push_back(encoder.encode(nodesValue[i], INTEGER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
 			}
 			else if (checkValue.isObjectIdentifier)
 			{
-				nodesValueEncoded[i] = encoder.encode(nodesValue[i], OBJECT_IDENTIFIER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+				nodesValueEncoded.push_back(encoder.encode(nodesValue[i], OBJECT_IDENTIFIER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
 			}
 			else
 			{
-				nodesValueEncoded[i] = encoder.encode(nodesValue[i], OCTET_STRING_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
+				nodesValueEncoded.push_back(encoder.encode(nodesValue[i], OCTET_STRING_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
 			}
 		}
 
@@ -174,7 +174,7 @@ void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 			varBindList.insert(pair<string, string>(OIDNumber, nodesValueEncoded[i]));
 		}
 
-		commandAsPDU = pduPackage.generatePacket(varBindList, GET_NEXT_REQUEST_TAG_NUMBER, requestID, 0, 0, community);
+		commandAsPDU = pduPackage.generatePacket(varBindList, SET_REQUEST_TAG_NUMBER, requestID, 0, 0, community);
 	}
 	else
 	{
@@ -272,6 +272,11 @@ void Network::commandParsing(string commandString, bool isSnmpGet)
 	{
 		sregex_iterator nodesIterator(nodesAll.begin(), nodesAll.end(), rgx);
 		sregex_iterator endIterator;
+
+		if (nodesIterator == endIterator)
+		{
+			throw eNetworkClientWrongCommand();
+		}
 
 		while (nodesIterator != endIterator)
 		{

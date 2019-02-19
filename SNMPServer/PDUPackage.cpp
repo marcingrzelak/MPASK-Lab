@@ -49,6 +49,9 @@ string PDUPackage::generatePacket(map<string, string> pVarBindList, int tag, int
 
 		varBindEncoded += coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
 		clearVectors();
+		coder.clearIdentifier();
+		coder.clearLength();
+		coder.clearValue();
 	}
 
 	clearVectors();
@@ -165,7 +168,6 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 	int i = 0;
 	for (itr = varBindList.begin(); itr != varBindList.end(); ++itr)
 	{
-
 		TreeNode *node;
 		if (itr->first.back() == '0')
 		{
@@ -197,10 +199,13 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 				{
 					errorIndex = i;
 					errorStatus = PDU_ERR_READ_ONLY_CODE;
+					//todo zakodowac wartosci w varBindList (teraz mamy "1" a ma byc "02 01 01" itd
+					//todo w przypadku bledu zakodowac wszystkie kolejne na null
 					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 				}
 				else
 				{
+					//todo wrzucic to w try catch
 					string test = coder.treeNodeEncoding(st, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 					if (test != "")//mozna zakodowac nowa wartosc - poprawny typ i rozmiar
 					{

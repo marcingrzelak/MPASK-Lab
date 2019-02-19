@@ -33,7 +33,7 @@ void runClient(Network client, const char* addr, u_short port, SOCKET clientSock
 		else if (pdu.errorStatus != PDU_ERR_NO_ERROR_CODE)
 		{
 			cout << PDU_ERROR_IN_PACKET << endl << ERR_REASON;
-			
+
 			if (pdu.errorStatus == PDU_ERR_TOO_BIG_CODE)
 			{
 				cout << PDU_ERR_TOO_BIG << endl;
@@ -54,7 +54,7 @@ void runClient(Network client, const char* addr, u_short port, SOCKET clientSock
 			{
 				cout << PDU_ERR_GEN_ERR << endl;
 			}
-			cout << endl;
+			cout << client.nodesOID[pdu.errorIndex] << endl;
 		}
 	}
 	catch (Exceptions &e)
