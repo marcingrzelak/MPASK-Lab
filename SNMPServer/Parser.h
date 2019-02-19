@@ -1,6 +1,8 @@
 #pragma once
 #include "TreeStructure.h"
 #include "DataStructures.h"
+#include "Exceptions.h"
+#include "Strings.h"
 
 class Parser
 {

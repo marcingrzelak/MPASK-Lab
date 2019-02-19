@@ -1,7 +1,8 @@
 #pragma once
 
 #pragma region errors
-#define F_OPEN_ERR_MSG "Blad otwarcia pliku."<<endl<<endl
+constexpr auto FILE_OPEN_ERR_MSG = "Blad otwarcia pliku.\n\n";
+#define F_DIM_FORMAT_ERR_MSG "abc"
 
 #pragma endregion
 
@@ -31,6 +32,35 @@ constexpr int OCTET_STRING_TAG_NUMBER = 4;
 constexpr int NULL_TAG_NUMBER = 5;
 constexpr int OBJECT_IDENTIFIER_TAG_NUMBER = 6;
 constexpr int SEQUENCE_TAG_NUMBER = 16;
+
+constexpr auto PACKET_TYPE_GET_REQUEST = "GetRequest";
+constexpr auto PACKET_TYPE_GET_RESPONSE = "GetResponse";
+constexpr auto PACKET_TYPE_SET_REQUEST = "SetRequest";
+constexpr auto PACKET_TYPE_GET_NEXT_REQUEST = "GetNextRequest";
+
+constexpr int GET_REQUEST_TAG_NUMBER = 0;
+constexpr int GET_RESPONSE_TAG_NUMBER = 2;
+constexpr int SET_REQUEST_TAG_NUMBER = 3;
+constexpr int GET_NEXT_REQUEST_TAG_NUMBER = 1;
+
+constexpr unsigned short GET_REQUEST_BYTE = 0xa0;
+constexpr unsigned short GET_RESPONSE_BYTE = 0xa2;
+constexpr unsigned short SET_REQUEST_BYTE = 0xa3;
+constexpr unsigned short GET_NEXT_REQUEST_BYTE = 0xa1;
+
+constexpr int GET_REQUEST_MY_TAG = 0x80;
+constexpr int GET_RESPONSE_MY_TAG = 0x82;
+constexpr int SET_REQUEST_MY_TAG = 0x83;
+constexpr int GET_NEXT_REQUEST_MY_TAG = 0x81;
+
+constexpr int PDU_ERR_NO_ERROR = 0;
+constexpr int PDU_ERR_TOO_BIG = 1;
+constexpr int PDU_ERR_NO_SUCH_NAME = 2;
+constexpr int PDU_ERR_BAD_VALUE = 3;
+constexpr int PDU_ERR_READ_ONLY = 4;
+constexpr int PDU_ERR_GEN_ERR = 5;
+
+constexpr auto READ_ONLY = "read-only";
 
 
 #pragma endregion

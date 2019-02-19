@@ -77,7 +77,7 @@ void CheckValue::lengthCalc(string pValue)
 		}
 		else if (pValueINT == 0)
 		{
-			bitCount = 0;
+			bitCount = 1;
 		}
 		else
 		{

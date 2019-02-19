@@ -82,7 +82,7 @@ unsigned long long Length::getLength(vector<uint8_t> pOctets, int &index, bool &
 	}
 	else
 	{
-		uint8_t lengthShort = pOctets.at(index) & 0x1f;
+		uint8_t lengthShort = pOctets.at(index) & 0x7f;
 		undefinedFlag = false;
 		index++;
 		return lengthShort;
