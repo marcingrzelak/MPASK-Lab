@@ -160,7 +160,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 {
 	BERCoder encoder;
 	CheckValue checkValue;
-	string st;
+	string oid;
 	analyzePacket(packet, true);
 
 	map<string, string>::iterator itr;
@@ -171,14 +171,14 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 		TreeNode *node;
 		if (itr->first.back() == '0')
 		{
-			st = itr->first.substr(0, itr->first.size() - 2);
+			oid = itr->first.substr(0, itr->first.size() - 2);
 		}
 		else
 		{
-			st = itr->first;
+			oid = itr->first;
 		}
 
-		node = OIDTree.findOID(st, OIDTree.root);
+		node = OIDTree.findOID(oid, OIDTree.root);
 
 		if (node != nullptr)//znaleziono oid
 		{
@@ -186,14 +186,36 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 			{
 				//pobranie wartosci z drzewa todo
 				string value = "1";
-				string encodedNode = encoder.treeNodeEncoding(st, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				string encodedNode = encoder.treeNodeEncoding(oid, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 				if (encodedNode != "")
 				{
 					itr->second = encodedNode;
 				}
 			}
 
-			if (stoi(packetType) == SET_REQUEST_TAG_NUMBER)
+			else if (stoi(packetType) == GET_NEXT_REQUEST_TAG_NUMBER)
+			{
+				string getNextOID;
+				try
+				{
+					getNextOID = OIDTree.findNextNode(oid, OIDTree.root);
+				}
+				catch (Exceptions &e)
+				{
+					e.message();
+					throw ePDU();
+				}
+
+				//pobranie wartosci z drzewa todo
+				string value = "1";
+				string encodedNode = encoder.treeNodeEncoding(getNextOID, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				if (encodedNode != "")
+				{
+					varBindList.insert(pair<string, string>(getNextOID, encodedNode));
+				}
+			}
+
+			else if (stoi(packetType) == SET_REQUEST_TAG_NUMBER)
 			{
 				if (node->access == READ_ONLY)
 				{
@@ -211,7 +233,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 					string test;
 					try
 					{
-						test = encoder.treeNodeEncoding(st, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+						test = encoder.treeNodeEncoding(oid, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 					}
 					catch (Exceptions &e)
 					{
@@ -243,11 +265,6 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 					}
 				}
 			}
-
-			if (stoi(packetType) == GET_NEXT_REQUEST_TAG_NUMBER)
-			{
-
-			}
 		}
 		else
 		{
@@ -263,7 +280,14 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 		}
 		i++;
 	}
-	return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+	if (stoi(packetType) == GET_NEXT_REQUEST_TAG_NUMBER)
+	{
+		return generatePacket(varBindListGetNext, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+	}
+	else
+	{
+		return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+	}
 }
 
 void PDUPackage::printResponse()

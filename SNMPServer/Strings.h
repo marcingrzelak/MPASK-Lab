@@ -27,10 +27,13 @@ constexpr auto SOCKET_LISTEN_ERR = "Blad - sluchanie na sockecie\n\n";
 constexpr auto SOCKET_CONNECT_ERR = "Socket - blad polaczenia \n\n";
 constexpr auto SERVER_TO_CLIENT_ERR = "Brak odpowiedzi z serwera\n\n";
 constexpr auto NETWORK_ERR_MSG = "Blad sieci\n\n";
+constexpr auto PDU_ERR_MSG = "Blad w obsludze PDU\n\n";
 constexpr auto NETWORK_CLIENT_WRONG_COMMAND = "Bledna skladnia polecenia\n\n";
 constexpr auto WRONG_TAG_GENERATE_PDU = "Niepoprawna komenda snmp\n\n";
 constexpr auto OID_WORD_ERROR= "Nie obsluguje OIDow jako wyrazy. Wprowadz liczbowy OID\n\n";
-//constexpr auto = "\n\n";
+constexpr auto OID_WRONG_SYNTAX_ERROR = "Niepoprawna skladnia OID\n\n";
+constexpr auto GET_NEXT_END_ERROR = "Osiagnieto koniec drzewa\n\n";
+
 
 #pragma endregion
 

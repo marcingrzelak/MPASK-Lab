@@ -201,6 +201,78 @@ TreeNode * Tree::findOID(string pOID, TreeNode * node)
 	return newNode;
 }
 
+string Tree::findNextNode(string pOID, TreeNode* root)
+{
+	if (root == NULL)
+	{
+		throw eFindOIDParentNull();
+	}
+	if (pOID.find(".") == string::npos)
+	{
+		throw eOIDWord();
+	}
+	stringstream streamOID(pOID);
+	string singleOID, nextOID;
+	vector<int> OIDlist;
+	TreeNode* newNode = root, *parentNode = newNode, *nextNode;
+	bool isOIDFound = false;
+	int index = 0;
+
+	while (getline(streamOID, singleOID, '.'))
+	{
+		OIDlist.push_back(stoi(singleOID));
+	}
+
+	if (OIDlist.at(0) == 1)
+	{
+		for (unsigned int i = 1; i < OIDlist.size(); i++)
+		{
+			int counter = newNode->next.size();
+			for (int j = 0; j < counter; j++)
+			{
+				isOIDFound = false;
+				if (newNode->next.at(j)->OID == OIDlist.at(i))
+				{
+					isOIDFound = true;
+					parentNode = newNode;
+					newNode = newNode->next.at(j);
+					index = j;
+					j = counter;
+				}
+			}
+			if (!isOIDFound || counter == 0)
+			{
+				//error
+			}
+		}
+	}
+
+	size_t found = pOID.find_last_of(".");
+	string newOID = pOID.substr(0, found);
+	if (newOID == "1.3.6")
+	{
+		throw eGetNextEnd();
+	}
+
+	if (index == parentNode->next.size() - 1)//podany oid byl ostatnim na liscie
+	{
+		nextOID = findNextNode(newOID, root);
+	}
+	else
+	{
+		newOID += "." + to_string(parentNode->next.at(index + 1)->OID);
+		nextNode = parentNode->next.at(index + 1);
+		while (nextNode->next.size() != 0)
+		{
+			nextNode = nextNode->next.at(0);
+			newOID += "." + to_string(nextNode->OID);
+		}
+		nextOID += ".0";
+		nextOID = newOID;
+	}
+	return nextOID;
+}
+
 TreeNodeBER::TreeNodeBER()
 {
 }
@@ -224,7 +296,7 @@ void TreeNodeBER::printTree(string indent, bool last)
 	}
 
 	cout << classValue << "\t" << complexity << "\t" << "TAG: ";
-	
+
 	//tag
 	if (classValue == IDENTIFIER_CLASS_UNIVERSAL && complexity == IDENTIFIER_COMPLEXITY_PRIMITIVE)
 	{

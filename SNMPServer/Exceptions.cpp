@@ -164,3 +164,18 @@ void eOIDWord::message()
 {
 	cout << OID_WORD_ERROR;
 }
+
+void eOIDWrongSyntax::message()
+{
+	cout << OID_WRONG_SYNTAX_ERROR;
+}
+
+void eGetNextEnd::message()
+{
+	cout << GET_NEXT_END_ERROR;
+}
+
+void ePDU::message()
+{
+	cout << PDU_ERR_MSG;
+}

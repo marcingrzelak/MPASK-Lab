@@ -26,6 +26,7 @@ public:
 	TreeNode* findNodeSpecificOID(string pName, int pOID, TreeNode* node);
 	string findNodeWord(string pName, TreeNode* node, string OID);
 	TreeNode* findOID(string pOID, TreeNode* node);
+	string findNextNode(string pOID, TreeNode* root);
 };
 
 class TreeNodeBER

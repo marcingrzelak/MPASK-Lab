@@ -202,3 +202,21 @@ class eOIDWord : public Exceptions
 public:
 	void message();
 };
+
+class eOIDWrongSyntax : public Exceptions
+{
+public:
+	void message();
+};
+
+class eGetNextEnd : public Exceptions
+{
+public:
+	void message();
+};
+
+class ePDU : public Exceptions
+{
+public:
+	void message();
+};

@@ -18,7 +18,7 @@ public:
 
 	int requestID, errorStatus, errorIndex;
 	string packetType, community;
-	map<string, string> varBindList;
+	map<string, string> varBindList, varBindListGetNext;
 
 	vector<int> sequenceDataTypes, sequenceTypeIds;
 	vector<string> sequenceDataValues, sequenceKeywords, sequenceVisibilities;
