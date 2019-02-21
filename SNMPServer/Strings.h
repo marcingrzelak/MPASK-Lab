@@ -38,9 +38,6 @@ constexpr auto SERVER_BUFFOR_OVERFLOW_ERROR = "Przekroczono rozmiar bufora serwe
 constexpr auto SET_VALUE_NOT_CHANGED_ERROR = "Nie udalo sie ustawic nowej wartosci\n\n";
 constexpr auto SET_VALUE_NOT_IMPLEMENTED_ERROR = "Brak implementacji ustawiania wartosci tego wezla\n\n";
 constexpr auto SERVER_NO_RESPONSE_ERROR = "Brak odpowiedzi z serwera\n\n";
-
-
-
 #pragma endregion
 
 #pragma region messages
@@ -52,7 +49,6 @@ constexpr auto CLIENT_COMMAND_ENTER = "Wpisz polecenie snmp\n";
 #pragma region oids
 constexpr auto SYS_NAME_OID = "1.3.6.1.2.1.1.5";
 constexpr auto SYS_UP_TIME_OID = "1.3.6.1.2.1.1.3";
-constexpr auto _OID = "";
 #pragma endregion
 
 
@@ -115,29 +111,5 @@ constexpr auto PDU_ERR_GEN_ERR = "genErr";
 constexpr auto PDU_ERROR_IN_PACKET = "Blad w pakiecie";
 constexpr auto ERR_REASON = "Powod: ";
 
-
 constexpr auto READ_ONLY = "read-only";
-
-//constexpr auto comments = R"(-{2}.*)";
-//constexpr auto whitespaces = R"(\s{2,})";
-//constexpr auto importsGeneral = R"(IMPORTS\s(.*?);)";
-//constexpr auto imports = R"((.*?)\sFROM\s(\S*))";
-//constexpr auto importsOneElement = R"(\s?(.*?),)";
-//constexpr auto objectIdentifierGeneral = R"((\S*)\sOBJECT\sIDENTIFIER\s::=\s\{\s(.*?)\s(\d+)\s\})";
-//constexpr auto objectIdentifierLongParent = R"((\S*?)(\((\d+)\))?\s)";
-//constexpr auto objectType = R"((\w*)\sOBJECT-TYPE\sSYNTAX\s(.*?)\sACCESS\s(.*?)\sSTATUS\s(.*?)\sDESCRIPTION\s(.*?)\s(INDEX\s\{.*?\}\s)?::=\s\{\s(\S*)\s(\d+)\s\})";
-//constexpr auto sizeGeneral = R"(\(.*?\)+)";
-//constexpr auto sizeR = R"(\(SIZE\((\d+)\)\)|\((\d+)\.\.(\d+)\))";
-//constexpr auto index = R"(\{\s(.*?)\s\})";
-//constexpr auto indexOneElement = R"(\s?(.*?),)";
-//constexpr auto dataType = R"((\w*?)\s::=\s?\[?(\S*?)?\s?(\d+)?\]?\s?(\S*?)?\s(INTEGER|OCTET STRING|OBJECT IDENTIFIER|NULL)\s\(?(((SIZE)?\s\((\d+)\))|((\d+)\.{2}(\d+)))?\)?)";
-//constexpr auto dataTypeEncoder = R"((INTEGER)|(OCTET STRING)|(OBJECT IDENTIFIER)|(NULL))";
-//constexpr auto choiceGeneral = R"((\w*)\s::=\s?CHOICE\s\{\s(.*?)\s\})";
-//constexpr auto choiceOneElement = R"(\s?(\S*?)\s(.*?),)";
-//constexpr auto sequenceGeneral = R"((\w*)\s::=\sSEQUENCE\s\{(.*?)\s\})";
-//constexpr auto sequenceOneElement = R"(\s?(\S*?)\s(.*?),)";
-//constexpr auto objectIdentifierCheckType = R"(\d+\.{1})";
-
-
 #pragma endregion
-
