@@ -5,18 +5,18 @@
 #include "BERDecoder.h"
 #include "CheckValue.h"
 #include "TreeStructure.h"
+#include "Exceptions.h"
 
 
 PDUPackage::PDUPackage()
 {
 }
 
-
 PDUPackage::~PDUPackage()
 {
 }
 
-string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int &requestID, int &errorStatus, int &errorIndex, string pCommunity)
+string PDUPackage::generatePacket(map<string, string> pVarBindList, int tag, int requestID, int errorStatus, int errorIndex, string pCommunity)
 {
 	//GetResponse
 	//serwer->client
@@ -32,16 +32,26 @@ string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int 
 
 	for (itr = pVarBindList.begin(); itr != pVarBindList.end(); ++itr)
 	{
+		if (itr != pVarBindList.begin()) //dodanie spacji pomiedzy elem. varbindlist
+		{
+			varBindEncoded += " ";
+		}
 		checkValue.setValueParameters(itr->first);
 		addDataToVector(OBJECT_IDENTIFIER_TAG_NUMBER, 0, itr->first, "", "", checkValue.byteCount);
 		if (itr->second == "")
 		{
 			addDataToVector(SEQUENCE_TAG_NUMBER, 0, coder.nullEncode(), "", "", 0);
 		}
-		addDataToVector(SEQUENCE_TAG_NUMBER, 0, itr->second, "", "", 0);//w itr->second mamy juz zakodowana wartosc z drzewa
+		else
+		{
+			addDataToVector(SEQUENCE_TAG_NUMBER, 0, itr->second, "", "", 0);//w itr->second mamy juz zakodowana wartosc z drzewa
+		}
 
 		varBindEncoded += coder.encode("", SEQUENCE_TAG_NUMBER, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
 		clearVectors();
+		coder.clearIdentifier();
+		coder.clearLength();
+		coder.clearValue();
 	}
 
 	clearVectors();
@@ -64,7 +74,27 @@ string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int 
 	//varbind list
 	addDataToVector(SEQUENCE_TAG_NUMBER, 0, varBindListEncoded, "", "", 0);
 
-	PDUEncoded = coder.encode("", GET_RESPONSE_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	if (tag == GET_RESPONSE_TAG_NUMBER)
+	{
+		PDUEncoded = coder.encode("", GET_RESPONSE_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	}
+	else if (tag == GET_REQUEST_TAG_NUMBER)
+	{
+		PDUEncoded = coder.encode("", GET_REQUEST_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	}
+	else if (tag == GET_NEXT_REQUEST_TAG_NUMBER)
+	{
+		PDUEncoded = coder.encode("", GET_NEXT_REQUEST_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	}
+	else if (tag == SET_REQUEST_TAG_NUMBER)
+	{
+		PDUEncoded = coder.encode("", SET_REQUEST_MY_TAG, 0, 0, "", "", sequenceDataValues, sequenceDataTypes, sequenceTypeIds, sequenceDataSizes, sequenceKeywords, sequenceVisibilities);
+	}
+	else
+	{
+		throw eWrongTagGeneratePDU();
+	}
+
 	clearVectors();
 
 	//version
@@ -83,14 +113,17 @@ string PDUPackage::generateResponsePacket(map<string, string> pVarBindList, int 
 	return messageEncoded;
 }
 
-void PDUPackage::analyzePacket(string packet)
+void PDUPackage::analyzePacket(string packet, bool printTree)
 {
 	BERDecoder decoder;
 	TreeBER BERTree;
 
 	int index = 0;
 	decoder.decode(packet, index, BERTree, nullptr);
-	BERTree.root->printTree("", true);
+	if (printTree)
+	{
+		BERTree.root->printTree("", true);
+	}
 
 	community = BERTree.root->next[1]->value;
 	requestID = stoi(BERTree.root->next[2]->next[0]->value);
@@ -125,80 +158,280 @@ void PDUPackage::addDataToVector(int dataType, int typeId, string dataValue, str
 
 string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>& pVDataType, vector<Index>& pVIndex, vector<Choice>& pVChoice, vector<Sequence>& pVSequence, vector<ObjectTypeSize>& pVObjectTypeSize)
 {
-	BERCoder coder;
+	BERCoder encoder;
 	CheckValue checkValue;
-	string st;
-	analyzePacket(packet);
+	string oid;
+	analyzePacket(packet, true);
 
 	map<string, string>::iterator itr;
 
 	int i = 0;
 	for (itr = varBindList.begin(); itr != varBindList.end(); ++itr)
 	{
-
 		TreeNode *node;
 		if (itr->first.back() == '0')
 		{
-			st = itr->first.substr(0, itr->first.size() - 2);
+			oid = itr->first.substr(0, itr->first.size() - 2);
 		}
 		else
 		{
-			st = itr->first;
+			oid = itr->first;
 		}
 
-		node = OIDTree.findOID(st, OIDTree.root);
+		node = OIDTree.findOID(oid, OIDTree.root);
 
 		if (node != nullptr)//znaleziono oid
 		{
+			string value;
 			if (stoi(packetType) == GET_REQUEST_TAG_NUMBER)
 			{
-				//pobranie wartosci z drzewa todo
-				string value = "1";
-				string encodedNode = coder.treeNodeEncoding(st, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				value = getValue(oid, node->syntax);
+
+				string encodedNode;
+				try
+				{
+					encodedNode = encoder.treeNodeEncoding(oid, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				}
+				catch (Exceptions &e)
+				{
+					errorIndex = i;
+					errorStatus = PDU_ERR_BAD_VALUE_CODE;
+					while (itr != varBindList.end())
+					{
+						itr->second = encoder.nullEncode();
+						itr++;
+					}
+					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+				}
 				if (encodedNode != "")
 				{
 					itr->second = encodedNode;
 				}
 			}
 
-			if (stoi(packetType) == SET_REQUEST_TAG_NUMBER)
+			else if (stoi(packetType) == GET_NEXT_REQUEST_TAG_NUMBER)
+			{
+				string getNextOID;
+				try
+				{
+					getNextOID = OIDTree.findNextNode(oid, OIDTree.root);
+				}
+				catch (Exceptions &e)
+				{
+					e.message();
+					throw ePDU();
+				}
+
+				TreeNode *getNextNode;
+				getNextNode = OIDTree.findOID(getNextOID, OIDTree.root);
+				value = getValue(getNextOID, getNextNode->syntax);
+
+				string encodedNode;
+				try
+				{
+					encodedNode = encoder.treeNodeEncoding(getNextOID, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				}
+				catch (Exceptions &e)
+				{
+					errorIndex = i;
+					errorStatus = PDU_ERR_BAD_VALUE_CODE;
+					while (itr != varBindList.end())
+					{
+						itr->second = encoder.nullEncode();
+						itr++;
+					}
+					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+				}
+				if (encodedNode != "")
+				{
+					varBindListGetNext.insert(pair<string, string>(getNextOID, encodedNode));
+				}
+			}
+
+			else if (stoi(packetType) == SET_REQUEST_TAG_NUMBER)
 			{
 				if (node->access == READ_ONLY)
 				{
 					errorIndex = i;
-					errorStatus = PDU_ERR_READ_ONLY;
-					return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+					errorStatus = PDU_ERR_READ_ONLY_CODE;
+					while (itr != varBindList.end())
+					{
+						itr->second = encoder.nullEncode();
+						itr++;
+					}
+					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 				}
 				else
 				{
-					string test = coder.treeNodeEncoding(st, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
-					if (test != "")//mozna zakodowac nowa wartosc - poprawny typ i rozmiar
+					string test;
+					try
 					{
-						//ustawienie wartosci w drzewie todo
-						itr->second = coder.nullEncode();
+						test = encoder.treeNodeEncoding(oid, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 					}
-					else
+					catch (Exceptions &e)
 					{
 						errorIndex = i;
-						errorStatus = PDU_ERR_BAD_VALUE;
-						return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+						errorStatus = PDU_ERR_BAD_VALUE_CODE;
+						while (itr != varBindList.end())
+						{
+							itr->second = encoder.nullEncode();
+							itr++;
+						}
+						return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+					}
+					if (test != "")//mozna zakodowac nowa wartosc - poprawny typ i rozmiar
+					{
+						try
+						{
+							setValue(oid, itr->second);
+						}
+						catch (Exceptions &e)
+						{
+							errorIndex = i;
+							errorStatus = PDU_ERR_GEN_ERR_CODE;
+							while (itr != varBindList.end())
+							{
+								itr->second = encoder.nullEncode();
+								itr++;
+							}
+							e.message();
+							return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+						}
+
+						checkValue.setValueParameters(itr->second);
+						if (checkValue.isValueNumber)
+						{
+							itr->second = (encoder.encode(itr->second, INTEGER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
+						}
+						else if (checkValue.isObjectIdentifier)
+						{
+							itr->second = (encoder.encode(itr->second, OBJECT_IDENTIFIER_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
+						}
+						else
+						{
+							itr->second = (encoder.encode(itr->second, OCTET_STRING_TAG_NUMBER, 0, checkValue.byteCount, "", "", checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities));
+						}
 					}
 				}
-			}
-
-			if (stoi(packetType) == GET_NEXT_REQUEST_TAG_NUMBER)
-			{
-
 			}
 		}
 		else
 		{
 			//error brak liscia o podanym oid
 			errorIndex = i;
-			errorStatus = PDU_ERR_NO_SUCH_NAME;
-			return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+			errorStatus = PDU_ERR_NO_SUCH_NAME_CODE;
+			while (itr != varBindList.end())
+			{
+				itr->second = encoder.nullEncode();
+				itr++;
+			}
+			return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
 		}
 		i++;
 	}
-	return generateResponsePacket(varBindList, requestID, errorStatus, errorIndex, community);
+	if (stoi(packetType) == GET_NEXT_REQUEST_TAG_NUMBER)
+	{
+		return generatePacket(varBindListGetNext, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+	}
+	else
+	{
+		return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+	}
+}
+
+void PDUPackage::printResponse(int errIndex, int errStatus)
+{
+	map<string, string>::iterator itr;
+	itr = varBindList.begin();
+	int i = 0;
+
+	if (errStatus == PDU_ERR_NO_ERROR_CODE)
+	{
+		while (itr != varBindList.end())
+		{
+			cout << itr->first << " = " << itr->second << endl;
+			itr++;
+		}
+	}
+	else
+	{
+		while (itr != varBindList.end() && i < errIndex)
+		{
+			if (itr->second != "")
+			{
+				cout << itr->first << " = " << itr->second << endl;
+			}
+			itr++;
+			i++;
+		}
+	}
+
+	cout << endl;
+}
+
+string PDUPackage::getValue(string oid, string syntax)
+{
+	string value;
+	if (oid == SYS_NAME_OID)
+	{
+		constexpr auto INFO_BUFFER_SIZE = 32767;
+		TCHAR  infoBuf[INFO_BUFFER_SIZE];
+		DWORD  bufCharCount = INFO_BUFFER_SIZE;
+
+		GetComputerName(infoBuf, &bufCharCount);
+		wstring test(&infoBuf[0]);
+		string test2(test.begin(), test.end());
+		value = test2;
+	}
+	else if (oid == SYS_UP_TIME_OID)
+	{
+		auto uptime = chrono::milliseconds(GetTickCount64());
+		value = to_string(uptime.count());
+	}
+	else
+	{
+		if (syntax.find(IDENTIFIER_TYPE_INTEGER) != string::npos)
+		{
+			value = "120";
+		}
+		else if (syntax.find(IDENTIFIER_TYPE_OCTET_STRING) != string::npos)
+		{
+			value = "test";
+		}
+		else if (syntax.find(IDENTIFIER_TYPE_NULL) != string::npos)
+		{
+			value = "";
+		}
+		else if (syntax.find(IDENTIFIER_TYPE_OBJECT_IDENTIFIER) != string::npos)
+		{
+			value = "1.3.6.1.4.1.311.1.1.3.1.1";
+		}
+		else
+		{
+			value = "inne";
+		}
+	}
+	return value;
+}
+
+void PDUPackage::setValue(string oid, string value)
+{
+	if (oid == SYS_NAME_OID)
+	{
+		wstring stemp = wstring(value.begin(), value.end());
+		LPCWSTR sw = stemp.c_str();
+		bool bSuccess = SetComputerName(sw);
+		if (bSuccess == 0)
+		{
+			throw eSetValueNotChanged();
+		}
+		else
+		{
+			return;
+		}
+	}
+	else
+	{
+		throw eSetValueNotImplemented();
+	}
 }

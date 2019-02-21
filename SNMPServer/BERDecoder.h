@@ -28,6 +28,7 @@ public:
 	void getIdentifier(int &pIndex);
 	void getLength(int &pIndex);
 	void getValue(int &pIndex);
+	void getValueINT();
 
 	void decode(string & pValue, int pIndex, TreeBER & pTree, TreeNodeBER *pParentNode);
 };

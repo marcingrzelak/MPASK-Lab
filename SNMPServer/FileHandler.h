@@ -9,4 +9,3 @@ public:
 	string FileRead();
 	fstream file;
 };
-

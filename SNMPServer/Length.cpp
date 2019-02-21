@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "Length.h"
 #include "Strings.h"
+#include "Exceptions.h"
 
 Length::Length()
 {
@@ -25,11 +26,11 @@ void Length::setDefinedForm(unsigned long long pLength)
 		uint8_t octet = 0;
 		if (K == 127)
 		{
-			//error
+			throw eLengthKEqual127();
 		}
 		else if (K > 127)
 		{
-			//error
+			throw eLengthKGraterThen127();
 		}
 		else
 		{
@@ -45,7 +46,7 @@ void Length::setDefinedForm(unsigned long long pLength)
 	}
 	else
 	{
-		//error
+		throw eLengthEqual128();
 	}
 }
 
@@ -87,5 +88,4 @@ unsigned long long Length::getLength(vector<uint8_t> pOctets, int &index, bool &
 		index++;
 		return lengthShort;
 	}
-
 }

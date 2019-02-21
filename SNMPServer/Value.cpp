@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "Value.h"
 #include "Strings.h"
-
+#include "Exceptions.h"
 
 Value::Value()
 {
@@ -35,8 +35,17 @@ void Value::setValue(long long pValue, int pLength)
 
 void Value::setValue(vector<string> pObjectIdentifierSubidentifiers)
 {
-	int X = stoi(pObjectIdentifierSubidentifiers.at(0));
-	int Y = stoi(pObjectIdentifierSubidentifiers.at(1));
+	int X, Y;
+	try
+	{
+		X = stoi(pObjectIdentifierSubidentifiers.at(0));
+		Y = stoi(pObjectIdentifierSubidentifiers.at(1));
+	}
+	catch (const std::exception&)
+	{
+		throw eValueObjectIdentifier();
+	}
+
 	int firstSubidentifier = X * 40 + Y;
 	valueObjectIdentifier(firstSubidentifier);
 	

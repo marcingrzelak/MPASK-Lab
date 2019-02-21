@@ -7,7 +7,7 @@
 #include "Value.h"
 #include "Regex.h"
 #include "CheckValue.h"
-
+#include "Exceptions.h"
 
 BERCoder::BERCoder()
 {
@@ -20,16 +20,34 @@ BERCoder::~BERCoder()
 
 void BERCoder::setIdentifier(string pClass, string pComplexity, string pType)
 {
-	identifier.setClass(pClass);
-	identifier.setComplexity(pComplexity);
-	identifier.setTagFromType(pType);
+	try
+	{
+		identifier.setClass(pClass);
+		identifier.setComplexity(pComplexity);
+		identifier.setTagFromType(pType);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eIdentifier();
+	}
+
 }
 
 void BERCoder::setIdentifier(string pClass, string pComplexity, unsigned int pTag)
 {
-	identifier.setClass(pClass);
-	identifier.setComplexity(pComplexity);
-	identifier.setTag(pTag);
+	try
+	{
+		identifier.setClass(pClass);
+		identifier.setComplexity(pComplexity);
+		identifier.setTag(pTag);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eIdentifier();
+	}
+
 }
 
 void BERCoder::clearIdentifier()
@@ -40,7 +58,15 @@ void BERCoder::clearIdentifier()
 
 void BERCoder::setLength(unsigned long long pLength)
 {
-	length.setDefinedForm(pLength);
+	try
+	{
+		length.setDefinedForm(pLength);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eLength();
+	}
 }
 
 void BERCoder::clearLength()
@@ -61,7 +87,15 @@ void BERCoder::setValue(long long pValue, int pLength)
 
 unsigned long long BERCoder::setValue(vector<string> pObjectIdentifierSubidentifiers)
 {
-	value.setValue(pObjectIdentifierSubidentifiers);
+	try
+	{
+		value.setValue(pObjectIdentifierSubidentifiers);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eValue();
+	}
 	return value.octet.size();
 }
 
@@ -106,6 +140,9 @@ string BERCoder::concatAllValues(bool pIsValueNumber)
 
 string BERCoder::nullEncode()
 {
+	clearIdentifier();
+	clearLength();
+	clearValue();
 	setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, IDENTIFIER_TYPE_NULL);
 	setLength(0);
 	string returnString = concatAllValues(false);
@@ -133,7 +170,7 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		stringstream test(pValue);
 		string segment;
 
-		while (std::getline(test, segment, '.'))
+		while (getline(test, segment, '.'))
 		{
 			pObjectIdentifierSubidentifiers.push_back(segment);
 		}
@@ -156,7 +193,15 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 	{
 		if (pKeyword.size() == 0) //kodowanie uniwersalne
 		{
-			this->setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			try
+			{
+				this->setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+
+			}
+			catch (Exceptions&)
+			{
+				throw eEncoder();
+			}
 			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
 				this->setLength(pByteCount);
@@ -182,11 +227,26 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		{
 			if (pVisibility.size() == 0)//brak widocznosci klasy
 			{
-				this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+				try
+				{
+					this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+
+				}
+				catch (Exceptions&)
+				{
+					throw eEncoder();
+				}
 			}
 			else
 			{
-				this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+				try
+				{
+					this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_PRIMITIVE, pTypeID);
+				}
+				catch (Exceptions&)
+				{
+					throw eEncoder();
+				}
 			}
 
 			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
@@ -214,16 +274,38 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		{
 			if (pVisibility.size() == 0)//brak widocznosci klasy
 			{
-				this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				try
+				{
+					this->setIdentifier(IDENTIFIER_CLASS_CONTEXT_SPECIFIC, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				}
+				catch (Exceptions&)
+				{
+					throw eEncoder();
+				}
 			}
 			else
 			{
-				this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				try
+				{
+					this->setIdentifier(pVisibility, IDENTIFIER_COMPLEXITY_CONSTRUCTED, pTypeID);
+				}
+				catch (Exceptions&)
+				{
+					throw eEncoder();
+				}
 			}
 
 			BERCoder temp;
 
-			temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			try
+			{
+				temp.setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, typeName);
+			}
+			catch (Exceptions&)
+			{
+				throw eEncoder();
+			}
+
 			if (!(pType == OBJECT_IDENTIFIER_TAG_NUMBER))
 			{
 				temp.setLength(pByteCount);
@@ -276,7 +358,6 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 		string allSequenceValuesEncodedString = allSequenceValuesEncoded;
 		allSequenceValuesEncodedString.erase(remove_if(allSequenceValuesEncodedString.begin(), allSequenceValuesEncodedString.end(), isspace), allSequenceValuesEncodedString.end());
 
-		//todo przechodzenie wartosci z ostatniego elementu sekwencji
 		clearIdentifier();
 		clearLength();
 		clearValue();
@@ -309,24 +390,43 @@ string BERCoder::encode(string pValue, int pType, int pTypeID, unsigned long lon
 	return "";
 }
 
-string BERCoder::treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
+string BERCoder::treeNodeEncoding(string nodeNameOrOID, string valueToEncode, Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
 {
-	string nodeNameOrOID = "", valueToEncode = "", keyword = "", visibility = "";
+	string keyword = "", visibility = "";
 	CheckValue checkValue;
 	int encodingType = 0, type = 0, typeID = 0, encodingDataType = 0;
+	bool askForValues = false;
 	unsigned long long byteCount = 0;
+	TreeNode* node;
 
-	cout << endl << "Podaj nazwe lub OID liscia:" << endl;
-	cin >> nodeNameOrOID;
+	if (nodeNameOrOID.length() == 0)
+	{
+		askForValues = true;
+	}
 
-	TreeNode* node = pOIDTree.findOID(nodeNameOrOID, pOIDTree.root);
+	if (askForValues)
+	{
+		cout << endl << "Podaj nazwe lub OID liscia:" << endl;
+		cin >> nodeNameOrOID;
+	}
+
+	try
+	{
+		node = pOIDTree.findOID(nodeNameOrOID, pOIDTree.root);
+	}
+	catch (Exceptions &e)
+	{
+		e.message();
+		throw eEncoder();
+	}
+
 	if (node == pOIDTree.root)
 	{
 		node = pOIDTree.findNode(nodeNameOrOID, pOIDTree.root);
 	}
 	if (node != nullptr && node != pOIDTree.root)
 	{
-		if (node->syntax != IDENTIFIER_TYPE_NULL)
+		if (node->syntax != IDENTIFIER_TYPE_NULL && askForValues)
 		{
 			cout << "Podaj wartosc do zakodowania:" << endl;
 			cin >> valueToEncode;
@@ -365,71 +465,21 @@ string BERCoder::treeNodeEncoding(Tree &pOIDTree, vector<DataType> &pVDataType, 
 		}
 		else if (result == -1)
 		{
-			cout << "Blad typu" << endl;
+			throw eEncodingWrongType();
 		}
 		else if (result == -2)
 		{
-			cout << "Blad rozmiaru" << endl;
+			throw eEncodingWrongSize();
+		}
+		else
+		{
+			throw eEncoder();
 		}
 	}
-	return string();
-}
-
-string BERCoder::treeNodeEncoding(string nodeNameOrOID, string valueToEncode, Tree &pOIDTree, vector<DataType> &pVDataType, vector <Index> &pVIndex, vector<Choice> &pVChoice, vector<Sequence> &pVSequence, vector<ObjectTypeSize> &pVObjectTypeSize)
-{
-	string keyword = "", visibility = "";
-	CheckValue checkValue;
-	int encodingType = 0, type = 0, typeID = 0, encodingDataType = 0;
-	unsigned long long byteCount = 0;
-
-	TreeNode* node = pOIDTree.findOID(nodeNameOrOID, pOIDTree.root);
-	if (node == pOIDTree.root)
+	else
 	{
-		node = pOIDTree.findNode(nodeNameOrOID, pOIDTree.root);
+		throw eNodeNotFound();
 	}
-	if (node != nullptr && node != pOIDTree.root)
-	{
-		int result = checkValue.checkValue(valueToEncode, node, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
-		if (result == 0)
-		{
-			if (checkValue.typeDataType != 0)
-			{
-				typeID = pVDataType.at(checkValue.indexDataType).typeID;
-				byteCount = checkValue.byteCount;
-				keyword = pVDataType.at(checkValue.indexDataType).keyword;
-				visibility = pVDataType.at(checkValue.indexDataType).visibility;
-				type = checkValue.typeDataType;
-			}
-			else if (checkValue.type != 0)
-			{
-				typeID = NULL;
-				byteCount = checkValue.byteCount;
-				keyword = "";
-				visibility = "";
-				type = checkValue.type;
-			}
-			else
-			{
-				typeID = NULL;
-				byteCount = NULL;
-				keyword = "";
-				visibility = "";
-				type = SEQUENCE_TAG_NUMBER;
-			}
-
-			string encodedValue = encode(valueToEncode, type, typeID, byteCount, keyword, visibility, checkValue.sequenceValues, checkValue.sequenceDefaultTypes, checkValue.sequenceTypeID, checkValue.sequenceBytesCount, checkValue.sequenceKeywords, checkValue.sequenceVisibilities);
-			return encodedValue;
-		}
-		else if (result == -1)
-		{
-			cout << "Blad typu" << endl;
-		}
-		else if (result == -2)
-		{
-			cout << "Blad rozmiaru" << endl;
-		}
-	}
-	return string();
 }
 
 string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
@@ -443,6 +493,10 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 	{
 		cout << "Wybierz typ danych do zakodowania" << endl << "2 - INTEGER" << endl << "4 - OCTET STRING" << endl << "5 - NULL" << endl << "6 - OBJECT IDENTIFIER" << endl << "16 - SEQUENCE" << endl;
 		cin >> encodingDataType;
+		if (encodingDataType != INTEGER_TAG_NUMBER && encodingDataType != OCTET_STRING_TAG_NUMBER && encodingDataType != NULL_TAG_NUMBER && encodingDataType != OBJECT_IDENTIFIER_TAG_NUMBER && encodingDataType != SEQUENCE_TAG_NUMBER)
+		{
+			throw eAnyValueEncodingWrongType();
+		}
 	}
 
 	if (encodingDataType != SEQUENCE_TAG_NUMBER && !isSequence)
@@ -492,12 +546,12 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 			}
 			else
 			{
-				return "";
+				throw eEncodingWrongSize();
 			}
 		}
 		else
 		{
-			return "";
+			throw eEncodingWrongType();
 		}
 	}
 
@@ -514,13 +568,16 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 		for (size_t i = 0; i < sequenceSize; i++)
 		{
 			cin >> sequenceDataType;
+			if (sequenceDataType != INTEGER_TAG_NUMBER && sequenceDataType != OCTET_STRING_TAG_NUMBER && sequenceDataType != NULL_TAG_NUMBER && sequenceDataType != OBJECT_IDENTIFIER_TAG_NUMBER && sequenceDataType != SEQUENCE_TAG_NUMBER)
+			{
+				throw eAnyValueEncodingWrongType();
+			}
 			sequenceDataTypes.push_back(sequenceDataType);
 		}
 
 		if (sequenceSize > 1 && syntax != IDENTIFIER_TYPE_NULL)
 		{
 			cout << "Podaj dane do zakodowania" << endl;
-
 		}
 
 		for (size_t i = 0; i < sequenceSize; i++)
@@ -577,12 +634,12 @@ string BERCoder::anyValueEncoding(string encodedValue, bool isSequence)
 					}
 					else
 					{
-						return "";
+						throw eEncodingWrongSize();
 					}
 				}
 				else
 				{
-					return "";
+					throw eEncodingWrongType();
 				}
 			}
 		}

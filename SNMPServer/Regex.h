@@ -19,7 +19,7 @@ public:
 	static regex objectType();
 	static regex sizeGeneral();
 	static regex size();
-	static regex index();
+	static regex indexRgx();
 	static regex indexOneElement();
 	static regex dataType();
 	static regex dataTypeEncoder();
@@ -28,4 +28,8 @@ public:
 	static regex sequenceGeneral();
 	static regex sequenceOneElement();
 	static regex objectIdentifierCheckType();
+	static regex snmpCommand();
+	static regex snmpGeneral();
+	static regex snmpgetOneElement();
+	static regex snmpsetOneElement();
 };

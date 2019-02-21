@@ -4,6 +4,7 @@
 #include "DataStructures.h"
 #include "Regex.h"
 #include "Strings.h"
+#include "Exceptions.h"
 
 
 CheckValue::CheckValue()
@@ -214,7 +215,6 @@ short CheckValue::defaultTypeCheck(string pSyntax, bool &isValueNumber)
 		else if (result[3].matched)//object identifier
 		{
 			isValueNumber = false;
-			//todo sprawdzenie poprawnosci typu
 			if (isObjectIdentifier)
 			{
 				return OBJECT_IDENTIFIER_TAG_NUMBER;
@@ -226,15 +226,7 @@ short CheckValue::defaultTypeCheck(string pSyntax, bool &isValueNumber)
 		}
 		else if (result[4].matched)//null
 		{
-			if ((this->byteCount) > 0)
-			{
-				//return -3;
-				return NULL_TAG_NUMBER;
-			}
-			else
-			{
-				return NULL_TAG_NUMBER;
-			}
+			return NULL_TAG_NUMBER;
 		}
 	}
 	return 0;
@@ -311,7 +303,6 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 				}
 				else if (returnedType > 0)//podstawowy typ danych
 				{
-					//todo zapisac returnedType
 					sequenceDefaultTypes.push_back(returnedType);
 					sequenceDataTypeIndexes.push_back(-1);
 					sequenceTypeID.push_back(NULL);
@@ -329,7 +320,6 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 					}
 					else if (tmp.typeDataType > 0)//podstawowy typ danych
 					{
-						//todo zapisac tmp.indexDataType oraz tmp.typeDataType
 						sequenceDefaultTypes.push_back(tmp.typeDataType);
 						sequenceDataTypeIndexes.push_back(tmp.indexDataType);
 						sequenceTypeID.push_back(pVDataType.at(tmp.indexDataType).typeID);
@@ -362,7 +352,7 @@ int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTyp
 	{
 		if (typeDataType == 0 && typeSequence == 0)//podstawowy typ, dodac potem sprawdzanie typeChoice itp todo
 		{
-			//todo sprawdzamy domyslne ograniczenia rozmiaru dla typu podstawowego (zmienna type)
+			//sprawdzamy domyslne ograniczenia rozmiaru dla typu podstawowego
 			short dSCreturned = defaultSizeCheck(type);
 			return dSCreturned;
 		}
@@ -376,7 +366,7 @@ int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTyp
 			}
 			else if (dTSCretuened > 0)//brak ograniczen w DataType
 			{
-				//todo sprawdzamy domyslne ograniczenia rozmiaru dla typu podstawowego (zmienna typeDataType)
+				//sprawdzamy domyslne ograniczenia rozmiaru dla typu podstawowego
 				short dSCreturned = defaultSizeCheck(type);
 				return dSCreturned;
 			}
@@ -412,7 +402,6 @@ int CheckValue::checkValueSize(string pName, vector<ObjectTypeSize> &pVObjectTyp
 
 int CheckValue::checkValueSize()
 {
-	//todo sprawdzanie zakresow podanych przez uzytkownika
 	short dSCreturned = defaultSizeCheck(type);
 	return dSCreturned;
 }
@@ -477,15 +466,12 @@ short CheckValue::sequenceSizeCheck(vector<ObjectTypeSize> &pVObjectTypeSize, ve
 		CheckValue tmp;
 		tmp.setValueParameters(sequenceValues.at(i));
 
-		//todo sprawdzic czy pVSequence.at(indexSequence).type.at(i) jest typu podst. czy data type
 		if (sequenceDataTypeIndexes.at(i) == -1)//typ podst.
 		{
-			//todo jezeli typ podst to nic nie robic
 			tmp.type = sequenceDefaultTypes.at(i);
 		}
 		else
 		{
-			//todo jezeli data type to ustawic tmp.indexDataType oraz tmp.typeDataType na podstawie wartosci zapisanych w sequenceTypeCheck
 			tmp.indexDataType = sequenceDataTypeIndexes.at(i);
 			tmp.typeDataType = sequenceDefaultTypes.at(i);
 			tmp.type = sequenceDefaultTypes.at(i);
@@ -530,7 +516,6 @@ short CheckValue::checkSize(int pSize, long long pSizeMin, long long pSizeMax)
 		}
 		else
 		{
-			//todo jezeli inna wartosc niz integer moze miec ograniczenia rozmiaru x..y to zmienic
 			return 0;
 		}
 	}

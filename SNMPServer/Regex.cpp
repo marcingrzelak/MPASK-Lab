@@ -60,7 +60,7 @@ regex Regex::size()
 	return regex(R"(\(SIZE\((\d+)\)\)|\((\d+)\.\.(\d+)\))");
 }
 
-regex Regex::index()
+regex Regex::indexRgx()
 {
 	return regex(R"(\{\s(.*?)\s\})");
 }
@@ -103,4 +103,24 @@ regex Regex::sequenceOneElement()
 regex Regex::objectIdentifierCheckType()
 {
 	return regex(R"(\d+\.{1})");
+}
+
+regex Regex::snmpCommand()
+{
+	return regex(R"((\w*?)(\s))");
+}
+
+regex Regex::snmpGeneral()
+{
+	return regex(R"((\w*?)\s(\w*?)\s(.*?)\s(.*))");
+}
+
+regex Regex::snmpgetOneElement()
+{
+	return regex(R"((.*?)\s)");
+}
+
+regex Regex::snmpsetOneElement()
+{
+	return regex(R"((.*?)\s(.*?)\s)");
 }
