@@ -187,7 +187,7 @@ void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 	{
 		connectToServer(pSocket, pSocketAddr);
 	}
-	catch (Exceptions &e)
+	catch (Exceptions &)
 	{
 		throw eSocketConnect();
 	}
@@ -233,7 +233,6 @@ string Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket
 
 	acceptConnection(pListenSocket, pServerSocket);
 	recv(pServerSocket, recvBuffor, SERVER_RECV_BUFFOR_SIZE, 0);
-	//todo przekroczenie rozmiaru bufora
 
 	cout << endl << "Klient -> Serwer: " << recvBuffor << endl;
 	return recvBuffor;
@@ -333,8 +332,6 @@ string Network::OIDtoNumber(string OID)
 		}
 
 		//todo poki co brak mozliwosci odczytania numeru oid bo drzewo jest na serwerze
-		//Tree OIDTree;
-		//st = OIDTree.findNodeWord(st, OIDTree.root, "");	
 		throw eOIDWord();
 	}
 	else

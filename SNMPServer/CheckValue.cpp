@@ -283,12 +283,6 @@ short CheckValue::sequenceTypeCheck(string pSyntax, vector<Sequence>& pVSequence
 				return -1;
 			}
 
-			//mamy dwie opcje
-			//1. SYNTAX  IpRouteEntry
-			//2. SYNTAX  SEQUENCE OF IpRouteEntry
-			//gdzie IpRouteEntry jest sekwencja
-			//2. poki co pomijamy bo to typ tablicowy todo
-
 			//dla kazdego elem. sekwencji sprawdzamy typ
 			for (size_t j = 0; j < pVSequence.at(i).type.size(); j++)
 			{

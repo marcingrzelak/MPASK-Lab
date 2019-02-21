@@ -18,12 +18,6 @@ PDUPackage::~PDUPackage()
 
 string PDUPackage::generatePacket(map<string, string> pVarBindList, int tag, int requestID, int errorStatus, int errorIndex, string pCommunity)
 {
-	//GetResponse
-	//serwer->client
-	//pVarBindList
-	//1)oid
-	//2)zakodowana wartosc liscia o id oid
-
 	BERCoder coder;
 	CheckValue checkValue;
 	string varBindEncoded, varBindListEncoded, PDUEncoded, messageEncoded;
@@ -192,7 +186,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 				{
 					encodedNode = encoder.treeNodeEncoding(oid, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 				}
-				catch (Exceptions &e)
+				catch (Exceptions &)
 				{
 					errorIndex = i;
 					errorStatus = PDU_ERR_BAD_VALUE_CODE;
@@ -231,7 +225,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 				{
 					encodedNode = encoder.treeNodeEncoding(getNextOID, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 				}
-				catch (Exceptions &e)
+				catch (Exceptions &)
 				{
 					errorIndex = i;
 					errorStatus = PDU_ERR_BAD_VALUE_CODE;
@@ -268,7 +262,7 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 					{
 						test = encoder.treeNodeEncoding(oid, itr->second, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
 					}
-					catch (Exceptions &e)
+					catch (Exceptions &)
 					{
 						errorIndex = i;
 						errorStatus = PDU_ERR_BAD_VALUE_CODE;
