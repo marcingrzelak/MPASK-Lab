@@ -140,6 +140,9 @@ string BERCoder::concatAllValues(bool pIsValueNumber)
 
 string BERCoder::nullEncode()
 {
+	clearIdentifier();
+	clearLength();
+	clearValue();
 	setIdentifier(IDENTIFIER_CLASS_UNIVERSAL, IDENTIFIER_COMPLEXITY_PRIMITIVE, IDENTIFIER_TYPE_NULL);
 	setLength(0);
 	string returnString = concatAllValues(false);

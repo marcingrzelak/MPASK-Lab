@@ -199,15 +199,28 @@ void Network::clientSendPacket(SOCKET &pSocket, sockaddr_in &pSocketAddr)
 string Network::clientReceivePacket(SOCKET &pSocket)
 {
 	int bytesRecv = 0;
-	char recvBuffor[CLIENT_RECV_BUFFOR_SIZE] = "";
+	char recvBuffor[CLIENT_RECV_BUFFOR_SIZE] = "", secondBuffor[10] = "";
+	clock_t begin = clock(), end;
+	double elapsed_secs = 0;
 
 	while (bytesRecv == 0)
 	{
 		bytesRecv = recv(pSocket, recvBuffor, CLIENT_RECV_BUFFOR_SIZE, 0);
+		if (recv(pSocket, secondBuffor, 10, 0)) //przekroczony rozmiar bufora
+		{
+			throw eClientBufforOverflow();
+		}
 
 		if (bytesRecv < 0)
 		{
 			throw eServerToClient();
+		}
+		end = clock();
+		elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
+
+		if (elapsed_secs > 5)
+		{
+			throw eServerNoResponse();
 		}
 	}
 	closesocket(pSocket);
@@ -216,11 +229,13 @@ string Network::clientReceivePacket(SOCKET &pSocket)
 
 string Network::serverReceivePacket(SOCKET &pListenSocket, SOCKET &pServerSocket)
 {
-	char recvBuffor[SERVER_RECV_BUFFOR_SIZE] = "";
+	char recvBuffor[SERVER_RECV_BUFFOR_SIZE] = "", secondBuffor[10] = "";
 
 	acceptConnection(pListenSocket, pServerSocket);
 	recv(pServerSocket, recvBuffor, SERVER_RECV_BUFFOR_SIZE, 0);
-	cout << "Klient -> Serwer: " << recvBuffor << endl << endl;
+	//todo przekroczenie rozmiaru bufora
+
+	cout << endl << "Klient -> Serwer: " << recvBuffor << endl;
 	return recvBuffor;
 }
 
@@ -229,8 +244,11 @@ void Network::serverSendPacket(SOCKET &serverSocket, string response)
 	const char *sendBuffor = response.c_str();
 
 	send(serverSocket, sendBuffor, strlen(sendBuffor), 0);
-	cout << "Serwer -> Klient: " << sendBuffor << endl << endl;
+	cout << endl << "Serwer -> Klient: " << sendBuffor << endl;
 	closesocket(serverSocket);
+	PDUPackage pdu;
+	pdu.analyzePacket(sendBuffor, true);
+	cout << endl << endl;
 	return;
 }
 

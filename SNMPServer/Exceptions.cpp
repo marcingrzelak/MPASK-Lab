@@ -179,3 +179,28 @@ void ePDU::message()
 {
 	cout << PDU_ERR_MSG;
 }
+
+void eClientBufforOverflow::message()
+{
+	cout << CLIENT_BUFFOR_OVERFLOW_ERROR;
+}
+
+void eServerBufforOverflow::message()
+{
+	cout << SERVER_BUFFOR_OVERFLOW_ERROR;
+}
+
+void eSetValueNotChanged::message()
+{
+	cout << SET_VALUE_NOT_CHANGED_ERROR;
+}
+
+void eSetValueNotImplemented::message()
+{
+	cout << SET_VALUE_NOT_IMPLEMENTED_ERROR;
+}
+
+void eServerNoResponse::message()
+{
+	cout << SERVER_NO_RESPONSE_ERROR << endl;
+}

@@ -53,42 +53,23 @@ void BERDecoder::getValue(int &pIndex)
 
 	if (complexityValue == IDENTIFIER_COMPLEXITY_PRIMITIVE)
 	{
+		if (classValue != IDENTIFIER_COMPLEXITY_PRIMITIVE)
+		{
+			if (tagValue >= 1 && tagValue <= 3)//integer
+			{
+				getValueINT();
+			}
+			if (tagValue == 0)//octet string
+			{
+				for (size_t i = 0; i < values.size(); i++)
+				{
+					dataValue += (char)values.at(i);
+				}
+			}
+		}
 		if (tagValue == INTEGER_TAG_NUMBER)
 		{
-			stringstream data;
-			for (size_t i = 0; i < values.size(); i++)
-			{
-				data << setfill('0') << setw(2) << hex << static_cast<int>(values.at(i));
-			}
-
-			char ch = data.str()[0];
-			int number;
-
-			if (ch >= '0' && ch <= '9')
-				number =  ch - '0';
-			if (ch >= 'A' && ch <= 'F')
-				number =  ch - 'A' + 10;
-			if (ch >= 'a' && ch <= 'f')
-				number =  ch - 'a' + 10;
-
-
-			if (number > 7)//ujemna liczba
-			{
-				string newData;
-				for (size_t i = data.str().length(); i < (sizeof(long))*2; i++)
-				{
-					newData += "f";
-				}
-				newData += data.str();
-				data.str("");
-				data << newData;
-			}
-			long dataINT = stoll(data.str(), nullptr, 16);
-
-			dataValue = to_string(dataINT);
-			stringstream ss;
-			ss << dataINT;
-			dataValue = ss.str();
+			getValueINT();
 		}
 		else if (tagValue == OCTET_STRING_TAG_NUMBER)
 		{
@@ -186,6 +167,44 @@ void BERDecoder::getValue(int &pIndex)
 
 		dataValue = data.str();
 	}
+}
+
+void BERDecoder::getValueINT()
+{
+	stringstream data;
+	for (size_t i = 0; i < values.size(); i++)
+	{
+		data << setfill('0') << setw(2) << hex << static_cast<int>(values.at(i));
+	}
+
+	char ch = data.str()[0];
+	int number;
+
+	if (ch >= '0' && ch <= '9')
+		number = ch - '0';
+	if (ch >= 'A' && ch <= 'F')
+		number = ch - 'A' + 10;
+	if (ch >= 'a' && ch <= 'f')
+		number = ch - 'a' + 10;
+
+
+	if (number > 7)//ujemna liczba
+	{
+		string newData;
+		for (size_t i = data.str().length(); i < (sizeof(long)) * 2; i++)
+		{
+			newData += "f";
+		}
+		newData += data.str();
+		data.str("");
+		data << newData;
+	}
+	long dataINT = stoll(data.str(), nullptr, 16);
+
+	dataValue = to_string(dataINT);
+	stringstream ss;
+	ss << dataINT;
+	dataValue = ss.str();
 }
 
 void BERDecoder::decode(string &pValue, int pIndex, TreeBER &pTree, TreeNodeBER *pParentNode)

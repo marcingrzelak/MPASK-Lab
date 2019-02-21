@@ -33,6 +33,12 @@ constexpr auto WRONG_TAG_GENERATE_PDU = "Niepoprawna komenda snmp\n\n";
 constexpr auto OID_WORD_ERROR= "Nie obsluguje OIDow jako wyrazy. Wprowadz liczbowy OID\n\n";
 constexpr auto OID_WRONG_SYNTAX_ERROR = "Niepoprawna skladnia OID\n\n";
 constexpr auto GET_NEXT_END_ERROR = "Osiagnieto koniec drzewa\n\n";
+constexpr auto CLIENT_BUFFOR_OVERFLOW_ERROR = "Przekroczono rozmiar bufora klienta\n\n";
+constexpr auto SERVER_BUFFOR_OVERFLOW_ERROR = "Przekroczono rozmiar bufora serwera\n\n";
+constexpr auto SET_VALUE_NOT_CHANGED_ERROR = "Nie udalo sie ustawic nowej wartosci\n\n";
+constexpr auto SET_VALUE_NOT_IMPLEMENTED_ERROR = "Brak implementacji ustawiania wartosci tego wezla\n\n";
+constexpr auto SERVER_NO_RESPONSE_ERROR = "Brak odpowiedzi z serwera\n\n";
+
 
 
 #pragma endregion
@@ -42,6 +48,13 @@ constexpr auto SOCKET_CONNECT_WAITING = "Oczekuje na polaczenie od klienta...\n"
 constexpr auto SOCKET_CONNECTED = "Klient podlaczony...\n";
 constexpr auto CLIENT_COMMAND_ENTER = "Wpisz polecenie snmp\n";
 #pragma endregion
+
+#pragma region oids
+constexpr auto SYS_NAME_OID = "1.3.6.1.2.1.1.5";
+constexpr auto SYS_UP_TIME_OID = "1.3.6.1.2.1.1.3";
+constexpr auto _OID = "";
+#pragma endregion
+
 
 #pragma region constants
 constexpr auto IDENTIFIER_CLASS_UNIVERSAL = "UNIVERSAL";

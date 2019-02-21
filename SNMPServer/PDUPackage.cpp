@@ -182,11 +182,27 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 
 		if (node != nullptr)//znaleziono oid
 		{
+			string value;
 			if (stoi(packetType) == GET_REQUEST_TAG_NUMBER)
 			{
-				//pobranie wartosci z drzewa todo
-				string value = "1";
-				string encodedNode = encoder.treeNodeEncoding(oid, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				value = getValue(oid, node->syntax);
+
+				string encodedNode;
+				try
+				{
+					encodedNode = encoder.treeNodeEncoding(oid, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				}
+				catch (Exceptions &e)
+				{
+					errorIndex = i;
+					errorStatus = PDU_ERR_BAD_VALUE_CODE;
+					while (itr != varBindList.end())
+					{
+						itr->second = encoder.nullEncode();
+						itr++;
+					}
+					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+				}
 				if (encodedNode != "")
 				{
 					itr->second = encodedNode;
@@ -206,12 +222,29 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 					throw ePDU();
 				}
 
-				//pobranie wartosci z drzewa todo
-				string value = "1";
-				string encodedNode = encoder.treeNodeEncoding(getNextOID, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				TreeNode *getNextNode;
+				getNextNode = OIDTree.findOID(getNextOID, OIDTree.root);
+				value = getValue(getNextOID, getNextNode->syntax);
+
+				string encodedNode;
+				try
+				{
+					encodedNode = encoder.treeNodeEncoding(getNextOID, value, OIDTree, pVDataType, pVIndex, pVChoice, pVSequence, pVObjectTypeSize);
+				}
+				catch (Exceptions &e)
+				{
+					errorIndex = i;
+					errorStatus = PDU_ERR_BAD_VALUE_CODE;
+					while (itr != varBindList.end())
+					{
+						itr->second = encoder.nullEncode();
+						itr++;
+					}
+					return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+				}
 				if (encodedNode != "")
 				{
-					varBindList.insert(pair<string, string>(getNextOID, encodedNode));
+					varBindListGetNext.insert(pair<string, string>(getNextOID, encodedNode));
 				}
 			}
 
@@ -248,7 +281,23 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 					}
 					if (test != "")//mozna zakodowac nowa wartosc - poprawny typ i rozmiar
 					{
-						//ustawienie wartosci w drzewie todo
+						try
+						{
+							setValue(oid, itr->second);
+						}
+						catch (Exceptions &e)
+						{
+							errorIndex = i;
+							errorStatus = PDU_ERR_GEN_ERR_CODE;
+							while (itr != varBindList.end())
+							{
+								itr->second = encoder.nullEncode();
+								itr++;
+							}
+							e.message();
+							return generatePacket(varBindList, GET_RESPONSE_TAG_NUMBER, requestID, errorStatus, errorIndex, community);
+						}
+
 						checkValue.setValueParameters(itr->second);
 						if (checkValue.isValueNumber)
 						{
@@ -290,12 +339,99 @@ string PDUPackage::packetHandler(string packet, Tree &OIDTree, vector<DataType>&
 	}
 }
 
-void PDUPackage::printResponse()
+void PDUPackage::printResponse(int errIndex, int errStatus)
 {
 	map<string, string>::iterator itr;
+	itr = varBindList.begin();
+	int i = 0;
 
-	for (itr = varBindList.begin(); itr != varBindList.end(); ++itr)
+	if (errStatus == PDU_ERR_NO_ERROR_CODE)
 	{
-		cout << itr->first << " = " << itr->second << endl;
+		while (itr != varBindList.end())
+		{
+			cout << itr->first << " = " << itr->second << endl;
+			itr++;
+		}
+	}
+	else
+	{
+		while (itr != varBindList.end() && i < errIndex)
+		{
+			if (itr->second != "")
+			{
+				cout << itr->first << " = " << itr->second << endl;
+			}
+			itr++;
+			i++;
+		}
+	}
+
+	cout << endl;
+}
+
+string PDUPackage::getValue(string oid, string syntax)
+{
+	string value;
+	if (oid == SYS_NAME_OID)
+	{
+		constexpr auto INFO_BUFFER_SIZE = 32767;
+		TCHAR  infoBuf[INFO_BUFFER_SIZE];
+		DWORD  bufCharCount = INFO_BUFFER_SIZE;
+
+		GetComputerName(infoBuf, &bufCharCount);
+		wstring test(&infoBuf[0]);
+		string test2(test.begin(), test.end());
+		value = test2;
+	}
+	else if (oid == SYS_UP_TIME_OID)
+	{
+		auto uptime = chrono::milliseconds(GetTickCount64());
+		value = to_string(uptime.count());
+	}
+	else
+	{
+		if (syntax.find(IDENTIFIER_TYPE_INTEGER) != string::npos)
+		{
+			value = "120";
+		}
+		else if (syntax.find(IDENTIFIER_TYPE_OCTET_STRING) != string::npos)
+		{
+			value = "test";
+		}
+		else if (syntax.find(IDENTIFIER_TYPE_NULL) != string::npos)
+		{
+			value = "";
+		}
+		else if (syntax.find(IDENTIFIER_TYPE_OBJECT_IDENTIFIER) != string::npos)
+		{
+			value = "1.3.6.1.4.1.311.1.1.3.1.1";
+		}
+		else
+		{
+			value = "inne";
+		}
+	}
+	return value;
+}
+
+void PDUPackage::setValue(string oid, string value)
+{
+	if (oid == SYS_NAME_OID)
+	{
+		wstring stemp = wstring(value.begin(), value.end());
+		LPCWSTR sw = stemp.c_str();
+		bool bSuccess = SetComputerName(sw);
+		if (bSuccess == 0)
+		{
+			throw eSetValueNotChanged();
+		}
+		else
+		{
+			return;
+		}
+	}
+	else
+	{
+		throw eSetValueNotImplemented();
 	}
 }

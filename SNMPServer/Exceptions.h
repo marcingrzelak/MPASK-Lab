@@ -220,3 +220,33 @@ class ePDU : public Exceptions
 public:
 	void message();
 };
+
+class eClientBufforOverflow : public Exceptions
+{
+public:
+	void message();
+};
+
+class eServerBufforOverflow : public Exceptions
+{
+public:
+	void message();
+};
+
+class eSetValueNotChanged : public Exceptions
+{
+public:
+	void message();
+};
+
+class eSetValueNotImplemented : public Exceptions
+{
+public:
+	void message();
+};
+
+class eServerNoResponse : public Exceptions
+{
+public:
+	void message();
+};

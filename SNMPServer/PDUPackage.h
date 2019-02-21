@@ -14,7 +14,9 @@ public:
 	void clearVectors();
 	void addDataToVector(int dataType, int typeId, string dataValue, string keyword, string visibility, unsigned long long dataSize);
 	string packetHandler(string packet, Tree &OIDTree, vector<DataType>& pVDataType, vector<Index>& pVIndex, vector<Choice>& pVChoice, vector<Sequence>& pVSequence, vector<ObjectTypeSize>& pVObjectTypeSize);
-	void printResponse();
+	void printResponse(int errIndex, int errStatus);
+	string getValue(string oid, string syntax);
+	void setValue(string oid, string value);
 
 	int requestID, errorStatus, errorIndex;
 	string packetType, community;

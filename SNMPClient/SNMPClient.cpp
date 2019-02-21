@@ -26,11 +26,9 @@ void runClient(Network client, const char* addr, u_short port, SOCKET clientSock
 		response = client.clientReceivePacket(clientSocket);
 		pdu.analyzePacket(response, false);
 
-		if (pdu.errorIndex == 0 && pdu.errorStatus == PDU_ERR_NO_ERROR_CODE)
-		{
-			pdu.printResponse();
-		}
-		else if (pdu.errorStatus != PDU_ERR_NO_ERROR_CODE)
+		pdu.printResponse(pdu.errorIndex, pdu.errorStatus);
+
+		if (pdu.errorStatus != PDU_ERR_NO_ERROR_CODE)
 		{
 			cout << PDU_ERROR_IN_PACKET << endl << ERR_REASON;
 
@@ -54,7 +52,7 @@ void runClient(Network client, const char* addr, u_short port, SOCKET clientSock
 			{
 				cout << PDU_ERR_GEN_ERR << endl;
 			}
-			cout << client.nodesOID[pdu.errorIndex] << endl;
+			cout << client.nodesOID[pdu.errorIndex] << endl << endl;
 		}
 	}
 	catch (Exceptions &e)
